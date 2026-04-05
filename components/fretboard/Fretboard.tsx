@@ -29,12 +29,12 @@ export function Fretboard({
 
   return (
     <div className={cn("w-full overflow-x-auto", className)}>
-      <div className="min-w-[700px] p-4">
+      <div className="min-w-[1200px] p-6">
         {/* Fret Numbers */}
-        <div className="flex mb-2">
-          <div className="w-12 shrink-0" />
+        <div className="flex mb-3">
+          <div className="w-16 shrink-0" />
           {Array.from({ length: fretCount }, (_, i) => (
-            <div key={i + 1} className="flex-1 text-center text-xs text-muted-foreground font-medium">
+            <div key={i + 1} className="flex-1 text-center text-sm font-semibold text-muted-foreground">
               {i + 1}
             </div>
           ))}
@@ -43,7 +43,7 @@ export function Fretboard({
         {/* Fretboard */}
         <div className="relative bg-gradient-to-b from-amber-900 to-amber-950 rounded-lg overflow-hidden shadow-lg">
           {/* Nut */}
-          <div className="absolute left-12 top-0 bottom-0 w-1.5 bg-gray-100 shadow-md z-10" />
+          <div className="absolute left-16 top-0 bottom-0 w-2 bg-gray-100 shadow-md z-10" />
 
           {/* Fret Markers */}
           <FretMarkers fretCount={fretCount} />
@@ -65,9 +65,9 @@ export function Fretboard({
         </div>
 
         {/* String Labels */}
-        <div className="flex mt-2">
-          <div className="w-12 shrink-0 flex items-center justify-center">
-            <span className="text-xs text-muted-foreground font-medium">Open</span>
+        <div className="flex mt-3">
+          <div className="w-16 shrink-0 flex items-center justify-center">
+            <span className="text-sm font-semibold text-muted-foreground">Open</span>
           </div>
           <div className="flex-1" />
         </div>

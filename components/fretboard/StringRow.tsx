@@ -26,9 +26,9 @@ export function StringRow({
   const stringThickness = 1 + stringIndex * 0.5;
 
   return (
-    <div className="flex items-center h-10 relative">
+    <div className="flex items-center h-14 relative">
       {/* Open string note area */}
-      <div className="w-12 h-full flex items-center justify-center relative shrink-0">
+      <div className="w-16 h-full flex items-center justify-center relative shrink-0">
         {(() => {
           const openNote = fretNotes.find((n) => n.fret === 0);
           if (!openNote) return null;

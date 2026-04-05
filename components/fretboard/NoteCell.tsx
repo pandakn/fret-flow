@@ -36,9 +36,9 @@ export const NoteCell = memo<NoteCellProps>(
     return (
       <button
         className={cn(
-          "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-150 z-20",
+          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 z-20",
           isRoot
-            ? "w-8 h-8 ring-2 ring-white/50"
+            ? "w-12 h-12 ring-2 ring-white/50"
             : "ring-1 ring-white/20",
           isHovered && "scale-110 ring-2 ring-orange-400"
         )}
