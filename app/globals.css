@@ -94,6 +94,56 @@
   --color-6: #a3e635; /* lime      */
   --color-b7: #c084fc; /* purple    */
   --color-7: #facc15; /* amber     */
+
+  /* Fretboard color presets */
+  /* Natural Wood */
+  --fretboard-natural-start: #a0522d;
+  --fretboard-natural-end: #654321;
+  --fretboard-natural-nut: #f5f5dc;
+  --fretboard-natural-text: #f5f5f5;
+  --fretboard-natural-fretline: #8b7355;
+
+  /* Light Maple */
+  --fretboard-light-start: #faf0e6;
+  --fretboard-light-end: #f5deb3;
+  --fretboard-light-nut: #2d2d2d;
+  --fretboard-light-text: #1a1a1a;
+  --fretboard-light-fretline: #a89080;
+
+  /* Dark Rosewood */
+  --fretboard-dark-start: #4a3728;
+  --fretboard-dark-end: #2d1f1a;
+  --fretboard-dark-nut: #f5f5dc;
+  --fretboard-dark-text: #f0f0f0;
+  --fretboard-dark-fretline: #6b5544;
+
+  /* Electric Blue */
+  --fretboard-blue-start: #1e3a5f;
+  --fretboard-blue-end: #0d1b2a;
+  --fretboard-blue-nut: #e8f4f8;
+  --fretboard-blue-text: #e8f4f8;
+  --fretboard-blue-fretline: #3d5a80;
+
+  /* Cosmic Purple */
+  --fretboard-purple-start: #4a3b69;
+  --fretboard-purple-end: #2d1b4e;
+  --fretboard-purple-nut: #f8e8ff;
+  --fretboard-purple-text: #f8e8ff;
+  --fretboard-purple-fretline: #6b5b8c;
+
+  /* Forest Green */
+  --fretboard-green-start: #2d5a3d;
+  --fretboard-green-end: #1a3d2b;
+  --fretboard-green-nut: #e8f8e8;
+  --fretboard-green-text: #e8f8e8;
+  --fretboard-green-fretline: #3d7a4d;
+
+  /* Hot Red */
+  --fretboard-red-start: #8b3a3a;
+  --fretboard-red-end: #5c2020;
+  --fretboard-red-nut: #ffe8e8;
+  --fretboard-red-text: #ffe8e8;
+  --fretboard-red-fretline: #a85050;
 }
 
 .dark {
