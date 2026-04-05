@@ -1,0 +1,16 @@
+export const INTERVAL_COLORS: Record<string, string> = {
+  R: 'var(--color-root)',
+  2: 'var(--color-2)',
+  b2: 'var(--color-b2)',
+  b3: 'var(--color-b3)',
+  3: 'var(--color-3)',
+  4: 'var(--color-4)',
+  b5: 'var(--color-b5)',
+  '#4': 'var(--color-b5)',
+  5: 'var(--color-5)',
+  b6: 'var(--color-b6)',
+  '#5': 'var(--color-b6)',
+  6: 'var(--color-6)',
+  b7: 'var(--color-b7)',
+  7: 'var(--color-7)',
+};
