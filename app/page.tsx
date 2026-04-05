@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import type { NoteName } from "@/types/music"
-import { Navbar } from "@/components/layout/Navbar"
 import { KeySelector } from "@/components/controls/KeySelector"
 import { ScaleTypeSelector } from "@/components/controls/ScaleTypeSelector"
 import { DisplayOptions } from "@/components/controls/DisplayOptions"
@@ -38,23 +37,9 @@ export default function FretFlowPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <aside className="space-y-4 lg:col-span-3">
-            <KeySelector value={selectedRoot} onChange={setSelectedRoot} />
-            <ScaleTypeSelector
-              value={selectedScaleId}
-              onChange={setSelectedScaleId}
-            />
-            <DisplayOptions
-              showNoteNames={showNoteNames}
-              showIntervals={showIntervals}
-              onShowNoteNamesChange={setShowNoteNames}
-              onShowIntervalsChange={setShowIntervals}
-            />
-          </aside>
-
-          <section className="lg:col-span-6">
+      <main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-6">
+          <section className="w-full">
             <FretboardPanel
               root={selectedRoot}
               scaleId={selectedScaleId}
@@ -64,16 +49,35 @@ export default function FretFlowPage() {
             />
           </section>
 
-          <aside className="space-y-4 lg:col-span-3">
-            <ScaleInfo root={selectedRoot} scaleId={selectedScaleId} />
-            <QuickPresets
-              presets={DEFAULT_PRESETS}
-              selectedRoot={selectedRoot}
-              selectedScaleId={selectedScaleId}
-              onSelect={handlePresetSelect}
-            />
-            <Legend />
-          </aside>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <aside className="space-y-4">
+              <KeySelector value={selectedRoot} onChange={setSelectedRoot} />
+              <ScaleTypeSelector
+                value={selectedScaleId}
+                onChange={setSelectedScaleId}
+              />
+              <DisplayOptions
+                showNoteNames={showNoteNames}
+                showIntervals={showIntervals}
+                onShowNoteNamesChange={setShowNoteNames}
+                onShowIntervalsChange={setShowIntervals}
+              />
+            </aside>
+
+            <aside className="space-y-4">
+              <ScaleInfo root={selectedRoot} scaleId={selectedScaleId} />
+              <QuickPresets
+                presets={DEFAULT_PRESETS}
+                selectedRoot={selectedRoot}
+                selectedScaleId={selectedScaleId}
+                onSelect={handlePresetSelect}
+              />
+            </aside>
+
+            <aside className="space-y-4">
+              <Legend />
+            </aside>
+          </div>
         </div>
       </main>
     </div>
