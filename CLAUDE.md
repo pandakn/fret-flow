@@ -162,7 +162,7 @@ To add a scale: append to `SCALES` — it auto-appears in `<ScaleSelector>`.
 3. **Interval colors via CSS vars only** — import `INTERVAL_COLORS`, never write hex in JSX.
 4. **Root note always visually dominant** — larger, brighter, or distinct shape vs other active notes.
 5. **Accessibility** — every NoteCell needs `aria-label="G, fifth, fret 3 string 2"`.
-6. **shadcn for all generic UI** — buttons, selects, sliders, tooltips, badges come from `components/ui/`. Don't reinvent them.
+6. **shadcn first, always** — before creating any new component, check if shadcn covers it. Run `bunx shadcn@latest add <component>` to install. Buttons, selects, sliders, switches, tooltips, badges, cards, dropdowns, dialogs — all come from `components/ui/`. Only build a custom component when shadcn has no equivalent.
 
 ---
 
