@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { INTERVAL_COLORS } from "@/lib/colors";
 import { cn } from "@/lib/utils";
+import type { ColorPreset } from "@/types/fretboard";
 
 interface NoteCellProps {
   note: string;
@@ -10,6 +11,7 @@ interface NoteCellProps {
   isActive: boolean;
   showNoteNames: boolean;
   showIntervals: boolean;
+  colorPreset: ColorPreset;
   isHovered: boolean;
   onHover: (hovering: boolean) => void;
   onClick: () => void;
@@ -24,6 +26,7 @@ export const NoteCell = memo<NoteCellProps>(
     isActive,
     showNoteNames,
     showIntervals,
+    colorPreset,
     isHovered,
     onHover,
     onClick,
@@ -31,8 +34,26 @@ export const NoteCell = memo<NoteCellProps>(
   }) => {
     if (!isActive) return null;
 
+    const isLightPreset = colorPreset === "light";
     const rootNoteColor = "var(--color-root)";
     const intervalColor = interval ? INTERVAL_COLORS[interval] : "var(--color-2)";
+
+    const getPresetTextColor = (preset: ColorPreset): string => {
+      const colors: Record<ColorPreset, string> = {
+        natural: "var(--fretboard-natural-text)",
+        light: "var(--fretboard-light-text)",
+        dark: "var(--fretboard-dark-text)",
+        blue: "var(--fretboard-blue-text)",
+        purple: "var(--fretboard-purple-text)",
+        green: "var(--fretboard-green-text)",
+        red: "var(--fretboard-red-text)",
+      };
+      return colors[preset];
+    };
+
+    const textColor = getPresetTextColor(colorPreset);
+    const ringColor = isLightPreset ? "ring-gray-500/40" : "ring-white/20";
+    const hoverRingColor = isLightPreset ? "ring-gray-600" : "ring-orange-400";
 
     return (
       <Button
@@ -40,14 +61,14 @@ export const NoteCell = memo<NoteCellProps>(
         className={cn(
           "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 z-20 p-0",
           isRoot
-            ? "w-12 h-12 ring-2 ring-white/50"
-            : "ring-1 ring-white/20",
-          isHovered && "scale-110 ring-2 ring-orange-400"
+            ? "w-12 h-12 ring-2 ring-gray-500/50"
+            : `ring-1 ${ringColor}`,
+          isHovered && `scale-110 ring-2 ${hoverRingColor}`
         )}
         style={{
           backgroundColor: isRoot ? rootNoteColor : intervalColor,
-          color: "#fff",
-          boxShadow: isRoot ? "0 0 12px rgba(212, 149, 42, 0.6)" : "0 0 8px rgba(0, 0, 0, 0.3)",
+          color: textColor,
+          boxShadow: isRoot ? "0 0 12px rgba(212, 149, 42, 0.6)" : isLightPreset ? "0 0 6px rgba(0, 0, 0, 0.15)" : "0 0 8px rgba(0, 0, 0, 0.3)",
         }}
         onMouseEnter={() => onHover(true)}
         onMouseLeave={() => onHover(false)}
