@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import type { NoteName } from "@/types/music"
-import { KeySelector } from "@/components/controls/KeySelector"
-import { ScaleTypeSelector } from "@/components/controls/ScaleTypeSelector"
+import type { ColorPreset } from "@/types/fretboard"
+import { FretboardPanel } from "@/components/layout/FretboardPanel"
 import { DisplayOptions } from "@/components/controls/DisplayOptions"
+import { FretboardSettings } from "@/components/controls/FretboardSettings"
 import { ScaleInfo } from "@/components/layout/ScaleInfo"
 import { QuickPresets } from "@/components/layout/QuickPresets"
 import { Legend } from "@/components/layout/Legend"
-import { FretboardPanel } from "@/components/layout/FretboardPanel"
 
 type Preset = {
   key: NoteName
@@ -26,7 +26,9 @@ const DEFAULT_PRESETS: Preset[] = [
 export default function FretFlowPage() {
   const [selectedRoot, setSelectedRoot] = useState<NoteName>("C")
   const [selectedScaleId, setSelectedScaleId] = useState("major")
-  const selectedTuningId = "standard"
+  const [selectedTuningId, setSelectedTuningId] = useState("standard")
+  const [colorPreset, setColorPreset] = useState<ColorPreset>("light")
+  const [fretCount, setFretCount] = useState(15)
   const [showNoteNames, setShowNoteNames] = useState(true)
   const [showIntervals, setShowIntervals] = useState(false)
 
@@ -44,17 +46,33 @@ export default function FretFlowPage() {
               root={selectedRoot}
               scaleId={selectedScaleId}
               tuningId={selectedTuningId}
+              fretCount={fretCount}
+              colorPreset={colorPreset}
               showNoteNames={showNoteNames}
               showIntervals={showIntervals}
+              onRootChange={setSelectedRoot}
+              onScaleChange={setSelectedScaleId}
             />
           </section>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
             <aside className="space-y-4">
-              <KeySelector value={selectedRoot} onChange={setSelectedRoot} />
-              <ScaleTypeSelector
-                value={selectedScaleId}
-                onChange={setSelectedScaleId}
+              <QuickPresets
+                presets={DEFAULT_PRESETS}
+                selectedRoot={selectedRoot}
+                selectedScaleId={selectedScaleId}
+                onSelect={handlePresetSelect}
+              />
+            </aside>
+
+            <aside className="space-y-4">
+              <FretboardSettings
+                colorPreset={colorPreset}
+                fretCount={fretCount}
+                tuningId={selectedTuningId}
+                onColorPresetChange={setColorPreset}
+                onFretCountChange={setFretCount}
+                onTuningChange={setSelectedTuningId}
               />
               <DisplayOptions
                 showNoteNames={showNoteNames}
@@ -66,12 +84,6 @@ export default function FretFlowPage() {
 
             <aside className="space-y-4">
               <ScaleInfo root={selectedRoot} scaleId={selectedScaleId} />
-              <QuickPresets
-                presets={DEFAULT_PRESETS}
-                selectedRoot={selectedRoot}
-                selectedScaleId={selectedScaleId}
-                onSelect={handlePresetSelect}
-              />
             </aside>
 
             <aside className="space-y-4">
