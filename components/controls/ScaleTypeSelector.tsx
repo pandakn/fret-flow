@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCALES } from "@/lib/scales";
 
@@ -17,18 +18,19 @@ export function ScaleTypeSelector({ value, onChange }: ScaleTypeSelectorProps) {
       </CardHeader>
       <CardContent className="space-y-2">
         {SCALES.map((scale) => (
-          <button
+          <Button
             key={scale.id}
             onClick={() => onChange(scale.id)}
+            variant={value === scale.id ? "default" : "outline"}
             className={cn(
-              "w-full px-3 py-2 rounded-lg text-sm font-medium text-left transition-all",
+              "w-full justify-start transition-all",
               value === scale.id
-                ? "bg-blue-500 text-white shadow-md"
+                ? "bg-blue-500 text-white shadow-md hover:bg-blue-600"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             )}
           >
             {scale.name}
-          </button>
+          </Button>
         ))}
       </CardContent>
     </Card>

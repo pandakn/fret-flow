@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+
 export function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -10,8 +12,8 @@ export function Navbar() {
             <span className="font-bold text-xl text-gray-900">FretFlow</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <button className="text-purple-600 font-medium">Explore Scales</button>
-            <button className="text-gray-600 hover:text-gray-900 transition-colors">Practice</button>
+            <Button variant="ghost" className="text-purple-600 font-medium">Explore Scales</Button>
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 transition-colors">Practice</Button>
           </div>
           <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
             <span className="text-purple-600 font-medium text-sm">U</span>

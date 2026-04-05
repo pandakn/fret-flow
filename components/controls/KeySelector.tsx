@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { NoteName } from "@/types/music";
 
@@ -20,18 +21,19 @@ export function KeySelector({ value, onChange }: KeySelectorProps) {
       <CardContent>
         <div className="grid grid-cols-4 gap-2">
           {KEYS.map((key) => (
-            <button
+            <Button
               key={key}
               onClick={() => onChange(key)}
+              variant={value === key ? "default" : "outline"}
               className={cn(
-                "px-2 py-2 rounded-lg text-sm font-medium transition-all",
+                "h-10 transition-all",
                 value === key
-                  ? "bg-purple-500 text-white shadow-md"
+                  ? "bg-purple-500 text-white shadow-md hover:bg-purple-600"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               )}
             >
               {key}
-            </button>
+            </Button>
           ))}
         </div>
       </CardContent>

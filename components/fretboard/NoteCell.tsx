@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Button } from "@/components/ui/button";
 import { INTERVAL_COLORS } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 
@@ -34,9 +35,10 @@ export const NoteCell = memo<NoteCellProps>(
     const intervalColor = interval ? INTERVAL_COLORS[interval] : "var(--color-2)";
 
     return (
-      <button
+      <Button
+        variant="ghost"
         className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 z-20",
+          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 z-20 p-0",
           isRoot
             ? "w-12 h-12 ring-2 ring-white/50"
             : "ring-1 ring-white/20",
@@ -44,7 +46,7 @@ export const NoteCell = memo<NoteCellProps>(
         )}
         style={{
           backgroundColor: isRoot ? rootNoteColor : intervalColor,
-          color: isRoot ? "#fff" : "#fff",
+          color: "#fff",
           boxShadow: isRoot ? "0 0 12px rgba(212, 149, 42, 0.6)" : "0 0 8px rgba(0, 0, 0, 0.3)",
         }}
         onMouseEnter={() => onHover(true)}
@@ -53,7 +55,7 @@ export const NoteCell = memo<NoteCellProps>(
         aria-label={ariaLabel}
       >
         {showIntervals && interval ? interval : showNoteNames ? note : ""}
-      </button>
+      </Button>
     );
   }
 );
