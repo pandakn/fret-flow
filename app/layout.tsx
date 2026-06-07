@@ -1,13 +1,18 @@
-import { Geist_Mono, Inter } from "next/font/google"
+import { Space_Mono, Syne } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
-
-const fontMono = Geist_Mono({
+const syne = Syne({
   subsets: ["latin"],
+  weight: ["400", "600", "800"],
+  variable: "--font-sans",
+})
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
   variable: "--font-mono",
 })
 
@@ -20,14 +25,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontMono.variable,
-        "font-sans",
-        inter.variable
-      )}
+      className={cn("antialiased", syne.variable, spaceMono.variable)}
     >
-      <body>
+      <body className="font-sans">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

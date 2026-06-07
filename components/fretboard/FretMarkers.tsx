@@ -1,53 +1,75 @@
-import { memo } from "react";
-import type { ColorPreset } from "@/types/fretboard";
+import { memo } from "react"
+import type { ColorPreset } from "@/types/fretboard"
 
 interface FretMarkersProps {
-  fretCount: number;
-  colorPreset: ColorPreset;
+  fretCount: number
+  colorPreset: ColorPreset
 }
 
-export const FretMarkers = memo<FretMarkersProps>(({ fretCount, colorPreset }) => {
-  const FRET_MARKERS = [3, 5, 7, 9, 12];
-  const DOUBLE_MARKER_FRETS = [12];
+export const FretMarkers = memo<FretMarkersProps>(
+  ({ fretCount, colorPreset }) => {
+    const FRET_MARKERS = [3, 5, 7, 9, 12]
+    const DOUBLE_MARKER_FRETS = [12]
 
-  const getMarkerColor = (preset: ColorPreset): string => {
-    const colors: Record<ColorPreset, string> = {
-      natural: "bg-gray-300/40",
-      light: "bg-gray-600/30",
-      dark: "bg-gray-300/40",
-      blue: "bg-blue-300/30",
-      purple: "bg-purple-300/30",
-      green: "bg-green-300/30",
-      red: "bg-red-300/30",
-    };
-    return colors[preset];
-  };
+    const isMinimal = colorPreset === "minimal"
+    const markerColor = isMinimal
+      ? "var(--fretboard-minimal-marker)"
+      : "currentColor"
 
-  const markerColor = getMarkerColor(colorPreset);
-
-  return (
-    <div className="absolute inset-0 flex" style={{ left: "48px" }}>
-      {Array.from({ length: fretCount }, (_, i) => {
-        const fretNum = i + 1;
-        return (
-          <div key={fretNum} className="flex-1 relative">
-            {FRET_MARKERS.includes(fretNum) && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    return (
+      <div
+        className="pointer-events-none absolute inset-0 flex"
+        style={{ left: "42px" }}
+      >
+        {Array.from({ length: fretCount }, (_, i) => {
+          const fretNum = i + 1
+          if (!FRET_MARKERS.includes(fretNum))
+            return <div key={fretNum} className="flex-1" />
+          return (
+            <div key={fretNum} className="relative flex-1">
+              <div className="absolute inset-0 flex items-end justify-center pb-1">
                 {DOUBLE_MARKER_FRETS.includes(fretNum) ? (
-                  <div className="flex flex-col gap-8">
-                    <div className={`w-3 h-3 rounded-full ${markerColor}`} />
-                    <div className={`w-3 h-3 rounded-full ${markerColor}`} />
+                  <div
+                    className="flex"
+                    style={{
+                      gap: isMinimal ? "4px" : "8px",
+                      transform: "translateY(-6px)",
+                    }}
+                  >
+                    <div
+                      className="rounded-full"
+                      style={{
+                        width: isMinimal ? "5px" : "12px",
+                        height: isMinimal ? "5px" : "12px",
+                        backgroundColor: markerColor,
+                      }}
+                    />
+                    <div
+                      className="rounded-full"
+                      style={{
+                        width: isMinimal ? "5px" : "12px",
+                        height: isMinimal ? "5px" : "12px",
+                        backgroundColor: markerColor,
+                      }}
+                    />
                   </div>
                 ) : (
-                  <div className={`w-3 h-3 rounded-full ${markerColor}`} />
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: isMinimal ? "5px" : "12px",
+                      height: isMinimal ? "5px" : "12px",
+                      backgroundColor: markerColor,
+                    }}
+                  />
                 )}
               </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-});
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+)
 
-FretMarkers.displayName = "FretMarkers";
+FretMarkers.displayName = "FretMarkers"

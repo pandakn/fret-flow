@@ -1,42 +1,66 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { NoteName } from "@/types/music";
+import { cn } from "@/lib/utils"
+import type { NoteName } from "@/types/music"
 
 interface KeySelectorProps {
-  value: NoteName;
-  onChange: (key: NoteName) => void;
+  value: NoteName
+  onChange: (key: NoteName) => void
 }
 
-export function KeySelector({ value, onChange }: KeySelectorProps) {
-  const KEYS: NoteName[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const KEYS: NoteName[] = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+]
 
+export function KeySelector({ value, onChange }: KeySelectorProps) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold text-gray-900">Key</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-2">
-          {KEYS.map((key) => (
-            <Button
-              key={key}
-              onClick={() => onChange(key)}
-              variant={value === key ? "default" : "outline"}
-              className={cn(
-                "h-10 transition-all",
-                value === key
-                  ? "bg-purple-500 text-white shadow-md hover:bg-purple-600"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              )}
-            >
-              {key}
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
+    <section
+      style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
+    >
+      <div
+        className="mb-2.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
+        style={{
+          color: "var(--text)",
+          opacity: 0.55,
+          fontFamily: "var(--font-mono)",
+        }}
+      >
+        Root key
+      </div>
+      <div className="grid grid-cols-4 gap-1">
+        {KEYS.map((key) => (
+          <button
+            key={key}
+            onClick={() => onChange(key)}
+            type="button"
+            className={cn(
+              "rounded-md text-[12px] font-bold transition-colors",
+              value === key
+                ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                : "text-[var(--text)] hover:bg-[var(--surface2)]"
+            )}
+            style={{
+              border: "1px solid var(--border)",
+              padding: "7px 0",
+              fontFamily: "var(--font-mono)",
+            }}
+            aria-pressed={value === key}
+          >
+            {key}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
 }

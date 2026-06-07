@@ -19,7 +19,7 @@ export function useFretboard({
   const scale = getScaleById(scaleId)
   const tuning = getTuningById(tuningId)
 
-  const fretCount = fretRange.max - fretRange.min
+  const fretCount = fretRange.max - fretRange.min + 1
 
   const fretNotes =
     scale && tuning

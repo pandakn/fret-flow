@@ -1,97 +1,123 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { NoteName } from "@/types/music";
-import { CHROMATIC } from "@/lib/notes";
-import { SCALES } from "@/lib/scales";
+import { CHROMATIC } from "@/lib/notes"
+import { SCALES } from "@/lib/scales"
+import { cn } from "@/lib/utils"
+import type { NoteName } from "@/types/music"
+import type { ColorPreset } from "@/types/fretboard"
 
 interface ScaleInfoProps {
-  root: NoteName;
-  scaleId: string;
+  root: NoteName
+  scaleId: string
+  colorPreset: ColorPreset
+  onColorPresetChange: (preset: ColorPreset) => void
 }
 
-export function ScaleInfo({ root, scaleId }: ScaleInfoProps) {
-  const scale = SCALES.find((s) => s.id === scaleId);
-  if (!scale) return null;
+const SEMITONE_BY_INTERVAL: Record<string, number> = {
+  R: 0,
+  b2: 1,
+  "2": 2,
+  b3: 3,
+  "3": 4,
+  "4": 5,
+  b5: 6,
+  "#4": 6,
+  "5": 7,
+  b6: 8,
+  "#5": 8,
+  "6": 9,
+  b7: 10,
+  "7": 11,
+}
 
-  const rootIndex = CHROMATIC.indexOf(root);
-  const displayScaleNotes = scale.intervals.map(
-    (interval, index) => CHROMATIC[(rootIndex + getIntervalSemitone(interval, index)) % 12]
-  );
+const PRESET_PILLS: ColorPreset[] = [
+  "minimal",
+  "natural",
+  "light",
+  "dark",
+  "blue",
+  "purple",
+  "green",
+  "red",
+]
 
-  const getRelativeKey = () => {
-    if (scaleId === "major") {
-      const relativeMinorIndex = (rootIndex + 9) % 12;
-      return CHROMATIC[relativeMinorIndex] + " Minor";
-    }
-    if (scaleId === "natural_minor") {
-      const relativeMajorIndex = (rootIndex + 3) % 12;
-      return CHROMATIC[relativeMajorIndex] + " Major";
-    }
-    return null;
-  };
+const PRESET_COLOR: Record<ColorPreset, string> = {
+  minimal: "#faf9f7",
+  natural: "#8b5a2b",
+  light: "#f5deb3",
+  dark: "#3a2818",
+  blue: "#1e3a5f",
+  purple: "#4a3b69",
+  green: "#2d5a3d",
+  red: "#8b3a3a",
+}
+
+export function ScaleInfo({
+  root,
+  scaleId,
+  colorPreset,
+  onColorPresetChange,
+}: ScaleInfoProps) {
+  const scale = SCALES.find((s) => s.id === scaleId)
+  if (!scale) return null
+
+  const rootIndex = CHROMATIC.indexOf(root)
+  const noteList = scale.intervals
+    .map(
+      (interval) =>
+        CHROMATIC[(rootIndex + (SEMITONE_BY_INTERVAL[interval] ?? 0)) % 12]
+    )
+    .join(" · ")
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold text-gray-900">Scale Info</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-xs text-gray-500 mb-1">Scale Name</p>
-          <p className="font-semibold text-gray-900">
-            {root} {scale.name}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500 mb-1">Notes</p>
-          <div className="flex flex-wrap gap-1">
-            {displayScaleNotes.map((note, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "px-2 py-1 rounded text-xs font-medium",
-                  i === 0
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-blue-100 text-blue-700"
-                )}
-              >
-                {note}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500 mb-1">Formula</p>
-          <p className="font-mono text-sm text-gray-700">
-            {scale.intervals.join(" - ")}
-          </p>
-        </div>
-        {getRelativeKey() && (
-          <div>
-            <p className="text-xs text-gray-500 mb-1">
-              {scaleId === "major" ? "Relative Minor" : "Relative Major"}
-            </p>
-            <p className="font-semibold text-gray-900">{getRelativeKey()}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+    <header
+      className="flex items-center justify-between gap-4"
+      style={{
+        backgroundColor: "var(--surface)",
+        borderBottom: "1px solid var(--border)",
+        padding: "12px 32px",
+      }}
+    >
+      <div>
+        <h1
+          className="text-[20px] font-extrabold tracking-[-0.4px]"
+          style={{ color: "var(--text)" }}
+        >
+          {root} {scale.name}
+        </h1>
+        <p
+          className="mt-[3px] text-[10px]"
+          style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+        >
+          {noteList} &nbsp;·&nbsp; {scale.intervals.length} notes
+        </p>
+      </div>
 
-function getIntervalSemitone(interval: string, index: number): number {
-  const semitoneMap: Record<string, number> = {
-    R: 0,
-    b2: 1, 2: 2,
-    b3: 3, 3: 4,
-    4: 5,
-    b5: 6, "#4": 6,
-    5: 7,
-    b6: 8, "#5": 8,
-    6: 9,
-    b7: 10, 7: 11,
-  };
-  return semitoneMap[interval] ?? index;
+      <div className="flex gap-1">
+        {PRESET_PILLS.map((p) => (
+          <button
+            key={p}
+            onClick={() => onColorPresetChange(p)}
+            title={p}
+            className={cn(
+              "h-4 w-4 rounded-full transition-all",
+              colorPreset === p ? "ring-2 ring-offset-1" : ""
+            )}
+            style={
+              {
+                backgroundColor: PRESET_COLOR[p],
+                border: "1px solid var(--border-2)",
+                ["--tw-ring-color" as string]:
+                  colorPreset === p ? "var(--accent)" : undefined,
+                ["--tw-ring-offset-color" as string]:
+                  colorPreset === p ? "var(--surface)" : undefined,
+              } as React.CSSProperties
+            }
+            aria-label={`Color preset: ${p}`}
+            aria-pressed={colorPreset === p}
+          />
+        ))}
+      </div>
+    </header>
+  )
 }

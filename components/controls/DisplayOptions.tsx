@@ -1,49 +1,56 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils"
+
+export type DisplayMode = "degrees" | "notes" | "rootOnly"
 
 interface DisplayOptionsProps {
-  showNoteNames: boolean;
-  showIntervals: boolean;
-  onShowNoteNamesChange: (show: boolean) => void;
-  onShowIntervalsChange: (show: boolean) => void;
+  value: DisplayMode
+  onChange: (mode: DisplayMode) => void
 }
 
-export function DisplayOptions({
-  showNoteNames,
-  showIntervals,
-  onShowNoteNamesChange,
-  onShowIntervalsChange,
-}: DisplayOptionsProps) {
+const OPTIONS: { id: DisplayMode; label: string }[] = [
+  { id: "degrees", label: "Degrees" },
+  { id: "notes", label: "Notes" },
+  { id: "rootOnly", label: "Root only" },
+]
+
+export function DisplayOptions({ value, onChange }: DisplayOptionsProps) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold text-gray-900">Display Options</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="show-notes" className="text-sm text-gray-700">
-            Show Note Names
-          </Label>
-          <Switch
-            id="show-notes"
-            checked={showNoteNames}
-            onCheckedChange={onShowNoteNamesChange}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="show-intervals" className="text-sm text-gray-700">
-            Show Intervals
-          </Label>
-          <Switch
-            id="show-intervals"
-            checked={showIntervals}
-            onCheckedChange={onShowIntervalsChange}
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
+    <div
+      className="inline-flex rounded-md"
+      style={{
+        border: "1px solid var(--border-2)",
+        padding: "2px",
+        gap: "2px",
+      }}
+      role="tablist"
+      aria-label="Display mode"
+    >
+      {OPTIONS.map((opt) => {
+        const active = value === opt.id
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(opt.id)}
+            className={cn(
+              "rounded-sm text-[11px] font-bold transition-colors",
+              active
+                ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                : "text-[var(--muted)] hover:text-[var(--text)]"
+            )}
+            style={{
+              padding: "5px 11px",
+              fontFamily: "var(--font-mono)",
+            }}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
 }

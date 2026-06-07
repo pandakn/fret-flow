@@ -1,53 +1,67 @@
-export type ColorPreset = "natural" | "light" | "dark" | "blue" | "purple" | "green" | "red";
+export type ColorPreset =
+  | "natural"
+  | "light"
+  | "dark"
+  | "blue"
+  | "purple"
+  | "green"
+  | "red"
+  | "minimal"
 
 export interface FretboardPreset {
-  id: ColorPreset;
-  name: string;
-  description: string;
-  preview: string;
+  id: ColorPreset
+  name: string
+  description: string
+  preview: string
 }
 
 export const FRETBOARD_PRESETS: FretboardPreset[] = [
   {
+    id: "minimal",
+    name: "Minimal",
+    description: "Flat cream — matches FretFlow minimal theme",
+    preview: "◻",
+  },
+  {
     id: "natural",
     name: "Natural Wood",
     description: "Classic wood-tone fretboard",
-    preview: "🪵"
+    preview: "🪵",
   },
   {
     id: "light",
     name: "Light Maple",
     description: "Bright maple wood",
-    preview: "🪵"
+    preview: "🪵",
   },
   {
     id: "dark",
     name: "Dark Rosewood",
     description: "Deep rosewood tone",
-    preview: "🪵"
+    preview: "🪵",
   },
   {
     id: "blue",
     name: "Electric Blue",
     description: "Modern blue aesthetic",
-    preview: "🎸"
+    preview: "🎸",
   },
   {
     id: "purple",
     name: "Cosmic Purple",
     description: "Purple galaxy theme",
-    preview: "🌌"
+    preview: "🌌",
   },
   {
     id: "green",
     name: "Forest Green",
     description: "Natural green tones",
-    preview: "🌿"
+    preview: "🌿",
   },
   {
     id: "red",
     name: "Hot Red",
     description: "Bold red aesthetic",
-    preview: "🔥"
+    preview: "🔥",
   },
-];
+]

@@ -7,6 +7,7 @@
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,136 +49,144 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ─── Light theme — minimal cream/black, single dark accent ─── */
+  --background: #faf9f7;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #1a1a1a;
+  --primary-foreground: #faf9f7;
+  --secondary: #f4f3f0;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f4f3f0;
+  --muted-foreground: #888780;
+  --accent: #1a1a1a;
+  --accent-foreground: #faf9f7;
+  --accent-soft: #f0ede8;
+  --destructive: #d85a30;
+  --border: #e8e6e1;
+  --border-2: #d4d1cb;
+  --input: #e8e6e1;
+  --ring: #1a1a1a;
+  --chart-1: #1a1a1a;
+  --chart-2: #7c6bff;
+  --chart-3: #d85a30;
+  --chart-4: #1d9e75;
+  --chart-5: #7c6bff;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #1a1a1a;
+  --sidebar-primary-foreground: #faf9f7;
+  --sidebar-accent: #f0ede8;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e8e6e1;
+  --sidebar-ring: #1a1a1a;
 
-  /* Interval colors for fretboard */
-  --color-root: #ef4444; /* red       — dominant, always stands out */
-  --color-b2: #f97316; /* orange    */
-  --color-2: #eab308; /* yellow    */
-  --color-b3: #8b5cf6; /* violet    */
-  --color-3: #22c55e; /* green     */
-  --color-4: #14b8a6; /* teal      */
-  --color-b5: #ec4899; /* pink      — tritone, feels "tense" */
-  --color-5: #3b82f6; /* blue      — stable, consonant */
-  --color-b6: #f97316; /* orange    */
-  --color-6: #a3e635; /* lime      */
-  --color-b7: #c084fc; /* purple    */
-  --color-7: #facc15; /* amber     */
+  /* ─── Interval colors — 4 family groups per design spec ─── */
+  --color-deg1: #1a1a1a; /* root */
+  --color-deg2: #7c6bff; /* 2nd / 3rd (b2, 2, b3, 3) */
+  --color-deg3: #d85a30; /* 4th / 5th (4, b5, 5, b6) */
+  --color-deg4: #1d9e75; /* 6th / 7th (6, b7, 7) */
 
-  /* Fretboard color presets */
-  /* Natural Wood */
+  /* ─── Back-compat aliases for existing fretboard wood presets ─── */
+  --color-root: var(--color-deg1);
+  --color-b2: var(--color-deg2);
+  --color-2: var(--color-deg2);
+  --color-b3: var(--color-deg2);
+  --color-3: var(--color-deg2);
+  --color-4: var(--color-deg3);
+  --color-b5: var(--color-deg3);
+  --color-5: var(--color-deg3);
+  --color-b6: var(--color-deg3);
+  --color-6: var(--color-deg4);
+  --color-b7: var(--color-deg4);
+  --color-7: var(--color-deg4);
+
+  /* ─── Fretboard wood presets (kept for back-compat) ─── */
   --fretboard-natural-start: #a0522d;
   --fretboard-natural-end: #654321;
   --fretboard-natural-nut: #f5f5dc;
   --fretboard-natural-text: #f5f5f5;
   --fretboard-natural-fretline: #8b7355;
 
-  /* Light Maple */
   --fretboard-light-start: #faf0e6;
   --fretboard-light-end: #f5deb3;
   --fretboard-light-nut: #2d2d2d;
   --fretboard-light-text: #1a1a1a;
   --fretboard-light-fretline: #a89080;
 
-  /* Dark Rosewood */
   --fretboard-dark-start: #4a3728;
   --fretboard-dark-end: #2d1f1a;
   --fretboard-dark-nut: #f5f5dc;
   --fretboard-dark-text: #f0f0f0;
   --fretboard-dark-fretline: #6b5544;
 
-  /* Electric Blue */
   --fretboard-blue-start: #1e3a5f;
   --fretboard-blue-end: #0d1b2a;
   --fretboard-blue-nut: #e8f4f8;
   --fretboard-blue-text: #e8f4f8;
   --fretboard-blue-fretline: #3d5a80;
 
-  /* Cosmic Purple */
   --fretboard-purple-start: #4a3b69;
   --fretboard-purple-end: #2d1b4e;
   --fretboard-purple-nut: #f8e8ff;
   --fretboard-purple-text: #f8e8ff;
   --fretboard-purple-fretline: #6b5b8c;
 
-  /* Forest Green */
   --fretboard-green-start: #2d5a3d;
   --fretboard-green-end: #1a3d2b;
   --fretboard-green-nut: #e8f8e8;
   --fretboard-green-text: #e8f8e8;
   --fretboard-green-fretline: #3d7a4d;
 
-  /* Hot Red */
   --fretboard-red-start: #8b3a3a;
   --fretboard-red-end: #5c2020;
   --fretboard-red-nut: #ffe8e8;
   --fretboard-red-text: #ffe8e8;
   --fretboard-red-fretline: #a85050;
+
+  /* ─── Minimal flat preset (matches fretflow_light_minimal.html) ─── */
+  --fretboard-minimal-bg: #faf9f7;
+  --fretboard-minimal-string: #c8c5be;
+  --fretboard-minimal-nut: #b4b2a9;
+  --fretboard-minimal-fret: #d4d1cb;
+  --fretboard-minimal-fret12: #888780;
+  --fretboard-minimal-marker: #b4b2a9;
+  --fretboard-minimal-text: #1a1a1a;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0e0e0e;
+  --foreground: #faf9f7;
+  --card: #1a1a1a;
+  --card-foreground: #faf9f7;
+  --popover: #1a1a1a;
+  --popover-foreground: #faf9f7;
+  --primary: #faf9f7;
+  --primary-foreground: #1a1a1a;
+  --secondary: #262626;
+  --secondary-foreground: #faf9f7;
+  --muted: #262626;
+  --muted-foreground: #a8a8a3;
+  --accent: #faf9f7;
+  --accent-foreground: #1a1a1a;
+  --accent-soft: #2a2a2a;
+  --destructive: #d85a30;
+  --border: #2a2a2a;
+  --border-2: #3a3a3a;
+  --input: #2a2a2a;
+  --ring: #faf9f7;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #faf9f7;
+  --sidebar-primary: #faf9f7;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #faf9f7;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #faf9f7;
 }
 
 @layer base {
@@ -185,9 +194,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
   html {
     @apply font-sans;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 }
