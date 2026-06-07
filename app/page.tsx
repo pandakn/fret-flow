@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import type { NoteName } from "@/types/music"
-import type { ColorPreset } from "@/types/fretboard"
-import { FretboardPanel } from "@/components/layout/FretboardPanel"
 import { DisplayOptions } from "@/components/controls/DisplayOptions"
 import { FretboardSettings } from "@/components/controls/FretboardSettings"
-import { ScaleInfo } from "@/components/layout/ScaleInfo"
-import { QuickPresets } from "@/components/layout/QuickPresets"
+import { FretboardPanel } from "@/components/layout/FretboardPanel"
 import { Legend } from "@/components/layout/Legend"
+import { QuickPresets } from "@/components/layout/QuickPresets"
+import { ScaleInfo } from "@/components/layout/ScaleInfo"
+import type { ColorPreset } from "@/types/fretboard"
+import type { NoteName } from "@/types/music"
+import { useState } from "react"
 
 type Preset = {
   key: NoteName
