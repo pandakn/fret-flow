@@ -20,6 +20,7 @@ import { IntervalList } from "@/components/layout/IntervalList"
 import { StatsGrid } from "@/components/layout/StatsGrid"
 import { RelatedScales } from "@/components/layout/RelatedScales"
 import { Playback } from "@/components/layout/Playback"
+import { CollapsiblePanel } from "@/components/layout/CollapsiblePanel"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { useState } from "react"
@@ -31,6 +32,8 @@ export default function FretFlowPage() {
   const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
   const [position, setPosition] = useState<PositionId>("full")
+  const [leftOpen, setLeftOpen] = useState(true)
+  const [rightOpen, setRightOpen] = useState(true)
 
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
@@ -44,12 +47,15 @@ export default function FretFlowPage() {
       <div
         className="grid flex-1"
         style={{
-          gridTemplateColumns: "200px 1fr 220px",
+          gridTemplateColumns: `${leftOpen ? 200 : 40}px 1fr ${rightOpen ? 220 : 40}px`,
           height: "calc(100vh - 49px)",
         }}
       >
-        <aside
-          className="flex flex-col overflow-y-auto"
+        <CollapsiblePanel
+          side="left"
+          open={leftOpen}
+          onOpenChange={setLeftOpen}
+          width={200}
           style={{
             backgroundColor: "var(--surface)",
             borderRight: "1px solid var(--border)",
@@ -58,7 +64,7 @@ export default function FretFlowPage() {
           <KeySelector value={root} onChange={setRoot} />
           <ScaleTypeSelector value={scaleId} onChange={setScaleId} />
           <TuningSelector value={tuningId} onChange={setTuningId} />
-        </aside>
+        </CollapsiblePanel>
 
         <main
           className="flex flex-col overflow-hidden"
@@ -96,8 +102,11 @@ export default function FretFlowPage() {
           <PositionTabs value={position} onChange={setPosition} />
         </main>
 
-        <aside
-          className="flex flex-col overflow-y-auto"
+        <CollapsiblePanel
+          side="right"
+          open={rightOpen}
+          onOpenChange={setRightOpen}
+          width={220}
           style={{
             backgroundColor: "var(--surface)",
             borderLeft: "1px solid var(--border)",
@@ -107,7 +116,7 @@ export default function FretFlowPage() {
           <StatsGrid scaleId={scaleId} />
           <RelatedScales root={root} scaleId={scaleId} />
           <Playback root={root} scaleId={scaleId} />
-        </aside>
+        </CollapsiblePanel>
       </div>
     </div>
   )
