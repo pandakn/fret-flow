@@ -71,7 +71,10 @@ export function Playback({ root, scaleId }: PlaybackProps) {
       <div className="mt-2 flex items-center gap-1.5">
         <span
           className="text-[9px] tracking-[0.12em] uppercase"
-          style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+          style={{
+            color: "var(--muted-foreground)",
+            fontFamily: "var(--font-mono)",
+          }}
         >
           BPM
         </span>
@@ -99,7 +102,7 @@ export function Playback({ root, scaleId }: PlaybackProps) {
             "rounded-md transition-colors",
             loop
               ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-              : "text-[var(--muted)] hover:text-[var(--text)]"
+              : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
           )}
           style={{
             border: "1px solid var(--border-2)",

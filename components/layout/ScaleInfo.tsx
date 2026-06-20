@@ -87,7 +87,10 @@ export function ScaleInfo({
         </h1>
         <p
           className="mt-[3px] text-[10px]"
-          style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+          style={{
+            color: "var(--muted-foreground)",
+            fontFamily: "var(--font-mono)",
+          }}
         >
           {noteList} &nbsp;·&nbsp; {scale.intervals.length} notes
         </p>

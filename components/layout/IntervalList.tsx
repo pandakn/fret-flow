@@ -112,7 +112,7 @@ export function IntervalList({ root, scaleId }: IntervalListProps) {
                   className="rounded-sm px-1.5 py-0.5 text-[9px]"
                   style={{
                     backgroundColor: "var(--surface2)",
-                    color: "var(--muted)",
+                    color: "var(--muted-foreground)",
                     border: "1px solid var(--border)",
                     fontFamily: "var(--font-mono)",
                     display: "inline-block",
@@ -123,7 +123,7 @@ export function IntervalList({ root, scaleId }: IntervalListProps) {
                 <div
                   className="mt-0.5 text-[9px]"
                   style={{
-                    color: "var(--muted)",
+                    color: "var(--muted-foreground)",
                     fontFamily: "var(--font-mono)",
                   }}
                 >

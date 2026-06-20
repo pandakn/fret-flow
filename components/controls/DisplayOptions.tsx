@@ -40,7 +40,7 @@ export function DisplayOptions({ value, onChange }: DisplayOptionsProps) {
               "rounded-sm text-[11px] font-bold transition-colors",
               active
                 ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                : "text-[var(--muted)] hover:text-[var(--text)]"
+                : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
             )}
             style={{
               padding: "5px 11px",

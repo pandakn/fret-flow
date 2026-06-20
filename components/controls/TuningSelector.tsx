@@ -60,7 +60,10 @@ export function TuningSelector({
         {current && (
           <div
             className="text-[10px]"
-            style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+            style={{
+              color: "var(--muted-foreground)",
+              fontFamily: "var(--font-mono)",
+            }}
           >
             {current.name}
           </div>

@@ -85,6 +85,11 @@
   --sidebar-border: #e8e6e1;
   --sidebar-ring: #1a1a1a;
 
+  /* ─── Component-level aliases (used by inline styles in new layout) ─── */
+  --text: var(--foreground);
+  --surface: var(--background);
+  --surface2: var(--muted);
+
   /* ─── Interval colors — 4 family groups per design spec ─── */
   --color-deg1: #1a1a1a; /* root */
   --color-deg2: #7c6bff; /* 2nd / 3rd (b2, 2, b3, 3) */
@@ -187,6 +192,11 @@
   --sidebar-accent-foreground: #faf9f7;
   --sidebar-border: #2a2a2a;
   --sidebar-ring: #faf9f7;
+
+  /* ─── Component-level aliases (mirror of :root) ─── */
+  --text: var(--foreground);
+  --surface: var(--background);
+  --surface2: var(--muted);
 }
 
 @layer base {

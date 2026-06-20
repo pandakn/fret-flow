@@ -55,7 +55,7 @@ export function Navbar() {
                   "rounded-full px-3.5 py-1.5 text-[11px] transition-colors",
                   active === pill
                     ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                    : "text-[var(--muted)] hover:text-[var(--text)]"
+                    : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
                 )}
                 style={{ fontFamily: "var(--font-mono)" }}
                 aria-pressed={active === pill}
@@ -69,7 +69,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="rounded-md px-3 py-1.5 text-[11px] text-[var(--muted)] transition-colors hover:text-[var(--text)]"
+            className="rounded-md px-3 py-1.5 text-[11px] text-[var(--muted-foreground)] transition-colors hover:text-[var(--text)]"
             style={{
               border: "1px solid var(--border-2)",
               fontFamily: "var(--font-mono)",

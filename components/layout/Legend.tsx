@@ -34,7 +34,10 @@ export function Legend() {
         <div
           key={family}
           className="flex items-center gap-[5px] text-[10px]"
-          style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+          style={{
+            color: "var(--muted-foreground)",
+            fontFamily: "var(--font-mono)",
+          }}
         >
           <div
             className="h-[9px] w-[9px] rounded-full"

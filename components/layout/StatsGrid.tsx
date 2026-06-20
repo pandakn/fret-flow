@@ -69,7 +69,10 @@ function StatCard({ value, label }: { value: string | number; label: string }) {
       </div>
       <div
         className="mt-0.5 text-[9px] uppercase"
-        style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}
+        style={{
+          color: "var(--muted-foreground)",
+          fontFamily: "var(--font-mono)",
+        }}
       >
         {label}
       </div>

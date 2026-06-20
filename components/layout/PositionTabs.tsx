@@ -50,7 +50,7 @@ export function PositionTabs({ value, onChange }: PositionTabsProps) {
               "rounded-md px-2.5 py-1 text-[10px] transition-colors",
               value === pos.id
                 ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                : "text-[var(--muted)] hover:text-[var(--text)]"
+                : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
             )}
             style={{
               borderColor:
