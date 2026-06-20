@@ -3,13 +3,13 @@
 import { cn } from "@/lib/utils"
 
 const POSITIONS = [
+  { id: "full", label: "Full", range: { min: 0, max: 21 } },
   { id: "open", label: "Open", range: { min: 0, max: 4 } },
   { id: "2nd", label: "2nd", range: { min: 2, max: 5 } },
   { id: "5th", label: "5th", range: { min: 5, max: 8 } },
   { id: "7th", label: "7th", range: { min: 7, max: 10 } },
   { id: "9th", label: "9th", range: { min: 9, max: 12 } },
   { id: "12th", label: "12th", range: { min: 12, max: 15 } },
-  { id: "full", label: "Full", range: { min: 0, max: 15 } },
 ] as const
 
 export type PositionId = (typeof POSITIONS)[number]["id"]
