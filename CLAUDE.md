@@ -164,6 +164,7 @@ To add a scale: append to `SCALES` — it auto-appears in `<ScaleSelector>`.
 5. **Accessibility** — every NoteCell needs `aria-label="G, fifth, fret 3 string 2"`.
 6. **shadcn first, always** — before creating any new component, check if shadcn covers it. Run `bunx shadcn@latest add <component>` to install. Buttons, selects, sliders, switches, tooltips, badges, cards, dropdowns, dialogs — all come from `components/ui/`. Only build a custom component when shadcn has no equivalent.
 7. **Always use `cn()` for className** — never use string concatenation or ternaries directly in `className`. Import from `@/lib/utils` and use `cn()` for all conditional or merged styles. Example: `cn("base-class", isActive && "active-class", variant === "root" && "ring-2")`.
+8. **Playwright screenshots → `.playwright-mcp/`** — always pass a `filename` (relative path) to `browser_take_screenshot` so files land in `.playwright-mcp/` (gitignored). Never let screenshots write to the repo root or absolute paths.
 
 ---
 
