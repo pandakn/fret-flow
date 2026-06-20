@@ -23,7 +23,7 @@ import { Playback } from "@/components/layout/Playback"
 import { CollapsiblePanel } from "@/components/layout/CollapsiblePanel"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function FretFlowPage() {
   const [root, setRoot] = useState<NoteName>("C")
@@ -34,6 +34,28 @@ export default function FretFlowPage() {
   const [position, setPosition] = useState<PositionId>("full")
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
+  const [modifier, setModifier] = useState("Ctrl")
+
+  useEffect(() => {
+    // ⌘ on macOS/iOS, Ctrl elsewhere — matches Zed's display convention.
+    // Platform is only known client-side, so this avoids a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setModifier(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl")
+
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
+      const k = e.key.toLowerCase()
+      if (k === "b") {
+        e.preventDefault()
+        setLeftOpen((o) => !o)
+      } else if (k === "r") {
+        e.preventDefault()
+        setRightOpen((o) => !o)
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
 
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
@@ -45,17 +67,16 @@ export default function FretFlowPage() {
       <Navbar />
 
       <div
-        className="grid flex-1"
-        style={{
-          gridTemplateColumns: `${leftOpen ? 200 : 40}px 1fr ${rightOpen ? 220 : 40}px`,
-          height: "calc(100vh - 49px)",
-        }}
+        className="flex flex-1 overflow-hidden"
+        style={{ height: "calc(100vh - 49px)" }}
       >
         <CollapsiblePanel
           side="left"
           open={leftOpen}
           onOpenChange={setLeftOpen}
           width={200}
+          shortcutKey="b"
+          modifier={modifier}
           style={{
             backgroundColor: "var(--surface)",
             borderRight: "1px solid var(--border)",
@@ -67,7 +88,7 @@ export default function FretFlowPage() {
         </CollapsiblePanel>
 
         <main
-          className="flex flex-col overflow-hidden"
+          className="flex min-w-0 flex-1 flex-col overflow-hidden"
           style={{ backgroundColor: "var(--surface)" }}
         >
           <ScaleInfo
@@ -107,6 +128,8 @@ export default function FretFlowPage() {
           open={rightOpen}
           onOpenChange={setRightOpen}
           width={220}
+          shortcutKey="r"
+          modifier={modifier}
           style={{
             backgroundColor: "var(--surface)",
             borderLeft: "1px solid var(--border)",
