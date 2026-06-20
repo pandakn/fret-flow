@@ -21,9 +21,7 @@ interface FretboardProps {
 const PRESETS: Record<
   ColorPreset,
   {
-    isLight: boolean
-    start: string
-    end: string
+    bg: string
     nut: string
     text: string
     fretline: string
@@ -31,76 +29,60 @@ const PRESETS: Record<
   }
 > = {
   minimal: {
-    isLight: true,
-    start: "var(--fretboard-minimal-bg)",
-    end: "var(--fretboard-minimal-bg)",
+    bg: "var(--fretboard-minimal-bg)",
     nut: "var(--fretboard-minimal-nut)",
     text: "var(--fretboard-minimal-text)",
     fretline: "var(--fretboard-minimal-fret)",
     marker: "var(--fretboard-minimal-marker)",
   },
   natural: {
-    isLight: false,
-    start: "var(--fretboard-natural-start)",
-    end: "var(--fretboard-natural-end)",
+    bg: "var(--fretboard-natural-bg)",
     nut: "var(--fretboard-natural-nut)",
     text: "var(--fretboard-natural-text)",
-    fretline: "var(--fretboard-natural-fretline)",
-    marker: "bg-gray-300/40",
+    fretline: "var(--fretboard-natural-fret)",
+    marker: "var(--fretboard-natural-marker)",
   },
   light: {
-    isLight: true,
-    start: "var(--fretboard-light-start)",
-    end: "var(--fretboard-light-end)",
+    bg: "var(--fretboard-light-bg)",
     nut: "var(--fretboard-light-nut)",
     text: "var(--fretboard-light-text)",
-    fretline: "var(--fretboard-light-fretline)",
-    marker: "bg-gray-500/30",
+    fretline: "var(--fretboard-light-fret)",
+    marker: "var(--fretboard-light-marker)",
   },
   dark: {
-    isLight: false,
-    start: "var(--fretboard-dark-start)",
-    end: "var(--fretboard-dark-end)",
+    bg: "var(--fretboard-dark-bg)",
     nut: "var(--fretboard-dark-nut)",
     text: "var(--fretboard-dark-text)",
-    fretline: "var(--fretboard-dark-fretline)",
-    marker: "bg-gray-300/40",
+    fretline: "var(--fretboard-dark-fret)",
+    marker: "var(--fretboard-dark-marker)",
   },
   blue: {
-    isLight: false,
-    start: "var(--fretboard-blue-start)",
-    end: "var(--fretboard-blue-end)",
+    bg: "var(--fretboard-blue-bg)",
     nut: "var(--fretboard-blue-nut)",
     text: "var(--fretboard-blue-text)",
-    fretline: "var(--fretboard-blue-fretline)",
-    marker: "bg-blue-300/30",
+    fretline: "var(--fretboard-blue-fret)",
+    marker: "var(--fretboard-blue-marker)",
   },
   purple: {
-    isLight: false,
-    start: "var(--fretboard-purple-start)",
-    end: "var(--fretboard-purple-end)",
+    bg: "var(--fretboard-purple-bg)",
     nut: "var(--fretboard-purple-nut)",
     text: "var(--fretboard-purple-text)",
-    fretline: "var(--fretboard-purple-fretline)",
-    marker: "bg-purple-300/30",
+    fretline: "var(--fretboard-purple-fret)",
+    marker: "var(--fretboard-purple-marker)",
   },
   green: {
-    isLight: false,
-    start: "var(--fretboard-green-start)",
-    end: "var(--fretboard-green-end)",
+    bg: "var(--fretboard-green-bg)",
     nut: "var(--fretboard-green-nut)",
     text: "var(--fretboard-green-text)",
-    fretline: "var(--fretboard-green-fretline)",
-    marker: "bg-green-300/30",
+    fretline: "var(--fretboard-green-fret)",
+    marker: "var(--fretboard-green-marker)",
   },
   red: {
-    isLight: false,
-    start: "var(--fretboard-red-start)",
-    end: "var(--fretboard-red-end)",
+    bg: "var(--fretboard-red-bg)",
     nut: "var(--fretboard-red-nut)",
     text: "var(--fretboard-red-text)",
-    fretline: "var(--fretboard-red-fretline)",
-    marker: "bg-red-300/30",
+    fretline: "var(--fretboard-red-fret)",
+    marker: "var(--fretboard-red-marker)",
   },
 }
 
@@ -117,23 +99,21 @@ export function Fretboard({
   const [hoveredNote, setHoveredNote] = useState<string | null>(null)
 
   const colors = PRESETS[colorPreset]
-  const isMinimal = colorPreset === "minimal"
 
   const getNoteKey = (stringIdx: number, fret: number) => `${stringIdx}-${fret}`
 
   return (
     <div className={cn("w-full overflow-x-auto", className)}>
-      <div className={cn("min-w-[1100px] p-4", isMinimal && "p-2")}>
+      <div className="min-w-[1100px] p-2">
         <div className="mb-2 flex">
           <div className="w-14 shrink-0" />
           {Array.from({ length: fretCount }, (_, i) => (
             <div
               key={i + 1}
-              className="flex-1 text-center font-mono text-[10px]"
+              className="flex-1 text-center font-mono text-[10px] font-semibold"
               style={{
                 color: "var(--foreground)",
-                opacity: isMinimal ? 1 : 0.55,
-                fontWeight: isMinimal ? 600 : 400,
+                opacity: 1,
               }}
             >
               {i + 1}
@@ -142,20 +122,13 @@ export function Fretboard({
         </div>
 
         <div
-          className={cn(
-            "relative overflow-hidden",
-            isMinimal ? "rounded-none" : "rounded-lg shadow-lg"
-          )}
-          style={{
-            background: isMinimal
-              ? colors.start
-              : `linear-gradient(to bottom, ${colors.start}, ${colors.end})`,
-          }}
+          className="relative overflow-hidden rounded-none"
+          style={{ background: colors.bg }}
         >
           <div
             className="absolute top-0 bottom-0 left-14 z-10"
             style={{
-              width: isMinimal ? "3px" : "8px",
+              width: "3px",
               backgroundColor: colors.nut,
             }}
           />

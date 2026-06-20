@@ -37,47 +37,33 @@ export const NoteCell = memo<NoteCellProps>(
     if (!isActive) return null
     if (rootOnly && !isRoot) return null
 
-    const isMinimal = colorPreset === "minimal"
     const rootNoteColor = "var(--color-deg1)"
     const intervalColor = interval
       ? INTERVAL_COLORS[interval]
       : "var(--color-deg2)"
+    const boardBg = `var(--fretboard-${colorPreset}-bg)`
 
-    const size = isMinimal ? (isRoot ? 14 : 11) : isRoot ? 11 : 9
-    const textFs = isMinimal ? (isRoot ? 7 : 6) : isRoot ? 9 : 8
+    const size = isRoot ? 14 : 11
+    const textFs = isRoot ? 7 : 6
 
     return (
       <Button
         variant="ghost"
         className={cn(
           "z-20 flex items-center justify-center rounded-full p-0 font-bold transition-all duration-150",
-          isMinimal
-            ? isRoot
-              ? "ring-2 ring-offset-1"
-              : "border"
-            : isRoot
-              ? "ring-2 ring-gray-500/50"
-              : "ring-1 ring-black/20",
+          isRoot ? "ring-2 ring-offset-1" : "border",
           isHovered && "scale-110"
         )}
         style={{
           width: `${size * 2}px`,
           height: `${size * 2}px`,
-          backgroundColor: isRoot
-            ? rootNoteColor
-            : isMinimal
-              ? `${intervalColor}26`
-              : intervalColor,
-          color: isRoot || !isMinimal ? "#faf9f7" : intervalColor,
-          borderColor: isMinimal && !isRoot ? intervalColor : undefined,
+          backgroundColor: isRoot ? rootNoteColor : `${intervalColor}26`,
+          color: isRoot ? "#faf9f7" : intervalColor,
+          borderColor: isRoot ? undefined : intervalColor,
           fontSize: `${textFs}px`,
           fontFamily: "var(--font-mono)",
-          ["--tw-ring-color" as string]: isMinimal
-            ? "var(--color-deg1)"
-            : undefined,
-          ["--tw-ring-offset-color" as string]: isMinimal
-            ? "var(--fretboard-minimal-bg)"
-            : undefined,
+          ["--tw-ring-color" as string]: "var(--color-deg1)",
+          ["--tw-ring-offset-color" as string]: boardBg,
         }}
         onMouseEnter={() => onHover(true)}
         onMouseLeave={() => onHover(false)}

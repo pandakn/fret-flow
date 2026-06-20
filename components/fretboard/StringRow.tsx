@@ -18,24 +18,24 @@ interface StringRowProps {
 
 const FRETLINE_BY_PRESET: Record<ColorPreset, string> = {
   minimal: "var(--fretboard-minimal-fret)",
-  natural: "var(--fretboard-natural-fretline)",
-  light: "var(--fretboard-light-fretline)",
-  dark: "var(--fretboard-dark-fretline)",
-  blue: "var(--fretboard-blue-fretline)",
-  purple: "var(--fretboard-purple-fretline)",
-  green: "var(--fretboard-green-fretline)",
-  red: "var(--fretboard-red-fretline)",
+  natural: "var(--fretboard-natural-fret)",
+  light: "var(--fretboard-light-fret)",
+  dark: "var(--fretboard-dark-fret)",
+  blue: "var(--fretboard-blue-fret)",
+  purple: "var(--fretboard-purple-fret)",
+  green: "var(--fretboard-green-fret)",
+  red: "var(--fretboard-red-fret)",
 }
 
 const STRING_BY_PRESET: Record<ColorPreset, string> = {
   minimal: "var(--fretboard-minimal-string)",
-  natural: "var(--fretboard-natural-fretline)",
-  light: "var(--fretboard-light-fretline)",
-  dark: "var(--fretboard-dark-fretline)",
-  blue: "var(--fretboard-blue-fretline)",
-  purple: "var(--fretboard-purple-fretline)",
-  green: "var(--fretboard-green-fretline)",
-  red: "var(--fretboard-red-fretline)",
+  natural: "var(--fretboard-natural-string)",
+  light: "var(--fretboard-light-string)",
+  dark: "var(--fretboard-dark-string)",
+  blue: "var(--fretboard-blue-string)",
+  purple: "var(--fretboard-purple-string)",
+  green: "var(--fretboard-green-string)",
+  red: "var(--fretboard-red-string)",
 }
 
 export function StringRow({

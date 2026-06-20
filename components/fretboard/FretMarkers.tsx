@@ -11,10 +11,7 @@ export const FretMarkers = memo<FretMarkersProps>(
     const FRET_MARKERS = [3, 5, 7, 9, 12]
     const DOUBLE_MARKER_FRETS = [12]
 
-    const isMinimal = colorPreset === "minimal"
-    const markerColor = isMinimal
-      ? "var(--fretboard-minimal-marker)"
-      : "currentColor"
+    const markerColor = `var(--fretboard-${colorPreset}-marker)`
 
     return (
       <div
@@ -32,23 +29,23 @@ export const FretMarkers = memo<FretMarkersProps>(
                   <div
                     className="flex"
                     style={{
-                      gap: isMinimal ? "4px" : "8px",
+                      gap: "4px",
                       transform: "translateY(-6px)",
                     }}
                   >
                     <div
                       className="rounded-full"
                       style={{
-                        width: isMinimal ? "5px" : "12px",
-                        height: isMinimal ? "5px" : "12px",
+                        width: "5px",
+                        height: "5px",
                         backgroundColor: markerColor,
                       }}
                     />
                     <div
                       className="rounded-full"
                       style={{
-                        width: isMinimal ? "5px" : "12px",
-                        height: isMinimal ? "5px" : "12px",
+                        width: "5px",
+                        height: "5px",
                         backgroundColor: markerColor,
                       }}
                     />
@@ -57,8 +54,8 @@ export const FretMarkers = memo<FretMarkersProps>(
                   <div
                     className="rounded-full"
                     style={{
-                      width: isMinimal ? "5px" : "12px",
-                      height: isMinimal ? "5px" : "12px",
+                      width: "5px",
+                      height: "5px",
                       backgroundColor: markerColor,
                     }}
                   />
