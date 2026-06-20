@@ -52,11 +52,10 @@ export function StringRow({
 }: StringRowProps) {
   const stringNum = stringIndex + 1
   const stringThickness = 0.5 + stringIndex * 0.25
-  const isMinimal = colorPreset === "minimal"
 
   const fretBorderColor = FRETLINE_BY_PRESET[colorPreset]
   const stringColor = STRING_BY_PRESET[colorPreset]
-  const rowHeight = isMinimal ? "h-[24px]" : "h-14"
+  const rowHeight = "h-14"
 
   return (
     <div className={cn("relative flex items-center", rowHeight)}>

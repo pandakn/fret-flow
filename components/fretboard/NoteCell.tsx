@@ -43,8 +43,8 @@ export const NoteCell = memo<NoteCellProps>(
       ? INTERVAL_COLORS[interval]
       : "var(--color-deg2)"
 
-    const size = isMinimal ? (isRoot ? 22 : 18) : isRoot ? 12 : 10
-    const textFs = isMinimal ? (isRoot ? 8 : 7) : isRoot ? 9 : 8
+    const size = isMinimal ? (isRoot ? 14 : 11) : isRoot ? 11 : 9
+    const textFs = isMinimal ? (isRoot ? 7 : 6) : isRoot ? 9 : 8
 
     return (
       <Button

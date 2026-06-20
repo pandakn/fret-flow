@@ -130,7 +130,11 @@ export function Fretboard({
             <div
               key={i + 1}
               className="flex-1 text-center font-mono text-[10px]"
-              style={{ color: colors.text, opacity: 0.55 }}
+              style={{
+                color: "var(--foreground)",
+                opacity: isMinimal ? 1 : 0.55,
+                fontWeight: isMinimal ? 600 : 400,
+              }}
             >
               {i + 1}
             </div>
