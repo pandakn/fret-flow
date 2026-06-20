@@ -68,7 +68,7 @@ export const NoteCell = memo<NoteCellProps>(
             : isMinimal
               ? `${intervalColor}26`
               : intervalColor,
-          color: isRoot ? "#faf9f7" : intervalColor,
+          color: isRoot || !isMinimal ? "#faf9f7" : intervalColor,
           borderColor: isMinimal && !isRoot ? intervalColor : undefined,
           fontSize: `${textFs}px`,
           fontFamily: "var(--font-mono)",
