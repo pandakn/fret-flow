@@ -29,7 +29,7 @@ export default function FretFlowPage() {
   const [scaleId, setScaleId] = useState("major")
   const [tuningId, setTuningId] = useState("standard")
   const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("degrees")
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
   const [position, setPosition] = useState<PositionId>("open")
 
   const showNoteNames = displayMode === "notes"

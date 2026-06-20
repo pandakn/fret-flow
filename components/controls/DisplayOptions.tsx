@@ -10,8 +10,8 @@ interface DisplayOptionsProps {
 }
 
 const OPTIONS: { id: DisplayMode; label: string }[] = [
-  { id: "degrees", label: "Degrees" },
   { id: "notes", label: "Notes" },
+  { id: "degrees", label: "Degrees" },
   { id: "rootOnly", label: "Root only" },
 ]
 
