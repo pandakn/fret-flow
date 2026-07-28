@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { StringRow } from "./StringRow"
 import { FretMarkers } from "./FretMarkers"
 import { cn } from "@/lib/utils"
+import type { ChordVoicing } from "@/lib/chord-voicings"
 import type { FretNote } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 
@@ -15,6 +16,8 @@ interface FretboardProps {
   rootOnly?: boolean
   focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
+  selectedVoicing?: ChordVoicing
+  shapeFocus?: boolean
   onNoteClick?: (note: FretNote) => void
   className?: string
 }
@@ -87,6 +90,8 @@ const PRESETS: Record<
   },
 }
 
+const handleNoNoteClick = () => {}
+
 export function Fretboard({
   fretNotes,
   fretCount,
@@ -95,14 +100,33 @@ export function Fretboard({
   rootOnly = false,
   focusRange,
   colorPreset,
+  selectedVoicing,
+  shapeFocus = false,
   onNoteClick,
   className,
 }: FretboardProps) {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null)
 
   const colors = PRESETS[colorPreset]
+  const selectedVoicingFrets = useMemo(() => {
+    if (!selectedVoicing) return undefined
 
-  const getNoteKey = (stringIdx: number, fret: number) => `${stringIdx}-${fret}`
+    const fretsByString = new Map<number, Set<number>>()
+    for (const { string, fret } of selectedVoicing.activePositions) {
+      let frets = fretsByString.get(string)
+      if (!frets) {
+        frets = new Set<number>()
+        fretsByString.set(string, frets)
+      }
+      frets.add(fret)
+    }
+
+    return fretsByString
+  }, [selectedVoicing])
+  const isShapeFocus = shapeFocus && selectedVoicing !== undefined
+  const handleNoteHover = useCallback((noteKey: string | null) => {
+    setHoveredNote(noteKey)
+  }, [])
 
   return (
     <div className={cn("w-full overflow-x-auto", className)}>
@@ -147,10 +171,12 @@ export function Fretboard({
               rootOnly={rootOnly}
               focusRange={focusRange}
               colorPreset={colorPreset}
+              selectedVoicingFrets={selectedVoicingFrets}
+              selectedVoicingLabel={selectedVoicing?.label}
+              shapeFocus={isShapeFocus}
               hoveredNote={hoveredNote}
-              onNoteHover={setHoveredNote}
-              onNoteClick={onNoteClick || (() => {})}
-              getNoteKey={getNoteKey}
+              onNoteHover={handleNoteHover}
+              onNoteClick={onNoteClick ?? handleNoNoteClick}
             />
           ))}
         </div>

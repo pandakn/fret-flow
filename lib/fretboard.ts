@@ -1,4 +1,4 @@
-import type { FretNote, NoteName, IntervalName } from '@/types/music';
+import type { FretNote, NoteName, TonalPattern } from '@/types/music';
 import { getNoteAtFret } from './notes';
 import { getScaleNotes } from './scales';
 
@@ -11,24 +11,22 @@ const FRET_INLAYS = [3, 5, 7, 9, 12, 15];
 
 export const getFretNotes = ({
   root,
-  formula,
-  intervals,
+  pattern,
   tuning = DEFAULT_TUNING,
   fretRange = DEFAULT_FRET_RANGE,
 }: {
   root: NoteName;
-  formula: number[];
-  intervals: IntervalName[];
+  pattern: TonalPattern;
   tuning?: NoteName[];
   fretRange?: { min: number; max: number };
 }): FretNote[] => {
-  const scaleNotes = getScaleNotes(root, formula);
+  const patternNotes = getScaleNotes(root, pattern.formula);
   const notes: FretNote[] = [];
 
   for (let stringIdx = 0; stringIdx < tuning.length; stringIdx++) {
     for (let fret = fretRange.min; fret <= fretRange.max; fret++) {
       const note = getNoteAtFret(tuning[stringIdx], fret);
-      const intervalIndex = scaleNotes.indexOf(note);
+      const intervalIndex = patternNotes.indexOf(note);
       const isActive = intervalIndex !== -1;
       const isRoot = note === root;
 
@@ -36,7 +34,7 @@ export const getFretNotes = ({
         string: stringIdx,
         fret,
         note,
-        interval: isActive ? intervals[intervalIndex] : null,
+        interval: isActive ? pattern.intervals[intervalIndex] : null,
         isRoot,
         isActive,
       });

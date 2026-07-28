@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "test": "bun test tests",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },

@@ -1,5 +1,5 @@
 import { NoteCell } from "./NoteCell"
-import type { FretNote } from "@/types/music"
+import type { FretNote, IntervalName } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 import { cn } from "@/lib/utils"
 
@@ -11,10 +11,12 @@ interface StringRowProps {
   rootOnly: boolean
   focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
+  selectedVoicingFrets?: ReadonlyMap<number, ReadonlySet<number>>
+  selectedVoicingLabel?: string
+  shapeFocus: boolean
   hoveredNote: string | null
   onNoteHover: (key: string | null) => void
   onNoteClick: (note: FretNote) => void
-  getNoteKey: (stringIdx: number, fret: number) => string
 }
 
 const FRETLINE_BY_PRESET: Record<ColorPreset, string> = {
@@ -39,6 +41,31 @@ const STRING_BY_PRESET: Record<ColorPreset, string> = {
   red: "var(--fretboard-red-string)",
 }
 
+const INTERVAL_ARIA_LABELS: Record<IntervalName, string> = {
+  R: "root",
+  b2: "flat second",
+  "2": "second",
+  b3: "minor third",
+  "3": "major third",
+  "4": "fourth",
+  b5: "diminished fifth",
+  "#4": "augmented fourth",
+  "5": "fifth",
+  b6: "flat sixth",
+  "#5": "augmented fifth",
+  "6": "sixth",
+  b7: "minor seventh",
+  "7": "major seventh",
+}
+
+const getAriaLabel = (note: FretNote, stringNum: number): string =>
+  `${note.note}, ${
+    note.interval ? INTERVAL_ARIA_LABELS[note.interval] : "note"
+  }, fret ${note.fret} string ${stringNum}`
+
+const getNoteKey = (stringIndex: number, fret: number): string =>
+  `${stringIndex}-${fret}`
+
 export function StringRow({
   stringIndex,
   fretNotes,
@@ -47,10 +74,12 @@ export function StringRow({
   rootOnly,
   focusRange,
   colorPreset,
+  selectedVoicingFrets,
+  selectedVoicingLabel,
+  shapeFocus,
   hoveredNote,
   onNoteHover,
   onNoteClick,
-  getNoteKey,
 }: StringRowProps) {
   const stringNum = stringIndex + 1
   const stringThickness = 0.5 + stringIndex * 0.25
@@ -58,37 +87,44 @@ export function StringRow({
   const fretBorderColor = FRETLINE_BY_PRESET[colorPreset]
   const stringColor = STRING_BY_PRESET[colorPreset]
   const rowHeight = "h-14"
+  const sourceStringIndex = fretNotes[0]?.string
+  const selectedFrets =
+    sourceStringIndex === undefined
+      ? undefined
+      : selectedVoicingFrets?.get(sourceStringIndex)
+  const openNote = fretNotes.find((note) => note.fret === 0)
+  const openNoteKey = getNoteKey(stringIndex, 0)
 
   return (
     <div className={cn("relative flex items-center", rowHeight)}>
       <div className="relative flex h-full w-14 shrink-0 items-center justify-center">
-        {(() => {
-          const openNote = fretNotes.find((n) => n.fret === 0)
-          if (!openNote) return null
-
-          const noteKey = getNoteKey(stringIndex, 0)
-          return (
-            <NoteCell
-              note={openNote.note}
-              interval={openNote.interval}
-              isRoot={openNote.isRoot}
-              isActive={openNote.isActive}
-              showNoteNames={showNoteNames}
-              showIntervals={showIntervals}
-              rootOnly={rootOnly}
-              isInFocus={
-                !focusRange ||
-                (openNote.fret >= focusRange.min &&
-                  openNote.fret <= focusRange.max)
-              }
-              colorPreset={colorPreset}
-              isHovered={hoveredNote === noteKey}
-              onHover={(hovering) => onNoteHover(hovering ? noteKey : null)}
-              onClick={() => onNoteClick(openNote)}
-              aria-label={`${openNote.note}, ${openNote.interval || "note"}, fret 0 string ${stringNum}`}
-            />
-          )
-        })()}
+        {openNote ? (
+          <NoteCell
+            note={openNote.note}
+            interval={openNote.interval}
+            stringIndex={openNote.string}
+            fret={openNote.fret}
+            noteKey={openNoteKey}
+            isRoot={openNote.isRoot}
+            isActive={openNote.isActive}
+            showNoteNames={showNoteNames}
+            showIntervals={showIntervals}
+            rootOnly={rootOnly}
+            isInFocus={
+              !focusRange ||
+              (openNote.fret >= focusRange.min &&
+                openNote.fret <= focusRange.max)
+            }
+            colorPreset={colorPreset}
+            isSelectedVoicingTone={selectedFrets?.has(openNote.fret) ?? false}
+            shapeFocus={shapeFocus}
+            selectedVoicingLabel={selectedVoicingLabel}
+            isHovered={hoveredNote === openNoteKey}
+            onNoteHover={onNoteHover}
+            onNoteClick={onNoteClick}
+            aria-label={getAriaLabel(openNote, stringNum)}
+          />
+        ) : null}
       </div>
 
       <div
@@ -116,6 +152,9 @@ export function StringRow({
               <NoteCell
                 note={note.note}
                 interval={note.interval}
+                stringIndex={note.string}
+                fret={note.fret}
+                noteKey={noteKey}
                 isRoot={note.isRoot}
                 isActive={note.isActive}
                 showNoteNames={showNoteNames}
@@ -126,10 +165,13 @@ export function StringRow({
                   (note.fret >= focusRange.min && note.fret <= focusRange.max)
                 }
                 colorPreset={colorPreset}
+                isSelectedVoicingTone={selectedFrets?.has(note.fret) ?? false}
+                shapeFocus={shapeFocus}
+                selectedVoicingLabel={selectedVoicingLabel}
                 isHovered={hoveredNote === noteKey}
-                onHover={(hovering) => onNoteHover(hovering ? noteKey : null)}
-                onClick={() => onNoteClick(note)}
-                aria-label={`${note.note}, ${note.interval || "note"}, fret ${note.fret} string ${stringNum}`}
+                onNoteHover={onNoteHover}
+                onNoteClick={onNoteClick}
+                aria-label={getAriaLabel(note, stringNum)}
               />
             </div>
           )

@@ -1,12 +1,13 @@
 # FretFlow
 
-Interactive guitar scale visualizer built with Next.js 16 and React 19. Explore scales, notes, and intervals across a dynamic fretboard with real-time visualization.
+Interactive guitar scale and chord visualizer built with Next.js 16 and React 19. Explore scales, chord tones, notes, and intervals across a dynamic fretboard with real-time visualization.
 
 ## Features
 
 - **Interactive Fretboard** - Dynamic visualization of guitar fretboard with customizable settings
 - **Scale Exploration** - Built-in scales including Major, Minor, Pentatonic, Blues, Dorian, Phrygian, Lydian, Mixolydian, and Harmonic Minor
-- **Color-Coded Intervals** - Visual representation of scale intervals with root notes highlighted
+- **Chord Exploration** - Major, Minor, 7, m7, maj7, diminished, augmented, sus2, and sus4 tone maps with open, barre, and up-neck voicings
+- **Color-Coded Intervals** - Visual representation of scale and chord intervals with root notes highlighted
 - **Multiple Tunings** - Support for various guitar tunings
 - **Responsive Design** - Works seamlessly across desktop and mobile devices
 - **Dark Mode** - Built-in theme switching for comfortable viewing in any lighting
@@ -65,6 +66,7 @@ bun start
 ```bash
 bun dev        # Start development server with Turbopack
 bun build      # Build for production
+bun test       # Run pure music-theory and voicing tests
 bun typecheck  # Run TypeScript type checking
 bun lint       # Run ESLint
 bun format     # Format code with Prettier
@@ -90,6 +92,7 @@ fret-flow/
 │   ├── controls/
 │   │   ├── RootSelector.tsx    # Root note selector
 │   │   ├── ScaleSelector.tsx   # Scale type selector
+│   │   ├── ChordTypeSelector.tsx # Chord type selector
 │   │   ├── TuningSelector.tsx  # Guitar tuning selector
 │   │   └── hooks/
 │   │       └── useControls.ts   # Control state management
@@ -97,6 +100,8 @@ fret-flow/
 ├── lib/
 │   ├── notes.ts               # Chromatic scale, enharmonic mappings
 │   ├── scales.ts              # Scale formulas + interval arrays
+│   ├── chords.ts              # Chord formulas + interval arrays
+│   ├── chord-voicings.ts      # Playable chord voicing templates + resolvers
 │   ├── fretboard.ts           # Note-at-fret calculations
 │   ├── tunings.ts             # Guitar tuning presets
 │   ├── colors.ts              # Interval → CSS variable mappings
@@ -143,6 +148,26 @@ export const getScaleNotes = (root: NoteName, formula: number[]): NoteName[] => 
 - Mixolydian
 - Harmonic Minor
 
+### Available Chords
+
+- Major (`C`)
+- Minor (`Cm`)
+- Dominant 7 (`C7`)
+- Minor 7 (`Cm7`)
+- Major 7 (`Cmaj7`)
+- Diminished (`Cdim`)
+- Augmented (`Caug`)
+- Sus2 (`Csus2`)
+- Sus4 (`Csus4`)
+
+Chord tone maps show every chord tone on the fretboard. A selected voicing is
+a separate playable six-string shape: `X`/`null` mutes a string, and fret slots
+are ordered low E through high E. Chord formulas are closed semitone steps that
+sum to 12; as with scales, the final step closes the octave and is not emitted
+as a second root. Intervals use the existing `IntervalName` values such as
+`R`, `b3`, `3`, `b5`, `5`, `b7`, and `7`, so they reuse the fretboard's
+interval colors.
+
 ### Default Settings
 
 - **Tuning**: E Standard (low to high: E-A-D-G-B-E)
@@ -166,6 +191,34 @@ export const SCALES = [
 ```
 
 The scale will automatically appear in the `<ScaleSelector>` component.
+
+## Adding Chords and Voicings
+
+Add a chord type to `CHORDS` in `lib/chords.ts`. Give it a stable `id`, display
+`name` and `symbol`, an ordered interval list, and a closed semitone `formula`
+whose entries total 12. Keep the formula and intervals in the same order; the
+chord selector and tone map read this catalog automatically.
+
+```typescript
+chord("minor_7", "Minor 7", "m7", [3, 4, 3, 2], ["R", "b3", "5", "b7"])
+```
+
+Add playable shapes in `lib/chord-voicings.ts`. Every template targets Standard
+tuning and exactly six low-to-high string slots. Use `null` for a muted string;
+every sounding fret must produce a tone in the selected chord, and the shape
+must include its root.
+
+- Add the chord's `open`, `barre`, and `upNeck` offsets to `SHAPES` to create
+  an E-root curated open shape plus root-anchored barre and up-neck shapes.
+  The resolver finds a compatible root fret and keeps the complete shape inside
+  the rendered 0–21 fret range.
+- For a curated open shape specific to a root, add an `openShape(...)` entry to
+  the `CHORD_VOICING_TEMPLATES` additions. Its `root` and concrete frets are
+  validated before display.
+
+Run `bun test` after changing either catalog; the pure tests verify chord tones
+and that resolved voicings use only chord tones, include a root, and have valid
+six-string positions.
 
 ## Design Principles
 

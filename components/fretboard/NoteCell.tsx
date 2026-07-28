@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import type { FretNote, IntervalName, NoteName } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
-import { memo } from "react"
+import { memo, useCallback } from "react"
 
 const INTERVAL_COLOR_CLASSES: Record<string, string> = {
   R: "bg-[var(--color-deg1)]/15 text-[var(--color-deg1)] border-[var(--color-deg1)]",
@@ -32,8 +33,11 @@ const RING_OFFSET_CLASSES: Record<ColorPreset, string> = {
 }
 
 interface NoteCellProps {
-  note: string
-  interval: string | null
+  note: NoteName
+  interval: IntervalName | null
+  stringIndex: number
+  fret: number
+  noteKey: string
   isRoot: boolean
   isActive: boolean
   showNoteNames: boolean
@@ -41,9 +45,12 @@ interface NoteCellProps {
   rootOnly: boolean
   isInFocus: boolean
   colorPreset: ColorPreset
+  isSelectedVoicingTone: boolean
+  shapeFocus: boolean
+  selectedVoicingLabel?: string
   isHovered: boolean
-  onHover: (hovering: boolean) => void
-  onClick: () => void
+  onNoteHover: (noteKey: string | null) => void
+  onNoteClick: (note: FretNote) => void
   "aria-label": string
 }
 
@@ -51,6 +58,9 @@ export const NoteCell = memo<NoteCellProps>(
   ({
     note,
     interval,
+    stringIndex,
+    fret,
+    noteKey,
     isRoot,
     isActive,
     showNoteNames,
@@ -58,11 +68,31 @@ export const NoteCell = memo<NoteCellProps>(
     rootOnly,
     isInFocus,
     colorPreset,
+    isSelectedVoicingTone,
+    shapeFocus,
+    selectedVoicingLabel,
     isHovered,
-    onHover,
-    onClick,
+    onNoteHover,
+    onNoteClick,
     "aria-label": ariaLabel,
   }) => {
+    const handleMouseEnter = useCallback(() => {
+      onNoteHover(noteKey)
+    }, [noteKey, onNoteHover])
+    const handleMouseLeave = useCallback(() => {
+      onNoteHover(null)
+    }, [onNoteHover])
+    const handleClick = useCallback(() => {
+      onNoteClick({
+        string: stringIndex,
+        fret,
+        note,
+        interval,
+        isRoot,
+        isActive,
+      })
+    }, [fret, interval, isActive, isRoot, note, onNoteClick, stringIndex])
+
     if (!isActive) return null
     if (rootOnly && !isRoot) return null
 
@@ -80,13 +110,20 @@ export const NoteCell = memo<NoteCellProps>(
               ? INTERVAL_COLOR_CLASSES[interval]
               : undefined,
           RING_OFFSET_CLASSES[colorPreset],
+          isSelectedVoicingTone &&
+            "outline outline-2 outline-offset-2 outline-[var(--foreground)]",
           isHovered && "scale-110",
-          !isInFocus && "opacity-20"
+          (!isInFocus || (shapeFocus && !isSelectedVoicingTone)) &&
+            "opacity-20"
         )}
-        onMouseEnter={() => onHover(true)}
-        onMouseLeave={() => onHover(false)}
-        onClick={onClick}
-        aria-label={ariaLabel}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        aria-label={
+          isSelectedVoicingTone && selectedVoicingLabel
+            ? `${ariaLabel}, selected ${selectedVoicingLabel} voicing`
+            : ariaLabel
+        }
       >
         {showIntervals && interval ? interval : showNoteNames ? note : ""}
       </Button>

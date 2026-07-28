@@ -4,13 +4,21 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
-const NAV_PILLS = ["Scales", "Chords", "Arpeggios", "Modes"] as const
-type NavPill = (typeof NAV_PILLS)[number]
+export type ExplorerMode = "scales" | "chords"
 
-export function Navbar() {
+const NAV_PILLS: { label: string; mode: ExplorerMode }[] = [
+  { label: "Scales", mode: "scales" },
+  { label: "Chords", mode: "chords" },
+]
+
+interface NavbarProps {
+  mode: ExplorerMode
+  onModeChange: (mode: ExplorerMode) => void
+}
+
+export function Navbar({ mode, onModeChange }: NavbarProps) {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [active, setActive] = useState<NavPill>("Scales")
 
   useEffect(() => {
     // Standard next-themes hydration pattern. See:
@@ -49,18 +57,18 @@ export function Navbar() {
           <nav className="flex items-center gap-0.5">
             {NAV_PILLS.map((pill) => (
               <button
-                key={pill}
-                onClick={() => setActive(pill)}
+                key={pill.mode}
+                onClick={() => onModeChange(pill.mode)}
                 className={cn(
                   "rounded-full px-3.5 py-1.5 text-[11px] transition-colors",
-                  active === pill
+                  mode === pill.mode
                     ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
                     : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
                 )}
                 style={{ fontFamily: "var(--font-mono)" }}
-                aria-pressed={active === pill}
+                aria-pressed={mode === pill.mode}
               >
-                {pill}
+                {pill.label}
               </button>
             ))}
           </nav>

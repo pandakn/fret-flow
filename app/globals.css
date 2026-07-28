@@ -175,33 +175,33 @@
 }
 
 .dark {
-  --background: #0e0e0e;
+  --background: #1a1a1a;
   --foreground: #faf9f7;
-  --card: #1a1a1a;
+  --card: #242424;
   --card-foreground: #faf9f7;
-  --popover: #1a1a1a;
+  --popover: #242424;
   --popover-foreground: #faf9f7;
   --primary: #faf9f7;
   --primary-foreground: #1a1a1a;
-  --secondary: #262626;
+  --secondary: #303030;
   --secondary-foreground: #faf9f7;
-  --muted: #262626;
+  --muted: #303030;
   --muted-foreground: #a8a8a3;
   --accent: #faf9f7;
   --accent-foreground: #1a1a1a;
-  --accent-soft: #2a2a2a;
+  --accent-soft: #333333;
   --destructive: #d85a30;
-  --border: #2a2a2a;
-  --border-2: #3a3a3a;
-  --input: #2a2a2a;
+  --border: #333333;
+  --border-2: #454545;
+  --input: #333333;
   --ring: #faf9f7;
-  --sidebar: #1a1a1a;
+  --sidebar: #242424;
   --sidebar-foreground: #faf9f7;
   --sidebar-primary: #faf9f7;
   --sidebar-primary-foreground: #1a1a1a;
-  --sidebar-accent: #262626;
+  --sidebar-accent: #303030;
   --sidebar-accent-foreground: #faf9f7;
-  --sidebar-border: #2a2a2a;
+  --sidebar-border: #333333;
   --sidebar-ring: #faf9f7;
 
   /* ─── Component-level aliases (mirror of :root) ─── */

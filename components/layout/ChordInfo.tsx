@@ -1,51 +1,28 @@
 "use client"
 
-import { CHROMATIC } from "@/lib/notes"
-import { SCALES } from "@/lib/scales"
-import type { NoteName } from "@/types/music"
+import { getChordById, getChordNotes } from "@/lib/chords"
 import type { ColorPreset } from "@/types/fretboard"
+import type { NoteName } from "@/types/music"
 import { ColorPresetPicker } from "./ColorPresetPicker"
 
-interface ScaleInfoProps {
+interface ChordInfoProps {
   root: NoteName
-  scaleId: string
+  chordId: string
   colorPreset: ColorPreset
   onColorPresetChange: (preset: ColorPreset) => void
 }
 
-const SEMITONE_BY_INTERVAL: Record<string, number> = {
-  R: 0,
-  b2: 1,
-  "2": 2,
-  b3: 3,
-  "3": 4,
-  "4": 5,
-  b5: 6,
-  "#4": 6,
-  "5": 7,
-  b6: 8,
-  "#5": 8,
-  "6": 9,
-  b7: 10,
-  "7": 11,
-}
-
-export function ScaleInfo({
+export function ChordInfo({
   root,
-  scaleId,
+  chordId,
   colorPreset,
   onColorPresetChange,
-}: ScaleInfoProps) {
-  const scale = SCALES.find((s) => s.id === scaleId)
-  if (!scale) return null
+}: ChordInfoProps) {
+  const chord = getChordById(chordId)
+  if (!chord) return null
 
-  const rootIndex = CHROMATIC.indexOf(root)
-  const noteList = scale.intervals
-    .map(
-      (interval) =>
-        CHROMATIC[(rootIndex + (SEMITONE_BY_INTERVAL[interval] ?? 0)) % 12]
-    )
-    .join(" · ")
+  const notes = getChordNotes(root, chord.formula)
+  const chordName = `${root}${chord.symbol}`
 
   return (
     <header
@@ -61,7 +38,7 @@ export function ScaleInfo({
           className="text-[20px] font-extrabold tracking-[-0.4px]"
           style={{ color: "var(--text)" }}
         >
-          {root} {scale.name}
+          {chordName} {chord.name}
         </h1>
         <p
           className="mt-[3px] text-[10px]"
@@ -70,7 +47,7 @@ export function ScaleInfo({
             fontFamily: "var(--font-mono)",
           }}
         >
-          {noteList} &nbsp;·&nbsp; {scale.intervals.length} notes
+          {notes.join(" · ")} &nbsp;·&nbsp; {chord.intervals.length} tones
         </p>
       </div>
 

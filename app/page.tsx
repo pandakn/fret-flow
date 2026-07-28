@@ -1,6 +1,7 @@
 "use client"
 
 import { KeySelector } from "@/components/controls/KeySelector"
+import { ChordTypeSelector } from "@/components/controls/ChordTypeSelector"
 import { ScaleTypeSelector } from "@/components/controls/ScaleTypeSelector"
 import { TuningSelector } from "@/components/controls/TuningSelector"
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/controls/DisplayOptions"
 import { FretboardPanel } from "@/components/layout/FretboardPanel"
 import { Legend } from "@/components/layout/Legend"
-import { Navbar } from "@/components/layout/Navbar"
+import { Navbar, type ExplorerMode } from "@/components/layout/Navbar"
 import {
   PositionTabs,
   POSITION_RANGES,
@@ -21,13 +22,29 @@ import { StatsGrid } from "@/components/layout/StatsGrid"
 import { RelatedScales } from "@/components/layout/RelatedScales"
 import { Playback } from "@/components/layout/Playback"
 import { CollapsiblePanel } from "@/components/layout/CollapsiblePanel"
+import { ChordInfo } from "@/components/layout/ChordInfo"
+import { ChordToneList } from "@/components/layout/ChordToneList"
+import {
+  ChordVoicingSelector,
+  type ChordDisplayMode,
+} from "@/components/layout/ChordVoicingSelector"
+import { ChordVoicingSummary } from "@/components/layout/ChordVoicingSummary"
+import { getChordVoicings } from "@/lib/chord-voicings"
+import { getChordById } from "@/lib/chords"
+import { getScaleById } from "@/lib/scales"
+import { getTuningById } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 export default function FretFlowPage() {
   const [root, setRoot] = useState<NoteName>("C")
+  const [mode, setMode] = useState<ExplorerMode>("scales")
   const [scaleId, setScaleId] = useState("major")
+  const [chordId, setChordId] = useState("major")
+  const [selectedVoicingId, setSelectedVoicingId] = useState<string>()
+  const [chordDisplayMode, setChordDisplayMode] =
+    useState<ChordDisplayMode>("toneMap")
   const [tuningId, setTuningId] = useState("standard")
   const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
@@ -61,7 +78,27 @@ export default function FretFlowPage() {
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
   const rootOnly = displayMode === "rootOnly"
-  const focusRange = focusMode ? POSITION_RANGES[position] : undefined
+  const focusRange =
+    mode === "scales" && focusMode ? POSITION_RANGES[position] : undefined
+  const selectedScale = getScaleById(scaleId)
+  const selectedChord = getChordById(chordId)
+  const selectedTuning = getTuningById(tuningId)
+  const chordVoicings = useMemo(
+    () =>
+      selectedTuning ? getChordVoicings(root, chordId, selectedTuning) : [],
+    [chordId, root, selectedTuning]
+  )
+  const selectedVoicing = chordVoicings.find(
+    (voicing) => voicing.id === selectedVoicingId
+  )
+  const selectedPattern = mode === "scales" ? selectedScale : selectedChord
+
+  useEffect(() => {
+    // Root, chord, and tuning define the playable set, so always select its
+    // first valid entry rather than retaining a possibly stale template ID.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedVoicingId(chordVoicings[0]?.id)
+  }, [chordId, chordVoicings, root, tuningId])
 
   const handlePositionChange = (nextPosition: PositionId) => {
     setPosition(nextPosition)
@@ -70,7 +107,7 @@ export default function FretFlowPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
+      <Navbar mode={mode} onModeChange={setMode} />
 
       <div
         className="flex flex-1 overflow-hidden"
@@ -89,7 +126,11 @@ export default function FretFlowPage() {
           }}
         >
           <KeySelector value={root} onChange={setRoot} />
-          <ScaleTypeSelector value={scaleId} onChange={setScaleId} />
+          {mode === "scales" ? (
+            <ScaleTypeSelector value={scaleId} onChange={setScaleId} />
+          ) : (
+            <ChordTypeSelector value={chordId} onChange={setChordId} />
+          )}
           <TuningSelector value={tuningId} onChange={setTuningId} />
         </CollapsiblePanel>
 
@@ -97,12 +138,21 @@ export default function FretFlowPage() {
           className="flex min-w-0 flex-1 flex-col overflow-hidden"
           style={{ backgroundColor: "var(--surface)" }}
         >
-          <ScaleInfo
-            root={root}
-            scaleId={scaleId}
-            colorPreset={colorPreset}
-            onColorPresetChange={setColorPreset}
-          />
+          {mode === "scales" ? (
+            <ScaleInfo
+              root={root}
+              scaleId={scaleId}
+              colorPreset={colorPreset}
+              onColorPresetChange={setColorPreset}
+            />
+          ) : (
+            <ChordInfo
+              root={root}
+              chordId={chordId}
+              colorPreset={colorPreset}
+              onColorPresetChange={setColorPreset}
+            />
+          )}
 
           <div
             className="flex items-center"
@@ -116,22 +166,40 @@ export default function FretFlowPage() {
 
           <FretboardPanel
             root={root}
-            scaleId={scaleId}
+            pattern={selectedPattern}
             tuningId={tuningId}
             focusRange={focusRange}
             colorPreset={colorPreset}
             showNoteNames={showNoteNames}
             showIntervals={showIntervals}
             rootOnly={rootOnly}
+            selectedVoicing={mode === "chords" ? selectedVoicing : undefined}
+            shapeFocus={
+              mode === "chords" && chordDisplayMode === "shapeFocus"
+            }
           />
 
-          <Legend />
-          <PositionTabs
-            value={position}
-            onChange={handlePositionChange}
-            focusMode={focusMode}
-            onFocusModeChange={setFocusMode}
+          <Legend
+            activeIntervals={
+              mode === "chords" ? (selectedChord?.intervals ?? []) : undefined
+            }
           />
+          {mode === "scales" ? (
+            <PositionTabs
+              value={position}
+              onChange={handlePositionChange}
+              focusMode={focusMode}
+              onFocusModeChange={setFocusMode}
+            />
+          ) : (
+            <ChordVoicingSelector
+              voicings={chordVoicings}
+              value={selectedVoicingId}
+              onChange={setSelectedVoicingId}
+              displayMode={chordDisplayMode}
+              onDisplayModeChange={setChordDisplayMode}
+            />
+          )}
         </main>
 
         <CollapsiblePanel
@@ -146,10 +214,19 @@ export default function FretFlowPage() {
             borderLeft: "1px solid var(--border)",
           }}
         >
-          <IntervalList root={root} scaleId={scaleId} />
-          <StatsGrid scaleId={scaleId} />
-          <RelatedScales root={root} scaleId={scaleId} />
-          <Playback root={root} scaleId={scaleId} />
+          {mode === "scales" ? (
+            <>
+              <IntervalList root={root} scaleId={scaleId} />
+              <StatsGrid scaleId={scaleId} />
+              <RelatedScales root={root} scaleId={scaleId} />
+              <Playback root={root} scaleId={scaleId} />
+            </>
+          ) : (
+            <>
+              <ChordToneList root={root} chordId={chordId} />
+              <ChordVoicingSummary voicing={selectedVoicing} />
+            </>
+          )}
         </CollapsiblePanel>
       </div>
     </div>

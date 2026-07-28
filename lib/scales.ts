@@ -1,11 +1,9 @@
-import type { NoteName, IntervalName } from '@/types/music';
+import type { NoteName, TonalPattern } from '@/types/music';
 import { CHROMATIC } from './notes';
 
-export type Scale = {
+export type Scale = TonalPattern & {
   id: string;
   name: string;
-  formula: number[];
-  intervals: IntervalName[];
 };
 
 export const SCALES: Scale[] = [
