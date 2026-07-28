@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
+import { FretFlowLogo } from "@/components/brand/FretFlowLogo"
 import { cn } from "@/lib/utils"
 
 export type ExplorerMode = "scales" | "chords"
@@ -36,23 +37,7 @@ export function Navbar({ mode, onModeChange }: NavbarProps) {
     >
       <div className="flex h-[49px] items-center justify-between px-6">
         <div className="flex items-center gap-7">
-          <div className="flex items-center gap-2">
-            <div
-              className="flex h-5 w-5 items-center justify-center rounded-[4px]"
-              style={{ border: "2px solid var(--text)" }}
-            >
-              <span
-                className="block h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: "var(--text)" }}
-              />
-            </div>
-            <span
-              className="text-[17px] font-extrabold tracking-[-0.5px]"
-              style={{ color: "var(--text)" }}
-            >
-              FretFlow
-            </span>
-          </div>
+          <FretFlowLogo />
 
           <nav className="flex items-center gap-0.5">
             {NAV_PILLS.map((pill) => (
