@@ -3,6 +3,7 @@
 import { Fretboard } from "@/components/fretboard/Fretboard"
 import { useFretboard } from "@/components/fretboard/hooks/useFretboard"
 import type { ChordVoicing } from "@/lib/chord-voicings"
+import type { ResolvedArpeggio } from "@/lib/arpeggios"
 import type { NoteName, TonalPattern } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 
@@ -17,6 +18,7 @@ interface FretboardPanelProps {
   rootOnly: boolean
   selectedVoicing?: ChordVoicing
   shapeFocus?: boolean
+  arpeggio?: ResolvedArpeggio
 }
 
 export function FretboardPanel({
@@ -30,6 +32,7 @@ export function FretboardPanel({
   rootOnly,
   selectedVoicing,
   shapeFocus = false,
+  arpeggio,
 }: FretboardPanelProps) {
   const { fretNotesByString, fretCount } = useFretboard({
     root,
@@ -50,6 +53,7 @@ export function FretboardPanel({
         focusRange={focusRange}
         selectedVoicing={selectedVoicing}
         shapeFocus={shapeFocus}
+        arpeggio={arpeggio}
       />
     </div>
   )

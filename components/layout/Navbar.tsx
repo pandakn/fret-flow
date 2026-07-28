@@ -5,12 +5,13 @@ import { useEffect, useState } from "react"
 import { FretFlowLogo } from "@/components/brand/FretFlowLogo"
 import { cn } from "@/lib/utils"
 
-export type ExplorerMode = "scales" | "modes" | "chords"
+export type ExplorerMode = "scales" | "modes" | "chords" | "arpeggios"
 
 const NAV_PILLS: { label: string; mode: ExplorerMode }[] = [
   { label: "Scales", mode: "scales" },
   { label: "Modes", mode: "modes" },
   { label: "Chords", mode: "chords" },
+  { label: "Arpeggios", mode: "arpeggios" },
 ]
 
 interface NavbarProps {

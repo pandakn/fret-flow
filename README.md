@@ -1,12 +1,13 @@
 # FretFlow
 
-Interactive guitar scale and chord visualizer built with Next.js 16 and React 19. Explore scales, chord tones, notes, and intervals across a dynamic fretboard with real-time visualization.
+Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 and React 19. Explore scales, chord tones, ordered arpeggio paths, notes, and intervals across a dynamic fretboard with real-time visualization.
 
 ## Features
 
 - **Interactive Fretboard** - Dynamic visualization of guitar fretboard with customizable settings
 - **Scale Exploration** - Built-in scales including Major, Minor, Pentatonic, Blues, Dorian, Phrygian, Lydian, Mixolydian, and Harmonic Minor
 - **Chord Exploration** - Major, Minor, 7, m7, maj7, diminished, augmented, sus2, and sus4 tone maps with open, barre, and up-neck voicings
+- **Arpeggio Exploration** - Turn a selected chord voicing into a numbered picking path, then play it ascending, descending, or up and down
 - **Color-Coded Intervals** - Visual representation of scale and chord intervals with root notes highlighted
 - **Multiple Tunings** - Support for various guitar tunings
 - **Responsive Design** - Works seamlessly across desktop and mobile devices
@@ -14,21 +15,21 @@ Interactive guitar scale and chord visualizer built with Next.js 16 and React 19
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 + Turbopack (App Router) |
-| Language | TypeScript 5 |
-| UI Library | React 19 + shadcn/ui + Radix UI |
-| Styling | Tailwind CSS v4 + tw-animate-css |
-| Utilities | clsx, tailwind-merge, class-variance-authority |
-| Icons | lucide-react |
-| Theme | next-themes |
+| Layer      | Technology                                     |
+| ---------- | ---------------------------------------------- |
+| Framework  | Next.js 16 + Turbopack (App Router)            |
+| Language   | TypeScript 5                                   |
+| UI Library | React 19 + shadcn/ui + Radix UI                |
+| Styling    | Tailwind CSS v4 + tw-animate-css               |
+| Utilities  | clsx, tailwind-merge, class-variance-authority |
+| Icons      | lucide-react                                   |
+| Theme      | next-themes                                    |
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - bun (recommended) or npm/yarn
 
 ### Installation
@@ -102,6 +103,7 @@ fret-flow/
 │   ├── scales.ts              # Scale formulas + interval arrays
 │   ├── chords.ts              # Chord formulas + interval arrays
 │   ├── chord-voicings.ts      # Playable chord voicing templates + resolvers
+│   ├── arpeggios.ts           # Ordered arpeggio-path resolver for chord voicings
 │   ├── fretboard.ts           # Note-at-fret calculations
 │   ├── tunings.ts             # Guitar tuning presets
 │   ├── colors.ts              # Interval → CSS variable mappings
@@ -121,17 +123,35 @@ The application uses precise music theory calculations defined in `lib/`:
 
 ```typescript
 // Chromatic scale (12 semitones)
-export const CHROMATIC: NoteName[] =
-  ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
+export const CHROMATIC: NoteName[] = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+]
 
 // Note at fret calculation
 export const getNoteAtFret = (open: NoteName, fret: number): NoteName =>
   CHROMATIC[(CHROMATIC.indexOf(open) + fret) % 12]
 
 // Scale note generation
-export const getScaleNotes = (root: NoteName, formula: number[]): NoteName[] => {
+export const getScaleNotes = (
+  root: NoteName,
+  formula: number[]
+): NoteName[] => {
   let i = CHROMATIC.indexOf(root)
-  return [root, ...formula.slice(0, -1).map(step => CHROMATIC[i = (i + step) % 12])]
+  return [
+    root,
+    ...formula.slice(0, -1).map((step) => CHROMATIC[(i = (i + step) % 12)]),
+  ]
 }
 ```
 
@@ -168,10 +188,19 @@ as a second root. Intervals use the existing `IntervalName` values such as
 `R`, `b3`, `3`, `b5`, `5`, `b7`, and `7`, so they reuse the fretboard's
 interval colors.
 
+### Arpeggios
+
+The Arpeggios explorer turns a selected chord voicing into an ordered picking
+path. It keeps the chord tones visible on the fretboard while numbering the
+notes in the chosen path, so the sequence and its position are clear together.
+Choose **Ascending**, **Descending**, or **Up & down** to change the order, and
+use the arpeggio playback control to hear that selected sequence. Chord
+voicings and arpeggio paths support fret positions 0–21.
+
 ### Default Settings
 
 - **Tuning**: E Standard (low to high: E-A-D-G-B-E)
-- **Fret Range**: 0–15
+- **Fret Range**: 0–15 by default (chord voicings and arpeggios support 0–21)
 - **Fret Inlays**: 3, 5, 7, 9, 12 (double), 15
 
 ## Adding New Scales
@@ -182,10 +211,10 @@ To add a new scale, simply append it to the `SCALES` array in `lib/scales.ts`:
 export const SCALES = [
   // ... existing scales
   {
-    id: 'your_scale_id',
-    name: 'Your Scale Name',
+    id: "your_scale_id",
+    name: "Your Scale Name",
     formula: [2, 2, 1, 2, 2, 2, 1], // Semitone steps
-    intervals: ['R', '2', '3', '4', '5', '6', '7'] // Interval names
+    intervals: ["R", "2", "3", "4", "5", "6", "7"], // Interval names
   },
 ]
 ```

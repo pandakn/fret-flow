@@ -1,27 +1,32 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import type { ChordVoicing } from "@/lib/chord-voicings"
 import { Button } from "@/components/ui/button"
+import type { ArpeggioDirection } from "@/lib/arpeggios"
+import type { ChordVoicing } from "@/lib/chord-voicings"
+import { cn } from "@/lib/utils"
 import { VoicingGroups } from "./VoicingGroups"
 
-export type ChordDisplayMode = "toneMap" | "shapeFocus"
+const DIRECTIONS: { direction: ArpeggioDirection; label: string }[] = [
+  { direction: "ascending", label: "Ascending" },
+  { direction: "descending", label: "Descending" },
+  { direction: "upAndDown", label: "Up & down" },
+]
 
-interface ChordVoicingSelectorProps {
+interface ArpeggioControlsProps {
   voicings: ChordVoicing[]
   value?: string
   onChange: (voicingId: string) => void
-  displayMode: ChordDisplayMode
-  onDisplayModeChange: (mode: ChordDisplayMode) => void
+  direction: ArpeggioDirection
+  onDirectionChange: (direction: ArpeggioDirection) => void
 }
 
-export function ChordVoicingSelector({
+export function ArpeggioControls({
   voicings,
   value,
   onChange,
-  displayMode,
-  onDisplayModeChange,
-}: ChordVoicingSelectorProps) {
+  direction,
+  onDirectionChange,
+}: ArpeggioControlsProps) {
   return (
     <section
       style={{ borderTop: "1px solid var(--border)", padding: "10px 32px" }}
@@ -45,28 +50,23 @@ export function ChordVoicingSelector({
             padding: "2px",
           }}
           role="group"
-          aria-label="Chord map display"
+          aria-label="Arpeggio direction"
         >
-          {(
-            [
-              ["toneMap", "Tone map"],
-              ["shapeFocus", "Shape focus"],
-            ] as const
-          ).map(([mode, label]) => (
+          {DIRECTIONS.map(({ direction: option, label }) => (
             <Button
-              key={mode}
+              key={option}
               type="button"
               variant="ghost"
               size="xs"
-              onClick={() => onDisplayModeChange(mode)}
+              onClick={() => onDirectionChange(option)}
               className={cn(
                 "h-auto rounded-sm px-2.5 py-1 text-[10px] font-bold",
-                displayMode === mode
+                direction === option
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
               )}
               style={{ fontFamily: "var(--font-mono)" }}
-              aria-pressed={displayMode === mode}
+              aria-pressed={direction === option}
             >
               {label}
             </Button>
@@ -74,7 +74,12 @@ export function ChordVoicingSelector({
         </div>
       </div>
 
-      <VoicingGroups voicings={voicings} value={value} onChange={onChange} />
+      <VoicingGroups
+        voicings={voicings}
+        value={value}
+        onChange={onChange}
+        ariaLabelSuffix="arpeggio "
+      />
     </section>
   )
 }

@@ -48,6 +48,8 @@ interface NoteCellProps {
   isSelectedVoicingTone: boolean
   shapeFocus: boolean
   selectedVoicingLabel?: string
+  arpeggioStepIndexes?: readonly number[]
+  arpeggioStepCount: number
   isHovered: boolean
   onNoteHover: (noteKey: string | null) => void
   onNoteClick: (note: FretNote) => void
@@ -71,6 +73,8 @@ export const NoteCell = memo<NoteCellProps>(
     isSelectedVoicingTone,
     shapeFocus,
     selectedVoicingLabel,
+    arpeggioStepIndexes,
+    arpeggioStepCount,
     isHovered,
     onNoteHover,
     onNoteClick,
@@ -96,11 +100,14 @@ export const NoteCell = memo<NoteCellProps>(
     if (!isActive) return null
     if (rootOnly && !isRoot) return null
 
+    const isArpeggioPathTone = arpeggioStepIndexes !== undefined
+    const arpeggioStepLabel = arpeggioStepIndexes?.join(" · ")
+
     return (
       <Button
         variant="ghost"
         className={cn(
-          "z-20 flex items-center justify-center rounded-full p-0 font-mono font-bold transition-[opacity,transform,box-shadow] duration-300 ease-out",
+          "relative z-20 flex items-center justify-center rounded-full p-0 font-mono font-bold transition-[opacity,transform,box-shadow] duration-300 ease-out",
           isRoot
             ? "h-10 w-10 text-xl ring-2 ring-offset-1"
             : "h-9 w-9 border text-lg",
@@ -113,7 +120,9 @@ export const NoteCell = memo<NoteCellProps>(
           isSelectedVoicingTone &&
             "outline outline-2 outline-offset-2 outline-[var(--foreground)]",
           isHovered && "scale-110",
-          (!isInFocus || (shapeFocus && !isSelectedVoicingTone)) &&
+          (!isInFocus ||
+            (shapeFocus && !isSelectedVoicingTone) ||
+            (arpeggioStepCount > 0 && !isArpeggioPathTone && !isRoot)) &&
             "opacity-20"
         )}
         onMouseEnter={handleMouseEnter}
@@ -126,6 +135,14 @@ export const NoteCell = memo<NoteCellProps>(
         }
       >
         {showIntervals && interval ? interval : showNoteNames ? note : ""}
+        {arpeggioStepLabel ? (
+          <span
+            aria-hidden="true"
+            className="absolute top-0.5 right-0.5 min-w-4 rounded-full bg-[var(--foreground)] px-1 text-center text-[9px] leading-4 text-[var(--background)]"
+          >
+            {arpeggioStepLabel}
+          </span>
+        ) : null}
       </Button>
     )
   }

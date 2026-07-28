@@ -5,6 +5,7 @@ import { StringRow } from "./StringRow"
 import { FretMarkers } from "./FretMarkers"
 import { cn } from "@/lib/utils"
 import type { ChordVoicing } from "@/lib/chord-voicings"
+import type { ResolvedArpeggio } from "@/lib/arpeggios"
 import type { FretNote } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 
@@ -18,6 +19,7 @@ interface FretboardProps {
   colorPreset: ColorPreset
   selectedVoicing?: ChordVoicing
   shapeFocus?: boolean
+  arpeggio?: ResolvedArpeggio
   onNoteClick?: (note: FretNote) => void
   className?: string
 }
@@ -102,6 +104,7 @@ export function Fretboard({
   colorPreset,
   selectedVoicing,
   shapeFocus = false,
+  arpeggio,
   onNoteClick,
   className,
 }: FretboardProps) {
@@ -124,6 +127,22 @@ export function Fretboard({
     return fretsByString
   }, [selectedVoicing])
   const isShapeFocus = shapeFocus && selectedVoicing !== undefined
+  const arpeggioPathSteps = useMemo(() => {
+    if (!arpeggio) return undefined
+
+    const stepsByPosition = new Map<string, number[]>()
+    for (const step of arpeggio.steps) {
+      const positionKey = `${step.string}-${step.fret}`
+      const indexes = stepsByPosition.get(positionKey)
+      if (indexes) {
+        indexes.push(step.index)
+      } else {
+        stepsByPosition.set(positionKey, [step.index])
+      }
+    }
+
+    return stepsByPosition
+  }, [arpeggio])
   const handleNoteHover = useCallback((noteKey: string | null) => {
     setHoveredNote(noteKey)
   }, [])
@@ -174,6 +193,8 @@ export function Fretboard({
               selectedVoicingFrets={selectedVoicingFrets}
               selectedVoicingLabel={selectedVoicing?.label}
               shapeFocus={isShapeFocus}
+              arpeggioPathSteps={arpeggioPathSteps}
+              arpeggioStepCount={arpeggio?.steps.length ?? 0}
               hoveredNote={hoveredNote}
               onNoteHover={handleNoteHover}
               onNoteClick={onNoteClick ?? handleNoNoteClick}

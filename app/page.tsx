@@ -22,8 +22,12 @@ import { IntervalList } from "@/components/layout/IntervalList"
 import { StatsGrid } from "@/components/layout/StatsGrid"
 import { RelatedScales } from "@/components/layout/RelatedScales"
 import { Playback } from "@/components/layout/Playback"
+import { ArpeggioPlayback } from "@/components/layout/ArpeggioPlayback"
 import { CollapsiblePanel } from "@/components/layout/CollapsiblePanel"
 import { ChordInfo } from "@/components/layout/ChordInfo"
+import { ArpeggioInfo } from "@/components/layout/ArpeggioInfo"
+import { ArpeggioControls } from "@/components/layout/ArpeggioControls"
+import { ArpeggioSequence } from "@/components/layout/ArpeggioSequence"
 import { ChordToneList } from "@/components/layout/ChordToneList"
 import {
   ChordVoicingSelector,
@@ -32,6 +36,7 @@ import {
 import { ChordVoicingSummary } from "@/components/layout/ChordVoicingSummary"
 import { getChordVoicings } from "@/lib/chord-voicings"
 import { getChordById } from "@/lib/chords"
+import { resolveArpeggio, type ArpeggioDirection } from "@/lib/arpeggios"
 import { getModeById, getScaleById, MODES } from "@/lib/scales"
 import { getTuningById } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
@@ -46,6 +51,11 @@ export default function FretFlowPage() {
   const [selectedVoicingId, setSelectedVoicingId] = useState<string>()
   const [chordDisplayMode, setChordDisplayMode] =
     useState<ChordDisplayMode>("toneMap")
+  const [arpeggioChordId, setArpeggioChordId] = useState("major")
+  const [selectedArpeggioVoicingId, setSelectedArpeggioVoicingId] =
+    useState<string>()
+  const [arpeggioDirection, setArpeggioDirection] =
+    useState<ArpeggioDirection>("ascending")
   const [tuningId, setTuningId] = useState("standard")
   const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
@@ -84,6 +94,7 @@ export default function FretFlowPage() {
     isScaleExplorer && focusMode ? POSITION_RANGES[position] : undefined
   const selectedScale = getScaleById(scaleId)
   const selectedChord = getChordById(chordId)
+  const selectedArpeggioChord = getChordById(arpeggioChordId)
   const selectedTuning = getTuningById(tuningId)
   const chordVoicings = useMemo(
     () =>
@@ -93,7 +104,38 @@ export default function FretFlowPage() {
   const selectedVoicing = chordVoicings.find(
     (voicing) => voicing.id === selectedVoicingId
   )
-  const selectedPattern = isScaleExplorer ? selectedScale : selectedChord
+  const arpeggioVoicings = useMemo(
+    () =>
+      selectedTuning
+        ? getChordVoicings(root, arpeggioChordId, selectedTuning)
+        : [],
+    [arpeggioChordId, root, selectedTuning]
+  )
+  const selectedArpeggioVoicing = arpeggioVoicings.find(
+    (voicing) => voicing.id === selectedArpeggioVoicingId
+  )
+  const resolvedArpeggio = useMemo(
+    () =>
+      selectedArpeggioChord && selectedTuning && selectedArpeggioVoicing
+        ? resolveArpeggio(
+            selectedArpeggioVoicing,
+            selectedArpeggioChord,
+            selectedTuning,
+            arpeggioDirection
+          )
+        : undefined,
+    [
+      arpeggioDirection,
+      selectedArpeggioChord,
+      selectedArpeggioVoicing,
+      selectedTuning,
+    ]
+  )
+  const selectedPattern = isScaleExplorer
+    ? selectedScale
+    : mode === "arpeggios"
+      ? selectedArpeggioChord
+      : selectedChord
 
   useEffect(() => {
     // Root, chord, and tuning define the playable set, so always select its
@@ -101,6 +143,12 @@ export default function FretFlowPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedVoicingId(chordVoicings[0]?.id)
   }, [chordId, chordVoicings, root, tuningId])
+
+  useEffect(() => {
+    // Arpeggio voicings are independent from the chord explorer selection.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedArpeggioVoicingId(arpeggioVoicings[0]?.id)
+  }, [arpeggioChordId, arpeggioVoicings, root, tuningId])
 
   const handlePositionChange = (nextPosition: PositionId) => {
     setPosition(nextPosition)
@@ -143,7 +191,10 @@ export default function FretFlowPage() {
               label={mode === "modes" ? "Mode" : undefined}
             />
           ) : (
-            <ChordTypeSelector value={chordId} onChange={setChordId} />
+            <ChordTypeSelector
+              value={mode === "arpeggios" ? arpeggioChordId : chordId}
+              onChange={mode === "arpeggios" ? setArpeggioChordId : setChordId}
+            />
           )}
           <TuningSelector value={tuningId} onChange={setTuningId} />
         </CollapsiblePanel>
@@ -163,6 +214,14 @@ export default function FretFlowPage() {
             <ModeInfo
               root={root}
               modeId={scaleId}
+              colorPreset={colorPreset}
+              onColorPresetChange={setColorPreset}
+            />
+          ) : mode === "arpeggios" ? (
+            <ArpeggioInfo
+              root={root}
+              chordId={arpeggioChordId}
+              voicing={selectedArpeggioVoicing}
               colorPreset={colorPreset}
               onColorPresetChange={setColorPreset}
             />
@@ -196,11 +255,16 @@ export default function FretFlowPage() {
             rootOnly={rootOnly}
             selectedVoicing={mode === "chords" ? selectedVoicing : undefined}
             shapeFocus={mode === "chords" && chordDisplayMode === "shapeFocus"}
+            arpeggio={mode === "arpeggios" ? resolvedArpeggio : undefined}
           />
 
           <Legend
             activeIntervals={
-              mode === "chords" ? (selectedChord?.intervals ?? []) : undefined
+              mode === "chords"
+                ? (selectedChord?.intervals ?? [])
+                : mode === "arpeggios"
+                  ? (selectedArpeggioChord?.intervals ?? [])
+                  : undefined
             }
           />
           {isScaleExplorer ? (
@@ -209,6 +273,14 @@ export default function FretFlowPage() {
               onChange={handlePositionChange}
               focusMode={focusMode}
               onFocusModeChange={setFocusMode}
+            />
+          ) : mode === "arpeggios" ? (
+            <ArpeggioControls
+              voicings={arpeggioVoicings}
+              value={selectedArpeggioVoicingId}
+              onChange={setSelectedArpeggioVoicingId}
+              direction={arpeggioDirection}
+              onDirectionChange={setArpeggioDirection}
             />
           ) : (
             <ChordVoicingSelector
@@ -239,6 +311,13 @@ export default function FretFlowPage() {
               <StatsGrid scaleId={scaleId} />
               <RelatedScales root={root} scaleId={scaleId} />
               <Playback root={root} scaleId={scaleId} />
+            </>
+          ) : mode === "arpeggios" ? (
+            <>
+              <ChordToneList root={root} chordId={arpeggioChordId} />
+              <ChordVoicingSummary voicing={selectedArpeggioVoicing} />
+              <ArpeggioSequence arpeggio={resolvedArpeggio} />
+              <ArpeggioPlayback root={root} arpeggio={resolvedArpeggio} />
             </>
           ) : (
             <>

@@ -14,6 +14,8 @@ interface StringRowProps {
   selectedVoicingFrets?: ReadonlyMap<number, ReadonlySet<number>>
   selectedVoicingLabel?: string
   shapeFocus: boolean
+  arpeggioPathSteps?: ReadonlyMap<string, readonly number[]>
+  arpeggioStepCount: number
   hoveredNote: string | null
   onNoteHover: (key: string | null) => void
   onNoteClick: (note: FretNote) => void
@@ -66,6 +68,27 @@ const getAriaLabel = (note: FretNote, stringNum: number): string =>
 const getNoteKey = (stringIndex: number, fret: number): string =>
   `${stringIndex}-${fret}`
 
+const getArpeggioPositionKey = (stringIndex: number, fret: number): string =>
+  `${stringIndex}-${fret}`
+
+const getArpeggioAriaLabel = (
+  note: FretNote,
+  stringNum: number,
+  stepIndexes: readonly number[] | undefined,
+  stepCount: number
+): string => {
+  const baseLabel = getAriaLabel(note, stringNum)
+  if (!stepIndexes || stepIndexes.length === 0 || stepCount === 0) {
+    return baseLabel
+  }
+
+  if (stepIndexes.length === 1) {
+    return `${baseLabel}, arpeggio step ${stepIndexes[0]} of ${stepCount}`
+  }
+
+  return `${baseLabel}, arpeggio steps ${stepIndexes.join(" and ")} of ${stepCount}`
+}
+
 export function StringRow({
   stringIndex,
   fretNotes,
@@ -77,6 +100,8 @@ export function StringRow({
   selectedVoicingFrets,
   selectedVoicingLabel,
   shapeFocus,
+  arpeggioPathSteps,
+  arpeggioStepCount,
   hoveredNote,
   onNoteHover,
   onNoteClick,
@@ -94,6 +119,11 @@ export function StringRow({
       : selectedVoicingFrets?.get(sourceStringIndex)
   const openNote = fretNotes.find((note) => note.fret === 0)
   const openNoteKey = getNoteKey(stringIndex, 0)
+  const openArpeggioStepIndexes = openNote
+    ? arpeggioPathSteps?.get(
+        getArpeggioPositionKey(openNote.string, openNote.fret)
+      )
+    : undefined
 
   return (
     <div className={cn("relative flex items-center", rowHeight)}>
@@ -118,11 +148,18 @@ export function StringRow({
             colorPreset={colorPreset}
             isSelectedVoicingTone={selectedFrets?.has(openNote.fret) ?? false}
             shapeFocus={shapeFocus}
+            arpeggioStepIndexes={openArpeggioStepIndexes}
+            arpeggioStepCount={arpeggioStepCount}
             selectedVoicingLabel={selectedVoicingLabel}
             isHovered={hoveredNote === openNoteKey}
             onNoteHover={onNoteHover}
             onNoteClick={onNoteClick}
-            aria-label={getAriaLabel(openNote, stringNum)}
+            aria-label={getArpeggioAriaLabel(
+              openNote,
+              stringNum,
+              openArpeggioStepIndexes,
+              arpeggioStepCount
+            )}
           />
         ) : null}
       </div>
@@ -141,6 +178,9 @@ export function StringRow({
         .filter((n) => n.fret > 0)
         .map((note) => {
           const noteKey = getNoteKey(stringIndex, note.fret)
+          const arpeggioStepIndexes = arpeggioPathSteps?.get(
+            getArpeggioPositionKey(note.string, note.fret)
+          )
           return (
             <div
               key={note.fret}
@@ -167,11 +207,18 @@ export function StringRow({
                 colorPreset={colorPreset}
                 isSelectedVoicingTone={selectedFrets?.has(note.fret) ?? false}
                 shapeFocus={shapeFocus}
+                arpeggioStepIndexes={arpeggioStepIndexes}
+                arpeggioStepCount={arpeggioStepCount}
                 selectedVoicingLabel={selectedVoicingLabel}
                 isHovered={hoveredNote === noteKey}
                 onNoteHover={onNoteHover}
                 onNoteClick={onNoteClick}
-                aria-label={getAriaLabel(note, stringNum)}
+                aria-label={getArpeggioAriaLabel(
+                  note,
+                  stringNum,
+                  arpeggioStepIndexes,
+                  arpeggioStepCount
+                )}
               />
             </div>
           )
