@@ -17,6 +17,7 @@ import {
   type PositionId,
 } from "@/components/layout/PositionTabs"
 import { ScaleInfo } from "@/components/layout/ScaleInfo"
+import { ModeInfo } from "@/components/layout/ModeInfo"
 import { IntervalList } from "@/components/layout/IntervalList"
 import { StatsGrid } from "@/components/layout/StatsGrid"
 import { RelatedScales } from "@/components/layout/RelatedScales"
@@ -31,7 +32,7 @@ import {
 import { ChordVoicingSummary } from "@/components/layout/ChordVoicingSummary"
 import { getChordVoicings } from "@/lib/chord-voicings"
 import { getChordById } from "@/lib/chords"
-import { getScaleById } from "@/lib/scales"
+import { getModeById, getScaleById, MODES } from "@/lib/scales"
 import { getTuningById } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
@@ -78,8 +79,9 @@ export default function FretFlowPage() {
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
   const rootOnly = displayMode === "rootOnly"
+  const isScaleExplorer = mode === "scales" || mode === "modes"
   const focusRange =
-    mode === "scales" && focusMode ? POSITION_RANGES[position] : undefined
+    isScaleExplorer && focusMode ? POSITION_RANGES[position] : undefined
   const selectedScale = getScaleById(scaleId)
   const selectedChord = getChordById(chordId)
   const selectedTuning = getTuningById(tuningId)
@@ -91,7 +93,7 @@ export default function FretFlowPage() {
   const selectedVoicing = chordVoicings.find(
     (voicing) => voicing.id === selectedVoicingId
   )
-  const selectedPattern = mode === "scales" ? selectedScale : selectedChord
+  const selectedPattern = isScaleExplorer ? selectedScale : selectedChord
 
   useEffect(() => {
     // Root, chord, and tuning define the playable set, so always select its
@@ -105,9 +107,16 @@ export default function FretFlowPage() {
     setFocusMode(nextPosition !== "full")
   }
 
+  const handleExplorerModeChange = (nextMode: ExplorerMode) => {
+    if (nextMode === "modes" && !getModeById(scaleId)) {
+      setScaleId(MODES[0].id)
+    }
+    setMode(nextMode)
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar mode={mode} onModeChange={setMode} />
+      <Navbar mode={mode} onModeChange={handleExplorerModeChange} />
 
       <div
         className="flex flex-1 overflow-hidden"
@@ -126,8 +135,13 @@ export default function FretFlowPage() {
           }}
         >
           <KeySelector value={root} onChange={setRoot} />
-          {mode === "scales" ? (
-            <ScaleTypeSelector value={scaleId} onChange={setScaleId} />
+          {isScaleExplorer ? (
+            <ScaleTypeSelector
+              value={scaleId}
+              onChange={setScaleId}
+              scales={mode === "modes" ? MODES : undefined}
+              label={mode === "modes" ? "Mode" : undefined}
+            />
           ) : (
             <ChordTypeSelector value={chordId} onChange={setChordId} />
           )}
@@ -142,6 +156,13 @@ export default function FretFlowPage() {
             <ScaleInfo
               root={root}
               scaleId={scaleId}
+              colorPreset={colorPreset}
+              onColorPresetChange={setColorPreset}
+            />
+          ) : mode === "modes" ? (
+            <ModeInfo
+              root={root}
+              modeId={scaleId}
               colorPreset={colorPreset}
               onColorPresetChange={setColorPreset}
             />
@@ -174,9 +195,7 @@ export default function FretFlowPage() {
             showIntervals={showIntervals}
             rootOnly={rootOnly}
             selectedVoicing={mode === "chords" ? selectedVoicing : undefined}
-            shapeFocus={
-              mode === "chords" && chordDisplayMode === "shapeFocus"
-            }
+            shapeFocus={mode === "chords" && chordDisplayMode === "shapeFocus"}
           />
 
           <Legend
@@ -184,7 +203,7 @@ export default function FretFlowPage() {
               mode === "chords" ? (selectedChord?.intervals ?? []) : undefined
             }
           />
-          {mode === "scales" ? (
+          {isScaleExplorer ? (
             <PositionTabs
               value={position}
               onChange={handlePositionChange}
@@ -214,7 +233,7 @@ export default function FretFlowPage() {
             borderLeft: "1px solid var(--border)",
           }}
         >
-          {mode === "scales" ? (
+          {isScaleExplorer ? (
             <>
               <IntervalList root={root} scaleId={scaleId} />
               <StatsGrid scaleId={scaleId} />

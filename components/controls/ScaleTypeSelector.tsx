@@ -1,14 +1,21 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { SCALES } from "@/lib/scales"
+import { SCALES, type Scale } from "@/lib/scales"
 
 interface ScaleTypeSelectorProps {
   value: string
   onChange: (scaleId: string) => void
+  scales?: Scale[]
+  label?: string
 }
 
-export function ScaleTypeSelector({ value, onChange }: ScaleTypeSelectorProps) {
+export function ScaleTypeSelector({
+  value,
+  onChange,
+  scales = SCALES,
+  label = "Scale",
+}: ScaleTypeSelectorProps) {
   return (
     <section
       className="flex flex-col"
@@ -27,14 +34,14 @@ export function ScaleTypeSelector({ value, onChange }: ScaleTypeSelectorProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        <span>Scale</span>
-        <span>{SCALES.length}</span>
+        <span>{label}</span>
+        <span>{scales.length}</span>
       </div>
       <div
         className="flex flex-col gap-1 overflow-y-auto"
         style={{ minHeight: 0 }}
       >
-        {SCALES.map((scale) => (
+        {scales.map((scale) => (
           <button
             key={scale.id}
             onClick={() => onChange(scale.id)}
