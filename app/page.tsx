@@ -32,6 +32,7 @@ export default function FretFlowPage() {
   const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
   const [position, setPosition] = useState<PositionId>("full")
+  const [focusMode, setFocusMode] = useState(false)
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
   const [modifier, setModifier] = useState("Ctrl")
@@ -60,7 +61,12 @@ export default function FretFlowPage() {
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
   const rootOnly = displayMode === "rootOnly"
-  const fretRange = POSITION_RANGES[position]
+  const focusRange = focusMode ? POSITION_RANGES[position] : undefined
+
+  const handlePositionChange = (nextPosition: PositionId) => {
+    setPosition(nextPosition)
+    setFocusMode(nextPosition !== "full")
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -112,7 +118,7 @@ export default function FretFlowPage() {
             root={root}
             scaleId={scaleId}
             tuningId={tuningId}
-            fretRange={fretRange}
+            focusRange={focusRange}
             colorPreset={colorPreset}
             showNoteNames={showNoteNames}
             showIntervals={showIntervals}
@@ -120,7 +126,12 @@ export default function FretFlowPage() {
           />
 
           <Legend />
-          <PositionTabs value={position} onChange={setPosition} />
+          <PositionTabs
+            value={position}
+            onChange={handlePositionChange}
+            focusMode={focusMode}
+            onFocusModeChange={setFocusMode}
+          />
         </main>
 
         <CollapsiblePanel

@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
 
 const POSITIONS = [
   { id: "full", label: "Full", range: { min: 0, max: 21 } },
@@ -23,9 +24,16 @@ export const POSITION_RANGES: Record<PositionId, { min: number; max: number }> =
 interface PositionTabsProps {
   value: PositionId
   onChange: (id: PositionId) => void
+  focusMode: boolean
+  onFocusModeChange: (enabled: boolean) => void
 }
 
-export function PositionTabs({ value, onChange }: PositionTabsProps) {
+export function PositionTabs({
+  value,
+  onChange,
+  focusMode,
+  onFocusModeChange,
+}: PositionTabsProps) {
   return (
     <div
       className="flex items-center gap-2.5 bg-[var(--surface)]"
@@ -64,6 +72,25 @@ export function PositionTabs({ value, onChange }: PositionTabsProps) {
             {pos.label}
           </button>
         ))}
+      </div>
+      <div
+        className="ml-auto flex items-center gap-2"
+        style={{ color: "var(--muted-foreground)" }}
+      >
+        <label
+          htmlFor="position-focus"
+          className="cursor-pointer text-[10px] font-medium"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          Focus form
+        </label>
+        <Switch
+          id="position-focus"
+          checked={focusMode}
+          onCheckedChange={onFocusModeChange}
+          disabled={value === "full"}
+          aria-label="Focus selected scale form"
+        />
       </div>
     </div>
   )

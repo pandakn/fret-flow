@@ -9,6 +9,7 @@ interface StringRowProps {
   showNoteNames: boolean
   showIntervals: boolean
   rootOnly: boolean
+  focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
   hoveredNote: string | null
   onNoteHover: (key: string | null) => void
@@ -44,6 +45,7 @@ export function StringRow({
   showNoteNames,
   showIntervals,
   rootOnly,
+  focusRange,
   colorPreset,
   hoveredNote,
   onNoteHover,
@@ -74,6 +76,11 @@ export function StringRow({
               showNoteNames={showNoteNames}
               showIntervals={showIntervals}
               rootOnly={rootOnly}
+              isInFocus={
+                !focusRange ||
+                (openNote.fret >= focusRange.min &&
+                  openNote.fret <= focusRange.max)
+              }
               colorPreset={colorPreset}
               isHovered={hoveredNote === noteKey}
               onHover={(hovering) => onNoteHover(hovering ? noteKey : null)}
@@ -114,6 +121,10 @@ export function StringRow({
                 showNoteNames={showNoteNames}
                 showIntervals={showIntervals}
                 rootOnly={rootOnly}
+                isInFocus={
+                  !focusRange ||
+                  (note.fret >= focusRange.min && note.fret <= focusRange.max)
+                }
                 colorPreset={colorPreset}
                 isHovered={hoveredNote === noteKey}
                 onHover={(hovering) => onNoteHover(hovering ? noteKey : null)}

@@ -12,6 +12,7 @@ interface NoteCellProps {
   showNoteNames: boolean
   showIntervals: boolean
   rootOnly: boolean
+  isInFocus: boolean
   colorPreset: ColorPreset
   isHovered: boolean
   onHover: (hovering: boolean) => void
@@ -28,6 +29,7 @@ export const NoteCell = memo<NoteCellProps>(
     showNoteNames,
     showIntervals,
     rootOnly,
+    isInFocus,
     colorPreset,
     isHovered,
     onHover,
@@ -50,9 +52,10 @@ export const NoteCell = memo<NoteCellProps>(
       <Button
         variant="ghost"
         className={cn(
-          "z-20 flex items-center justify-center rounded-full p-0 font-bold transition-all duration-150",
+          "z-20 flex items-center justify-center rounded-full p-0 font-bold transition-[opacity,transform,box-shadow] duration-300 ease-out",
           isRoot ? "ring-2 ring-offset-1" : "border",
-          isHovered && "scale-110"
+          isHovered && "scale-110",
+          !isInFocus && "opacity-20"
         )}
         style={{
           width: `${size * 2}px`,

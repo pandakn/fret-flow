@@ -13,6 +13,7 @@ interface FretboardProps {
   showNoteNames?: boolean
   showIntervals?: boolean
   rootOnly?: boolean
+  focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
   onNoteClick?: (note: FretNote) => void
   className?: string
@@ -92,6 +93,7 @@ export function Fretboard({
   showNoteNames = true,
   showIntervals = false,
   rootOnly = false,
+  focusRange,
   colorPreset,
   onNoteClick,
   className,
@@ -143,6 +145,7 @@ export function Fretboard({
               showNoteNames={showNoteNames}
               showIntervals={showIntervals}
               rootOnly={rootOnly}
+              focusRange={focusRange}
               colorPreset={colorPreset}
               hoveredNote={hoveredNote}
               onNoteHover={setHoveredNote}

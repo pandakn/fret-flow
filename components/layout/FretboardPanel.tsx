@@ -9,7 +9,7 @@ interface FretboardPanelProps {
   root: NoteName
   scaleId: string
   tuningId: string
-  fretRange: { min: number; max: number }
+  focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
   showNoteNames: boolean
   showIntervals: boolean
@@ -20,7 +20,7 @@ export function FretboardPanel({
   root,
   scaleId,
   tuningId,
-  fretRange,
+  focusRange,
   colorPreset,
   showNoteNames,
   showIntervals,
@@ -30,7 +30,7 @@ export function FretboardPanel({
     root,
     scaleId,
     tuningId,
-    fretRange,
+    fretRange: { min: 0, max: 21 },
   })
 
   return (
@@ -42,6 +42,7 @@ export function FretboardPanel({
         showNoteNames={showNoteNames}
         showIntervals={showIntervals}
         rootOnly={rootOnly}
+        focusRange={focusRange}
       />
     </div>
   )
