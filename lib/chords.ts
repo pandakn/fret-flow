@@ -27,6 +27,10 @@ export const CHORDS: ChordType[] = [
   chord("sus4", "Sus4", "sus4", [5, 2, 5], ["R", "4", "5"]),
 ]
 
+/** Returns chord types made up of exactly three distinct chord tones. */
+export const getTriadChordTypes = (): ChordType[] =>
+  CHORDS.filter((chordType) => chordType.intervals.length === 3)
+
 export const getChordById = (id: string): ChordType | undefined =>
   CHORDS.find((chordType) => chordType.id === id)
 

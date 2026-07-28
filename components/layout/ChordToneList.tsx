@@ -25,9 +25,14 @@ const INTERVAL_LABELS: Record<IntervalName, string> = {
 interface ChordToneListProps {
   root: NoteName
   chordId: string
+  label?: string
 }
 
-export function ChordToneList({ root, chordId }: ChordToneListProps) {
+export function ChordToneList({
+  root,
+  chordId,
+  label = "Chord",
+}: ChordToneListProps) {
   const chord = getChordById(chordId)
   if (!chord) return null
 
@@ -45,7 +50,7 @@ export function ChordToneList({ root, chordId }: ChordToneListProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Chord tones
+        {label} tones
       </div>
       <div className="flex flex-col gap-0.5">
         {chord.intervals.map((interval, index) => {

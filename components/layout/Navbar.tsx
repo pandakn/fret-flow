@@ -3,14 +3,21 @@
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { FretFlowLogo } from "@/components/brand/FretFlowLogo"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-export type ExplorerMode = "scales" | "modes" | "chords" | "arpeggios"
+export type ExplorerMode =
+  | "scales"
+  | "modes"
+  | "chords"
+  | "triads"
+  | "arpeggios"
 
 const NAV_PILLS: { label: string; mode: ExplorerMode }[] = [
   { label: "Scales", mode: "scales" },
   { label: "Modes", mode: "modes" },
   { label: "Chords", mode: "chords" },
+  { label: "Triads", mode: "triads" },
   { label: "Arpeggios", mode: "arpeggios" },
 ]
 
@@ -43,8 +50,11 @@ export function Navbar({ mode, onModeChange }: NavbarProps) {
 
           <nav className="flex items-center gap-0.5">
             {NAV_PILLS.map((pill) => (
-              <button
+              <Button
                 key={pill.mode}
+                type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => onModeChange(pill.mode)}
                 className={cn(
                   "rounded-full px-3.5 py-1.5 text-[11px] transition-colors",
@@ -56,7 +66,7 @@ export function Navbar({ mode, onModeChange }: NavbarProps) {
                 aria-pressed={mode === pill.mode}
               >
                 {pill.label}
-              </button>
+              </Button>
             ))}
           </nav>
         </div>

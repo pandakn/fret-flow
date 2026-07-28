@@ -1,15 +1,22 @@
 "use client"
 
-import { CHORDS } from "@/lib/chords"
+import { CHORDS, type ChordType } from "@/lib/chords"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 interface ChordTypeSelectorProps {
   value: string
   onChange: (chordId: string) => void
+  chords?: readonly ChordType[]
+  label?: string
 }
 
-export function ChordTypeSelector({ value, onChange }: ChordTypeSelectorProps) {
+export function ChordTypeSelector({
+  value,
+  onChange,
+  chords = CHORDS,
+  label = "Chord",
+}: ChordTypeSelectorProps) {
   return (
     <section
       className="flex min-h-0 flex-1 flex-col"
@@ -23,11 +30,11 @@ export function ChordTypeSelector({ value, onChange }: ChordTypeSelectorProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        <span>Chord</span>
-        <span>{CHORDS.length}</span>
+        <span>{label}</span>
+        <span>{chords.length}</span>
       </div>
       <div className="flex min-h-0 flex-col gap-1 overflow-y-auto">
-        {CHORDS.map((chord) => {
+        {chords.map((chord) => {
           const isSelected = value === chord.id
           return (
             <Button

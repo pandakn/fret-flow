@@ -4,9 +4,13 @@ import type { ChordVoicing } from "@/lib/chord-voicings"
 
 interface ChordVoicingSummaryProps {
   voicing?: ChordVoicing
+  label?: string
 }
 
-export function ChordVoicingSummary({ voicing }: ChordVoicingSummaryProps) {
+export function ChordVoicingSummary({
+  voicing,
+  label,
+}: ChordVoicingSummaryProps) {
   return (
     <section
       style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
@@ -19,7 +23,7 @@ export function ChordVoicingSummary({ voicing }: ChordVoicingSummaryProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Selected voicing
+        Selected{label ? ` ${label.toLowerCase()}` : ""} voicing
       </div>
       {voicing ? (
         <div className="flex flex-col gap-1.5">

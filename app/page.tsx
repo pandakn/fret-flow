@@ -35,13 +35,15 @@ import {
 } from "@/components/layout/ChordVoicingSelector"
 import { ChordVoicingSummary } from "@/components/layout/ChordVoicingSummary"
 import { getChordVoicings } from "@/lib/chord-voicings"
-import { getChordById } from "@/lib/chords"
+import { getChordById, getTriadChordTypes } from "@/lib/chords"
 import { resolveArpeggio, type ArpeggioDirection } from "@/lib/arpeggios"
 import { getModeById, getScaleById, MODES } from "@/lib/scales"
 import { getTuningById } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { useEffect, useMemo, useState } from "react"
+
+const TRIAD_CHORD_TYPES = getTriadChordTypes()
 
 export default function FretFlowPage() {
   const [root, setRoot] = useState<NoteName>("C")
@@ -50,6 +52,10 @@ export default function FretFlowPage() {
   const [chordId, setChordId] = useState("major")
   const [selectedVoicingId, setSelectedVoicingId] = useState<string>()
   const [chordDisplayMode, setChordDisplayMode] =
+    useState<ChordDisplayMode>("toneMap")
+  const [triadId, setTriadId] = useState("major")
+  const [selectedTriadVoicingId, setSelectedTriadVoicingId] = useState<string>()
+  const [triadDisplayMode, setTriadDisplayMode] =
     useState<ChordDisplayMode>("toneMap")
   const [arpeggioChordId, setArpeggioChordId] = useState("major")
   const [selectedArpeggioVoicingId, setSelectedArpeggioVoicingId] =
@@ -94,6 +100,7 @@ export default function FretFlowPage() {
     isScaleExplorer && focusMode ? POSITION_RANGES[position] : undefined
   const selectedScale = getScaleById(scaleId)
   const selectedChord = getChordById(chordId)
+  const selectedTriad = getChordById(triadId)
   const selectedArpeggioChord = getChordById(arpeggioChordId)
   const selectedTuning = getTuningById(tuningId)
   const chordVoicings = useMemo(
@@ -103,6 +110,14 @@ export default function FretFlowPage() {
   )
   const selectedVoicing = chordVoicings.find(
     (voicing) => voicing.id === selectedVoicingId
+  )
+  const triadVoicings = useMemo(
+    () =>
+      selectedTuning ? getChordVoicings(root, triadId, selectedTuning) : [],
+    [root, selectedTuning, triadId]
+  )
+  const selectedTriadVoicing = triadVoicings.find(
+    (voicing) => voicing.id === selectedTriadVoicingId
   )
   const arpeggioVoicings = useMemo(
     () =>
@@ -131,11 +146,17 @@ export default function FretFlowPage() {
       selectedTuning,
     ]
   )
+  const isChordExplorer = mode === "chords" || mode === "triads"
+  const selectedChordPattern = mode === "triads" ? selectedTriad : selectedChord
   const selectedPattern = isScaleExplorer
     ? selectedScale
     : mode === "arpeggios"
       ? selectedArpeggioChord
-      : selectedChord
+      : selectedChordPattern
+  const activeVoicing =
+    mode === "triads" ? selectedTriadVoicing : selectedVoicing
+  const activeChordDisplayMode =
+    mode === "triads" ? triadDisplayMode : chordDisplayMode
 
   useEffect(() => {
     // Root, chord, and tuning define the playable set, so always select its
@@ -143,6 +164,12 @@ export default function FretFlowPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedVoicingId(chordVoicings[0]?.id)
   }, [chordId, chordVoicings, root, tuningId])
+
+  useEffect(() => {
+    // Triad voicings are independent from the chord explorer selection.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedTriadVoicingId(triadVoicings[0]?.id)
+  }, [root, triadId, triadVoicings, tuningId])
 
   useEffect(() => {
     // Arpeggio voicings are independent from the chord explorer selection.
@@ -192,8 +219,22 @@ export default function FretFlowPage() {
             />
           ) : (
             <ChordTypeSelector
-              value={mode === "arpeggios" ? arpeggioChordId : chordId}
-              onChange={mode === "arpeggios" ? setArpeggioChordId : setChordId}
+              value={
+                mode === "arpeggios"
+                  ? arpeggioChordId
+                  : mode === "triads"
+                    ? triadId
+                    : chordId
+              }
+              onChange={
+                mode === "arpeggios"
+                  ? setArpeggioChordId
+                  : mode === "triads"
+                    ? setTriadId
+                    : setChordId
+              }
+              chords={mode === "triads" ? TRIAD_CHORD_TYPES : undefined}
+              label={mode === "triads" ? "Triad" : undefined}
             />
           )}
           <TuningSelector value={tuningId} onChange={setTuningId} />
@@ -228,7 +269,8 @@ export default function FretFlowPage() {
           ) : (
             <ChordInfo
               root={root}
-              chordId={chordId}
+              chordId={mode === "triads" ? triadId : chordId}
+              titleSuffix={mode === "triads" ? "Triad" : undefined}
               colorPreset={colorPreset}
               onColorPresetChange={setColorPreset}
             />
@@ -253,15 +295,17 @@ export default function FretFlowPage() {
             showNoteNames={showNoteNames}
             showIntervals={showIntervals}
             rootOnly={rootOnly}
-            selectedVoicing={mode === "chords" ? selectedVoicing : undefined}
-            shapeFocus={mode === "chords" && chordDisplayMode === "shapeFocus"}
+            selectedVoicing={isChordExplorer ? activeVoicing : undefined}
+            shapeFocus={
+              isChordExplorer && activeChordDisplayMode === "shapeFocus"
+            }
             arpeggio={mode === "arpeggios" ? resolvedArpeggio : undefined}
           />
 
           <Legend
             activeIntervals={
-              mode === "chords"
-                ? (selectedChord?.intervals ?? [])
+              isChordExplorer
+                ? (selectedChordPattern?.intervals ?? [])
                 : mode === "arpeggios"
                   ? (selectedArpeggioChord?.intervals ?? [])
                   : undefined
@@ -284,11 +328,20 @@ export default function FretFlowPage() {
             />
           ) : (
             <ChordVoicingSelector
-              voicings={chordVoicings}
-              value={selectedVoicingId}
-              onChange={setSelectedVoicingId}
-              displayMode={chordDisplayMode}
-              onDisplayModeChange={setChordDisplayMode}
+              voicings={mode === "triads" ? triadVoicings : chordVoicings}
+              value={
+                mode === "triads" ? selectedTriadVoicingId : selectedVoicingId
+              }
+              onChange={
+                mode === "triads"
+                  ? setSelectedTriadVoicingId
+                  : setSelectedVoicingId
+              }
+              displayMode={activeChordDisplayMode}
+              onDisplayModeChange={
+                mode === "triads" ? setTriadDisplayMode : setChordDisplayMode
+              }
+              label={mode === "triads" ? "Triad" : undefined}
             />
           )}
         </main>
@@ -321,8 +374,15 @@ export default function FretFlowPage() {
             </>
           ) : (
             <>
-              <ChordToneList root={root} chordId={chordId} />
-              <ChordVoicingSummary voicing={selectedVoicing} />
+              <ChordToneList
+                root={root}
+                chordId={mode === "triads" ? triadId : chordId}
+                label={mode === "triads" ? "Triad" : undefined}
+              />
+              <ChordVoicingSummary
+                voicing={activeVoicing}
+                label={mode === "triads" ? "Triad" : undefined}
+              />
             </>
           )}
         </CollapsiblePanel>

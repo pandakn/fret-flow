@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { describe, test } from "node:test"
-import { CHORDS, getChordNotes } from "../lib/chords"
+import { CHORDS, getChordNotes, getTriadChordTypes } from "../lib/chords"
 import type { NoteName } from "../types/music"
 
 const expectedNotes: Record<NoteName, Record<string, string[]>> = {
@@ -71,6 +71,24 @@ describe("chord catalog", () => {
         12
       )
       assert.equal(chord.intervals.length, chord.formula.length)
+    }
+  })
+
+  test("returns every three-tone chord type as a triad", () => {
+    const triads = getTriadChordTypes()
+
+    assert.deepEqual(
+      triads.map((chord) => chord.id),
+      ["major", "minor", "diminished", "augmented", "sus2", "sus4"]
+    )
+
+    for (const triad of triads) {
+      assert.equal(triad.intervals.length, 3)
+      assert.equal(triad.formula.length, 3)
+      assert.equal(
+        triad.formula.reduce((total, step) => total + step, 0),
+        12
+      )
     }
   })
 

@@ -13,6 +13,7 @@ interface ChordVoicingSelectorProps {
   onChange: (voicingId: string) => void
   displayMode: ChordDisplayMode
   onDisplayModeChange: (mode: ChordDisplayMode) => void
+  label?: string
 }
 
 export function ChordVoicingSelector({
@@ -21,6 +22,7 @@ export function ChordVoicingSelector({
   onChange,
   displayMode,
   onDisplayModeChange,
+  label = "Chord",
 }: ChordVoicingSelectorProps) {
   return (
     <section
@@ -45,7 +47,7 @@ export function ChordVoicingSelector({
             padding: "2px",
           }}
           role="group"
-          aria-label="Chord map display"
+          aria-label={`${label} map display`}
         >
           {(
             [

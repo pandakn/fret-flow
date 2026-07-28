@@ -8,6 +8,7 @@ import { ColorPresetPicker } from "./ColorPresetPicker"
 interface ChordInfoProps {
   root: NoteName
   chordId: string
+  titleSuffix?: string
   colorPreset: ColorPreset
   onColorPresetChange: (preset: ColorPreset) => void
 }
@@ -15,6 +16,7 @@ interface ChordInfoProps {
 export function ChordInfo({
   root,
   chordId,
+  titleSuffix,
   colorPreset,
   onColorPresetChange,
 }: ChordInfoProps) {
@@ -39,6 +41,7 @@ export function ChordInfo({
           style={{ color: "var(--text)" }}
         >
           {chordName} {chord.name}
+          {titleSuffix ? ` ${titleSuffix}` : ""}
         </h1>
         <p
           className="mt-[3px] text-[10px]"
