@@ -5,6 +5,7 @@ import { useFretboard } from "@/components/fretboard/hooks/useFretboard"
 import { useGuitarSound } from "@/components/fretboard/hooks/useGuitarSound"
 import type { ChordVoicing } from "@/lib/chord-voicings"
 import type { ResolvedArpeggio } from "@/lib/arpeggios"
+import { EXPLORER_FRET_RANGE } from "@/lib/fretboard"
 import { getStringFrequencyAtFret, getTuningById } from "@/lib/tunings"
 import type { FretNote, NoteName, TonalPattern } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
@@ -41,7 +42,7 @@ export function FretboardPanel({
     root,
     pattern,
     tuningId,
-    fretRange: { min: 0, max: 21 },
+    fretRange: EXPLORER_FRET_RANGE,
   })
   const { playNote } = useGuitarSound()
   const tuning = getTuningById(tuningId)

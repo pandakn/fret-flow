@@ -1,9 +1,6 @@
 "use client"
 
-import {
-  getIntervalFamily,
-  INTERVAL_FAMILY_COLORS,
-} from "@/lib/colors"
+import { getIntervalFamily, INTERVAL_FAMILY_COLORS } from "@/lib/colors"
 import type { IntervalName } from "@/types/music"
 
 const SCALE_ITEMS: { family: 1 | 2 | 3 | 4; label: string }[] = [

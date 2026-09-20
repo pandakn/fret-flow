@@ -131,12 +131,17 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
     const inputVersion = inputVersionRef.current
     let timer: ReturnType<typeof setTimeout> | null = null
     let cancelled = false
+    let tone: Awaited<ReturnType<typeof startGuitarAudio>> | null = null
     let sampler: Awaited<ReturnType<typeof getGuitarSampler>> | null = null
+    let noteIndex = 0
+    const noteDuration = Math.min(Math.max(beat * 1.4, 0.4), 1.5)
 
     const finish = () => {
-      sampler?.releaseAll()
       if (cancelled || activeSessionRef.current?.id !== sessionId) return
 
+      if (timer) clearTimeout(timer)
+      timer = null
+      sampler?.releaseAll()
       activeSessionRef.current = null
       if (loopRef.current && inputVersionRef.current === inputVersion) {
         startRef.current?.()
@@ -145,9 +150,34 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
       setPlaying(false)
     }
 
+    const playNextNote = () => {
+      if (
+        cancelled ||
+        activeSessionRef.current?.id !== sessionId ||
+        !sampler ||
+        !tone
+      ) {
+        return
+      }
+
+      sampler.triggerAttackRelease(
+        freqs[noteIndex],
+        noteDuration,
+        tone.now() + 0.05
+      )
+      noteIndex += 1
+
+      if (noteIndex < freqs.length) {
+        timer = setTimeout(playNextNote, beat * 1000)
+      } else {
+        timer = setTimeout(finish, (noteDuration + 0.1) * 1000)
+      }
+    }
+
     const stopSession = () => {
       cancelled = true
       if (timer) clearTimeout(timer)
+      timer = null
       sampler?.releaseAll()
     }
 
@@ -157,26 +187,14 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
 
     void (async () => {
       try {
-        const tone = await startGuitarAudio()
+        tone = await startGuitarAudio()
         if (cancelled || activeSessionRef.current?.id !== sessionId) return
         sampler = await getGuitarSampler(tone)
         if (cancelled || activeSessionRef.current?.id !== sessionId) {
-          sampler.releaseAll()
           return
         }
 
-        let time = tone.now() + 0.05
-        freqs.forEach((frequency) => {
-          sampler?.triggerAttackRelease(
-            frequency,
-            Math.min(Math.max(beat * 1.4, 0.4), 1.5),
-            time
-          )
-          time += beat
-        })
-
-        const totalDuration = (time - tone.now() + 0.1) * 1000
-        timer = setTimeout(finish, totalDuration)
+        playNextNote()
       } catch (error) {
         console.error("Unable to start guitar playback", error)
         if (activeSessionRef.current?.id !== sessionId) return

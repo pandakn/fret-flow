@@ -198,28 +198,30 @@ const SHAPES: Record<
 
 export const CHORD_VOICING_TEMPLATES: ChordVoicingTemplate[] = Object.entries(
   SHAPES
-).flatMap(([chordId, shapes]) => [
-  openShape(chordId, "E", "E open shape", shapes.open),
-  aShape(chordId, shapes.barre),
-  eShape(chordId, shapes.upNeck),
-]).concat([
-  openShape("major", "A", "A open shape", [null, 0, 2, 2, 2, 0]),
-  openShape("minor", "A", "Am open shape", [null, 0, 2, 2, 1, 0]),
-  openShape("dominant_7", "A", "A7 open shape", [null, 0, 2, 0, 2, 0]),
-  openShape("minor_7", "A", "Am7 open shape", [null, 0, 2, 0, 1, 0]),
-  openShape("major_7", "A", "Amaj7 open shape", [null, 0, 2, 1, 2, 0]),
-  openShape("major", "C", "C open shape", [null, 3, 2, 0, 1, 0]),
-  openShape("dominant_7", "C", "C7 open shape", [null, 3, 2, 3, 1, 0]),
-  openShape("major_7", "C", "Cmaj7 open shape", [null, 3, 2, 0, 0, 0]),
-  openShape("major", "D", "D open shape", [null, null, 0, 2, 3, 2]),
-  openShape("minor", "D", "Dm open shape", [null, null, 0, 2, 3, 1]),
-  openShape("dominant_7", "D", "D7 open shape", [null, null, 0, 2, 1, 2]),
-  openShape("minor_7", "D", "Dm7 open shape", [null, null, 0, 2, 1, 1]),
-  openShape("major_7", "D", "Dmaj7 open shape", [null, null, 0, 2, 2, 2]),
-  openShape("major", "G", "G open shape", [3, 2, 0, 0, 0, 3]),
-  openShape("dominant_7", "G", "G7 open shape", [3, 2, 0, 0, 0, 1]),
-  openShape("major_7", "G", "Gmaj7 open shape", [3, 2, 0, 0, 0, 2]),
-])
+)
+  .flatMap(([chordId, shapes]) => [
+    openShape(chordId, "E", "E open shape", shapes.open),
+    aShape(chordId, shapes.barre),
+    eShape(chordId, shapes.upNeck),
+  ])
+  .concat([
+    openShape("major", "A", "A open shape", [null, 0, 2, 2, 2, 0]),
+    openShape("minor", "A", "Am open shape", [null, 0, 2, 2, 1, 0]),
+    openShape("dominant_7", "A", "A7 open shape", [null, 0, 2, 0, 2, 0]),
+    openShape("minor_7", "A", "Am7 open shape", [null, 0, 2, 0, 1, 0]),
+    openShape("major_7", "A", "Amaj7 open shape", [null, 0, 2, 1, 2, 0]),
+    openShape("major", "C", "C open shape", [null, 3, 2, 0, 1, 0]),
+    openShape("dominant_7", "C", "C7 open shape", [null, 3, 2, 3, 1, 0]),
+    openShape("major_7", "C", "Cmaj7 open shape", [null, 3, 2, 0, 0, 0]),
+    openShape("major", "D", "D open shape", [null, null, 0, 2, 3, 2]),
+    openShape("minor", "D", "Dm open shape", [null, null, 0, 2, 3, 1]),
+    openShape("dominant_7", "D", "D7 open shape", [null, null, 0, 2, 1, 2]),
+    openShape("minor_7", "D", "Dm7 open shape", [null, null, 0, 2, 1, 1]),
+    openShape("major_7", "D", "Dmaj7 open shape", [null, null, 0, 2, 2, 2]),
+    openShape("major", "G", "G open shape", [3, 2, 0, 0, 0, 3]),
+    openShape("dominant_7", "G", "G7 open shape", [3, 2, 0, 0, 0, 1]),
+    openShape("major_7", "G", "Gmaj7 open shape", [3, 2, 0, 0, 0, 2]),
+  ])
 
 const getRootFret = (
   root: NoteName,
@@ -252,8 +254,7 @@ const getHighestFittingAnchorFret = (
     if (
       template.fretOffsets.every(
         (offset) =>
-          offset === null ||
-          isWithinRange(anchorFret + offset, fretRange)
+          offset === null || isWithinRange(anchorFret + offset, fretRange)
       )
     ) {
       return anchorFret

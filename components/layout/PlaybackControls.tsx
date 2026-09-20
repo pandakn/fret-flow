@@ -23,6 +23,11 @@ export function PlaybackControls({
   const [loop, setLoop] = useState(false)
   const { playing, toggle } = usePlayback({ root, sequence, bpm, loop })
   const isAvailable = sequence.length > 0
+  const buttonLabel = playing
+    ? "Stop"
+    : isAvailable
+      ? playLabel
+      : unavailableLabel
 
   return (
     <section
@@ -55,7 +60,7 @@ export function PlaybackControls({
         }}
         type="button"
         aria-pressed={playing}
-        aria-label={isAvailable ? playLabel : unavailableLabel}
+        aria-label={buttonLabel}
       >
         {playing ? (
           <span

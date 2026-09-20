@@ -1,9 +1,14 @@
 import assert from "node:assert/strict"
 import { describe, test } from "node:test"
 import { CHORDS } from "../lib/chords"
-import { getFretNotes } from "../lib/fretboard"
+import {
+  EXPLORER_FRET_RANGE,
+  getActiveFretNotesInPitchOrder,
+  getFretNotes,
+} from "../lib/fretboard"
 import { getScaleById } from "../lib/scales"
 import { getTuningById } from "../lib/tunings"
+import { getStringFrequencyAtFret } from "../lib/tunings"
 import { useFretboard } from "../components/fretboard/hooks/useFretboard"
 
 const standardTuning = getTuningById("standard")
@@ -62,7 +67,59 @@ describe("fretboard tone maps", () => {
       ["3", "5", "R"]
     )
     assert.equal(
-      activeNotes.filter((note) => note.note === "C").every((note) => note.isRoot),
+      activeNotes
+        .filter((note) => note.note === "C")
+        .every((note) => note.isRoot),
+      true
+    )
+  })
+
+  test("orders every highlighted scale position by sounding pitch", () => {
+    const major = getScaleById("major")
+
+    if (!major) {
+      throw new Error("Major scale is required for fretboard tests.")
+    }
+
+    const highlightedNotes = getFretNotes({
+      root: "C",
+      pattern: major,
+      tuning: standardTuning.strings,
+      fretRange: EXPLORER_FRET_RANGE,
+    }).filter((note) => note.isActive)
+    const orderedNotes = getActiveFretNotesInPitchOrder({
+      root: "C",
+      pattern: major,
+      tuning: standardTuning,
+    })
+
+    assert.equal(orderedNotes.length, highlightedNotes.length)
+    assert.deepEqual(
+      new Set(orderedNotes.map((note) => `${note.string}-${note.fret}`)),
+      new Set(highlightedNotes.map((note) => `${note.string}-${note.fret}`))
+    )
+    assert.equal(
+      orderedNotes.every((note, index) => {
+        if (index === 0) return true
+
+        const previous = orderedNotes[index - 1]
+        const previousFrequency = getStringFrequencyAtFret(
+          standardTuning,
+          previous.string,
+          previous.fret
+        )
+        const frequency = getStringFrequencyAtFret(
+          standardTuning,
+          note.string,
+          note.fret
+        )
+
+        return (
+          previousFrequency !== undefined &&
+          frequency !== undefined &&
+          previousFrequency <= frequency
+        )
+      }),
       true
     )
   })

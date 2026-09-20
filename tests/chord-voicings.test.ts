@@ -144,7 +144,10 @@ describe("chord voicings", () => {
     )
     assert.equal(
       isResolvedChordVoicingValid(
-        { ...voicing, barre: { ...voicing.barre, fret: voicing.barre.fret + 1 } },
+        {
+          ...voicing,
+          barre: { ...voicing.barre, fret: voicing.barre.fret + 1 },
+        },
         major,
         standardTuning
       ),

@@ -363,7 +363,7 @@ export default function FretFlowPage() {
               <IntervalList root={root} scaleId={scaleId} />
               <StatsGrid scaleId={scaleId} />
               <RelatedScales root={root} scaleId={scaleId} />
-              <Playback root={root} scaleId={scaleId} />
+              <Playback root={root} scaleId={scaleId} tuningId={tuningId} />
             </>
           ) : mode === "arpeggios" ? (
             <>
