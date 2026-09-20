@@ -25,15 +25,16 @@ Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 a
 | Utilities  | clsx, tailwind-merge, class-variance-authority |
 | Icons      | lucide-react                                   |
 | Theme      | next-themes                                    |
-| Audio      | Tone.js + recorded electric-guitar samples     |
+| Audio      | Tone.js + Emilyguitar electric-guitar samples |
 
 ## Getting Started
 
 ### Audio sample attribution
 
-The electric-guitar playback uses the `guitar-electric` recordings from
-[`nbrosowsky/tonejs-instruments`](https://github.com/nbrosowsky/tonejs-instruments),
-licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+The electric-guitar playback uses the open-source
+[`karoryfer.emilyguitar`](https://github.com/sfzinstruments/karoryfer.emilyguitar)
+recordings by Karoryfer Samples. The sample set is released under the
+[CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).
 
 ### Prerequisites
 
