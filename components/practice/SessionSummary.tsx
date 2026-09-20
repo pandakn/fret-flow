@@ -12,6 +12,10 @@ import {
   isChallengeGoalMet,
 } from "@/lib/practice/challenges"
 import { getNewMilestones } from "@/lib/practice/milestones"
+import {
+  evaluateFretboardStage,
+  getFretboardPathStage,
+} from "@/lib/practice/paths"
 import type { PracticeSession as PracticeSessionType } from "@/types/practice"
 import { usePracticeStore } from "./hooks/usePracticeStore"
 
@@ -64,6 +68,23 @@ export function SessionSummary({
     () =>
       getNewMilestones(document.sessions, document.acknowledgedMilestoneIds)[0]
   )
+  const pathMetadata =
+    session.exercise.kind === "fretboardRecall"
+      ? session.exercise.path
+      : undefined
+  const pathEvidence = pathMetadata
+    ? evaluateFretboardStage(
+        getFretboardPathStage(pathMetadata.stageId),
+        document.sessions
+      )
+    : undefined
+  const pathDoneLabel = pathEvidence
+    ? pathEvidence.passed
+      ? "Continue to next stage"
+      : pathMetadata?.checkpoint
+        ? "Review weak targets"
+        : "Back to path"
+    : doneLabel
 
   useEffect(() => {
     if (milestone) acknowledgeMilestone(milestone.id)
@@ -144,6 +165,30 @@ export function SessionSummary({
             </div>
           </section>
         ) : null}
+        {pathMetadata && pathEvidence ? (
+          <section
+            className="border-l-2 border-[var(--color-root)] bg-muted/35 px-5 py-4"
+            aria-labelledby="path-result-heading"
+          >
+            <h2 id="path-result-heading" className="font-semibold">
+              {pathEvidence.passed
+                ? "Stage mastered"
+                : pathMetadata.checkpoint
+                  ? "Checkpoint recorded"
+                  : "Path evidence updated"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {pathEvidence.masteredTargetIds.length} mastered ·{" "}
+              {pathEvidence.shakyTargetIds.length} shaky ·{" "}
+              {pathEvidence.reviewTargetIds.length} not yet covered
+            </p>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              {Math.round(pathEvidence.coverage * 100)}% coverage ·{" "}
+              {Math.round(pathEvidence.accuracy * 100)}% accuracy ·{" "}
+              {pathEvidence.sessionCount} measured sessions
+            </p>
+          </section>
+        ) : null}
         {milestone ? (
           <section className="border-y py-5 text-center" aria-live="polite">
             <Trophy
@@ -160,7 +205,7 @@ export function SessionSummary({
           </section>
         ) : null}
         <div className="flex justify-center">
-          <Button onClick={onDone}>{doneLabel}</Button>
+          <Button onClick={onDone}>{pathDoneLabel}</Button>
         </div>
       </CardContent>
     </Card>

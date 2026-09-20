@@ -14,6 +14,7 @@ import { PracticeCalendar } from "./PracticeCalendar"
 import { FretboardHeatmap } from "./FretboardHeatmap"
 import { PersonalBests } from "./PersonalBests"
 import { MasteryMilestones } from "./MasteryMilestones"
+import { FretboardPathProgress } from "./FretboardPathProgress"
 
 export function ProgressDashboard() {
   const { document, hydrated, exportData, importData } = usePracticeStore()
@@ -140,6 +141,17 @@ export function ProgressDashboard() {
         </CardHeader>
         <CardContent>
           <MasteryMilestones sessions={sessions} />
+        </CardContent>
+      </Card>
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle>Fretboard mastery path</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Durable progress from verified recall, coverage, and response time.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <FretboardPathProgress sessions={sessions} />
         </CardContent>
       </Card>
       <Card className="shadow-none">

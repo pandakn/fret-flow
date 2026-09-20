@@ -1,7 +1,9 @@
-import { CHROMATIC } from "@/lib/notes"
+import { CHROMATIC, getNoteAtFret } from "@/lib/notes"
+import { getTuningById } from "@/lib/tunings"
 import type {
   ConstructionExercise,
   ExerciseDefinition,
+  FretboardPromptDirection,
   FretboardRecallExercise,
   PracticeAttempt,
   PracticeTarget,
@@ -46,6 +48,7 @@ export const createDefaultExercise = (
         name: "Fretboard recall",
         description: "Locate notes and intervals without visual hints.",
         recall: "note",
+        promptDirection: "findPosition",
         root: "C",
         strings: [0, 1, 2, 3, 4, 5],
         fretRange: { min: 0, max: 12 },
@@ -133,21 +136,150 @@ export const createDefaultExercise = (
 const boundedIndex = (length: number, random: RandomSource): number =>
   Math.min(length - 1, Math.floor(Math.max(0, random()) * length))
 
-export type RecallPrompt = {
+type RecallPromptBase = {
   id: string
   prompt: string
   expected: NoteName
   target: PracticeTarget
 }
 
+export type FindPositionRecallPrompt = RecallPromptBase & {
+  direction: "findPosition"
+  string?: number
+}
+
+export type NamePositionRecallPrompt = RecallPromptBase & {
+  direction: "namePosition"
+  position: { string: number; fret: number }
+  choices: NoteName[]
+}
+
+export type RecallPrompt = FindPositionRecallPrompt | NamePositionRecallPrompt
+
+export type RecallPromptTarget = {
+  id: string
+  direction: FretboardPromptDirection
+  note: NoteName
+  string?: number
+  fret?: number
+  root?: NoteName
+  interval?: IntervalName
+}
+
+const shuffledNotes = (
+  expected: NoteName,
+  random: RandomSource
+): NoteName[] => {
+  const distractors = CHROMATIC.filter((note) => note !== expected)
+  for (let index = distractors.length - 1; index > 0; index -= 1) {
+    const next = boundedIndex(index + 1, random)
+    ;[distractors[index], distractors[next]] = [
+      distractors[next],
+      distractors[index],
+    ]
+  }
+  const choices = [expected, ...distractors.slice(0, 5)]
+  for (let index = choices.length - 1; index > 0; index -= 1) {
+    const next = boundedIndex(index + 1, random)
+    ;[choices[index], choices[next]] = [choices[next], choices[index]]
+  }
+  return choices
+}
+
 export const generateRecallPrompt = (
   exercise: FretboardRecallExercise,
   random: RandomSource = Math.random,
-  weakTargets: readonly PracticeTarget[] = []
+  weakTargets: readonly PracticeTarget[] = [],
+  explicitTarget?: RecallPromptTarget
 ): RecallPrompt => {
-  const weak = weakTargets.filter((target) => target.skill === "fretboardRecall")
+  if (explicitTarget?.direction === "namePosition") {
+    if (
+      explicitTarget.string === undefined ||
+      explicitTarget.fret === undefined
+    ) {
+      throw new Error("Name-position prompts require a fretboard coordinate")
+    }
+    return {
+      id: makeId("prompt"),
+      direction: "namePosition",
+      prompt: `Name the note at string ${explicitTarget.string + 1}, fret ${explicitTarget.fret}`,
+      expected: explicitTarget.note,
+      position: {
+        string: explicitTarget.string,
+        fret: explicitTarget.fret,
+      },
+      choices: shuffledNotes(explicitTarget.note, random),
+      target: {
+        skill: "fretboardRecall",
+        key: explicitTarget.id,
+        string: explicitTarget.string,
+        fret: explicitTarget.fret,
+        note: explicitTarget.note,
+        interval: explicitTarget.interval,
+      },
+    }
+  }
+
+  if (explicitTarget?.direction === "findPosition") {
+    const label = explicitTarget.interval
+      ? `${explicitTarget.interval} of ${explicitTarget.root ?? exercise.root}`
+      : explicitTarget.note
+    return {
+      id: makeId("prompt"),
+      direction: "findPosition",
+      prompt: `Find ${label}${explicitTarget.string === undefined ? "" : ` on string ${explicitTarget.string + 1}`}`,
+      expected: explicitTarget.note,
+      string: explicitTarget.string,
+      target: {
+        skill: "fretboardRecall",
+        key: explicitTarget.id,
+        string: explicitTarget.string,
+        note: explicitTarget.note,
+        interval: explicitTarget.interval,
+      },
+    }
+  }
+
+  const direction =
+    exercise.promptDirection === "mixed"
+      ? random() < 0.5
+        ? "findPosition"
+        : "namePosition"
+      : exercise.promptDirection
+
+  if (direction === "namePosition") {
+    const string =
+      exercise.strings[boundedIndex(exercise.strings.length, random)]
+    const fret =
+      exercise.fretRange.min +
+      boundedIndex(exercise.fretRange.max - exercise.fretRange.min + 1, random)
+    const tuning = getTuningById("standard")
+    if (!tuning) throw new Error("Standard tuning is required for recall")
+    const expected = getNoteAtFret(tuning.strings[string], fret)
+    return {
+      id: makeId("prompt"),
+      direction: "namePosition",
+      prompt: `Name the note at string ${string + 1}, fret ${fret}`,
+      expected,
+      position: { string, fret },
+      choices: shuffledNotes(expected, random),
+      target: {
+        skill: "fretboardRecall",
+        key: `position:${string}-${fret}`,
+        string,
+        fret,
+        note: expected,
+      },
+    }
+  }
+
+  const weak = weakTargets.filter(
+    (target) => target.skill === "fretboardRecall"
+  )
   const useWeak = weak.length > 0 && random() < 0.6
-  const weakTarget = useWeak ? weak[boundedIndex(weak.length, random)] : undefined
+  const weakTarget = useWeak
+    ? weak[boundedIndex(weak.length, random)]
+    : undefined
   const note =
     weakTarget?.note ?? CHROMATIC[boundedIndex(CHROMATIC.length, random)]
   const interval =
@@ -168,6 +300,7 @@ export const generateRecallPrompt = (
 
   return {
     id: makeId("prompt"),
+    direction: "findPosition",
     prompt: `Find ${label}`,
     expected,
     target: {
@@ -188,6 +321,7 @@ export const createAttempt = ({
   verification = "app-verified",
   bpm,
   timingOffsetMs,
+  correct,
 }: {
   prompt: string
   answer: string
@@ -197,12 +331,13 @@ export const createAttempt = ({
   verification?: PracticeAttempt["verification"]
   bpm?: number
   timingOffsetMs?: number
+  correct?: boolean
 }): PracticeAttempt => ({
   id: makeId("attempt"),
   prompt,
   answer,
   expected,
-  correct: answer === expected,
+  correct: correct ?? answer === expected,
   responseMs: Math.max(0, Math.round(responseMs)),
   createdAt: nowIso(),
   verification,

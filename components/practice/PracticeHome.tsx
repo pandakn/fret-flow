@@ -25,6 +25,7 @@ import { PracticeSession } from "./PracticeSession"
 import { RoutineBuilder } from "./RoutineBuilder"
 import { FretboardRecallSetup } from "./FretboardRecallSetup"
 import { DailyMissionBoard } from "./DailyMissionBoard"
+import { FretboardMasteryPath } from "./FretboardMasteryPath"
 
 const EXERCISES: {
   kind: ExerciseKind
@@ -169,6 +170,11 @@ export function PracticeHome() {
       </header>
 
       <DailyMissionBoard onStart={startMission} />
+
+      <FretboardMasteryPath
+        sessions={document.sessions}
+        onStart={startExercise}
+      />
 
       <RoutineBuilder onStart={startRoutine} />
 

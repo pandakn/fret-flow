@@ -1,6 +1,6 @@
 import type { IntervalName, NoteName } from "@/types/music"
 
-export const PRACTICE_SCHEMA_VERSION = 2 as const
+export const PRACTICE_SCHEMA_VERSION = 3 as const
 
 export type ExerciseKind =
   | "fretboardRecall"
@@ -68,13 +68,32 @@ type ExerciseBase = {
   createdAt: string
 }
 
+export type FretboardPromptDirection = "findPosition" | "namePosition"
+export type FretboardPromptMode = FretboardPromptDirection | "mixed"
+
+export type FretboardPathStageId =
+  | "landmarks"
+  | "natural-map"
+  | "chromatic-map"
+  | "interval-map"
+  | "position-links"
+
+export type PracticePathMetadata = {
+  pathId: "fretboard"
+  stageId: FretboardPathStageId
+  checkpoint: boolean
+  targetIds: string[]
+}
+
 export type FretboardRecallExercise = ExerciseBase & {
   kind: "fretboardRecall"
   recall: "note" | "root" | "interval"
+  promptDirection: FretboardPromptMode
   root: NoteName
   strings: number[]
   fretRange: { min: number; max: number }
   questionCount: number
+  path?: PracticePathMetadata
 }
 
 export type TempoLadderExercise = ExerciseBase & {

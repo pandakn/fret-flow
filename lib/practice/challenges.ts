@@ -170,6 +170,7 @@ const makeExercise = (
           name: `${root} note hunt`,
           description: "Find the target before the board gives it away.",
           recall: band >= 2 ? "interval" : band === 1 ? "root" : "note",
+          promptDirection: "findPosition",
           root,
           strings,
           fretRange,

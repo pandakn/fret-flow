@@ -21,6 +21,7 @@ interface StringRowProps {
   onNoteClick: (note: FretNote) => void
   quizMode: boolean
   quizFeedback?: { key: string; status: "correct" | "incorrect" }
+  quizTarget?: { string: number; fret: number }
 }
 
 const FRETLINE_BY_PRESET: Record<ColorPreset, string> = {
@@ -109,6 +110,7 @@ export function StringRow({
   onNoteClick,
   quizMode,
   quizFeedback,
+  quizTarget,
 }: StringRowProps) {
   const stringNum = stringIndex + 1
   const stringThickness = 0.5 + stringIndex * 0.25
@@ -164,15 +166,23 @@ export function StringRow({
                 ? quizFeedback.status
                 : "idle"
             }
+            isQuizTarget={
+              quizTarget?.string === openNote.string &&
+              quizTarget.fret === openNote.fret
+            }
+            quizTargetOnly={quizTarget !== undefined}
             aria-label={
-              quizMode
-                ? `Hidden answer, fret ${openNote.fret} string ${stringNum}`
-                : getArpeggioAriaLabel(
-                    openNote,
-                    stringNum,
-                    openArpeggioStepIndexes,
-                    arpeggioStepCount
-                  )
+              quizTarget?.string === openNote.string &&
+              quizTarget.fret === openNote.fret
+                ? `Target position, fret ${openNote.fret} string ${openNote.string + 1}`
+                : quizMode
+                  ? `Hidden answer, fret ${openNote.fret} string ${stringNum}`
+                  : getArpeggioAriaLabel(
+                      openNote,
+                      stringNum,
+                      openArpeggioStepIndexes,
+                      arpeggioStepCount
+                    )
             }
           />
         ) : null}
@@ -233,15 +243,23 @@ export function StringRow({
                     ? quizFeedback.status
                     : "idle"
                 }
+                isQuizTarget={
+                  quizTarget?.string === note.string &&
+                  quizTarget.fret === note.fret
+                }
+                quizTargetOnly={quizTarget !== undefined}
                 aria-label={
-                  quizMode
-                    ? `Hidden answer, fret ${note.fret} string ${stringNum}`
-                    : getArpeggioAriaLabel(
-                        note,
-                        stringNum,
-                        arpeggioStepIndexes,
-                        arpeggioStepCount
-                      )
+                  quizTarget?.string === note.string &&
+                  quizTarget.fret === note.fret
+                    ? `Target position, fret ${note.fret} string ${note.string + 1}`
+                    : quizMode
+                      ? `Hidden answer, fret ${note.fret} string ${stringNum}`
+                      : getArpeggioAriaLabel(
+                          note,
+                          stringNum,
+                          arpeggioStepIndexes,
+                          arpeggioStepCount
+                        )
                 }
               />
             </div>

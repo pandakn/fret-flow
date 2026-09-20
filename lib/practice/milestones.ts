@@ -4,6 +4,7 @@ import type {
   PracticeSession,
 } from "@/types/practice"
 import { summarizeSession } from "./scoring"
+import { getFretboardPathProgress } from "./paths"
 
 const completed = (sessions: readonly PracticeSession[]) =>
   sessions.filter((session) => session.status === "completed")
@@ -51,8 +52,20 @@ export const getMilestoneProgress = (
       return bpm === null ? [] : [bpm]
     })
   )
+  const fretboardPath = getFretboardPathProgress(done)
 
   const definitions: MilestoneProgress[] = [
+    {
+      id: "fretboard-path-foundations",
+      title: "Fretboard foundations",
+      description: "Master the landmark-notes stage with verified recall.",
+      skill: "fretboardRecall",
+      current: fretboardPath.earnedStageIds.includes("landmarks") ? 1 : 0,
+      target: 1,
+      unit: "count",
+      earned: false,
+      verifiedOnly: true,
+    },
     {
       id: "recall-90",
       title: "Clear coordinates",

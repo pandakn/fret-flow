@@ -19,6 +19,37 @@ export const createEmptyPracticeDocument = (): PracticeDocument => ({
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
+const PATH_STAGE_IDS = new Set([
+  "landmarks",
+  "natural-map",
+  "chromatic-map",
+  "interval-map",
+  "position-links",
+])
+
+const hasValidPathMetadata = (exercise: Record<string, unknown>) => {
+  if (exercise.path === undefined) return true
+  if (!isRecord(exercise.path)) return false
+  return (
+    exercise.path.pathId === "fretboard" &&
+    typeof exercise.path.stageId === "string" &&
+    PATH_STAGE_IDS.has(exercise.path.stageId) &&
+    typeof exercise.path.checkpoint === "boolean" &&
+    Array.isArray(exercise.path.targetIds) &&
+    exercise.path.targetIds.every((targetId) => typeof targetId === "string")
+  )
+}
+
+const isExercise = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.kind === "string" &&
+  hasValidPathMetadata(value)
+
+const isRoutine = (value: unknown) =>
+  isRecord(value) &&
+  Array.isArray(value.blocks) &&
+  value.blocks.every((block) => isRecord(block) && isExercise(block.exercise))
+
 const isSession = (value: unknown): value is PracticeSession =>
   isRecord(value) &&
   typeof value.id === "string" &&
@@ -26,8 +57,7 @@ const isSession = (value: unknown): value is PracticeSession =>
   typeof value.updatedAt === "string" &&
   typeof value.elapsedMs === "number" &&
   Array.isArray(value.attempts) &&
-  isRecord(value.exercise) &&
-  typeof value.exercise.kind === "string"
+  isExercise(value.exercise)
 
 export const validatePracticeDocument = (
   value: unknown
@@ -37,7 +67,9 @@ export const validatePracticeDocument = (
   if (value.version === PRACTICE_SCHEMA_VERSION) {
     if (
       !Array.isArray(value.savedExercises) ||
+      !value.savedExercises.every(isExercise) ||
       !Array.isArray(value.routines) ||
+      !value.routines.every(isRoutine) ||
       !Array.isArray(value.sessions) ||
       !value.sessions.every(isSession) ||
       !isRecord(value.dailyChallengeState) ||
@@ -52,6 +84,33 @@ export const validatePracticeDocument = (
       return null
     }
     return value as PracticeDocument
+  }
+
+  if (
+    value.version === 2 &&
+    Array.isArray(value.savedExercises) &&
+    Array.isArray(value.routines) &&
+    Array.isArray(value.sessions) &&
+    value.sessions.every(isSession) &&
+    isRecord(value.dailyChallengeState) &&
+    Array.isArray(value.acknowledgedMilestoneIds)
+  ) {
+    return {
+      version: PRACTICE_SCHEMA_VERSION,
+      savedExercises:
+        value.savedExercises as PracticeDocument["savedExercises"],
+      routines: value.routines as PracticeDocument["routines"],
+      sessions: value.sessions,
+      activeSessionId:
+        typeof value.activeSessionId === "string"
+          ? value.activeSessionId
+          : undefined,
+      dailyChallengeState:
+        value.dailyChallengeState as PracticeDocument["dailyChallengeState"],
+      acknowledgedMilestoneIds: value.acknowledgedMilestoneIds.filter(
+        (milestoneId): milestoneId is string => typeof milestoneId === "string"
+      ),
+    }
   }
 
   if (

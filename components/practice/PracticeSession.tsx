@@ -44,12 +44,16 @@ export function PracticeSession({
       }
     : undefined
   const practice = usePracticeSession(exercise, challenge)
+  const pathStage =
+    exercise.kind === "fretboardRecall" ? exercise.path : undefined
 
   if (!practice.session) {
     return (
       <div className="mx-auto flex min-h-[65vh] max-w-2xl flex-col items-center justify-center text-center">
         <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
-          Ready
+          {pathStage
+            ? `${pathStage.checkpoint ? "Mastery checkpoint" : "Path review"} · ${pathStage.stageId.replaceAll("-", " ")}`
+            : "Ready"}
         </p>
         <h1 className="mt-3 text-4xl font-semibold">{exercise.name}</h1>
         <p className="mt-4 max-w-lg text-muted-foreground">
@@ -130,6 +134,17 @@ export function PracticeSession({
             {formatChallengeGoal(mission.goal)}
           </span>
           <span className="text-muted-foreground">{mission.modifierLabel}</span>
+        </div>
+      ) : null}
+
+      {pathStage ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-[var(--color-root)] bg-muted/40 px-4 py-3 text-sm">
+          <span className="font-medium capitalize">
+            {pathStage.stageId.replaceAll("-", " ")}
+          </span>
+          <span className="text-muted-foreground">
+            {pathStage.checkpoint ? "Mastery checkpoint" : "Adaptive review"}
+          </span>
         </div>
       ) : null}
 

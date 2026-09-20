@@ -55,6 +55,8 @@ interface NoteCellProps {
   onNoteClick: (note: FretNote) => void
   quizMode: boolean
   quizState: "idle" | "correct" | "incorrect"
+  isQuizTarget: boolean
+  quizTargetOnly: boolean
   "aria-label": string
 }
 
@@ -82,6 +84,8 @@ export const NoteCell = memo<NoteCellProps>(
     onNoteClick,
     quizMode,
     quizState,
+    isQuizTarget,
+    quizTargetOnly,
     "aria-label": ariaLabel,
   }) => {
     const handleMouseEnter = useCallback(() => {
@@ -103,6 +107,7 @@ export const NoteCell = memo<NoteCellProps>(
 
     if (!isActive) return null
     if (rootOnly && !isRoot) return null
+    if (quizTargetOnly && !isQuizTarget) return null
 
     const isArpeggioPathTone = arpeggioStepIndexes !== undefined
     const arpeggioStepLabel = arpeggioStepIndexes?.join(" · ")
@@ -115,8 +120,8 @@ export const NoteCell = memo<NoteCellProps>(
           quizMode
             ? "h-8 w-8 border border-[var(--border-2)] bg-[var(--surface)] text-sm text-[var(--foreground)] hover:scale-110 hover:border-[var(--foreground)]"
             : isRoot
-            ? "h-10 w-10 text-xl ring-2 ring-offset-1"
-            : "h-9 w-9 border text-lg",
+              ? "h-10 w-10 text-xl ring-2 ring-offset-1"
+              : "h-9 w-9 border text-lg",
           !quizMode && isRoot
             ? "bg-(--color-deg1) text-[#faf9f7] ring-(--color-deg1)"
             : !quizMode && interval
@@ -133,11 +138,14 @@ export const NoteCell = memo<NoteCellProps>(
           quizState === "correct" &&
             "border-[var(--color-deg4)] bg-[var(--color-deg4)] text-white",
           quizState === "incorrect" &&
-            "border-[var(--destructive)] bg-[var(--destructive)] text-white"
+            "border-[var(--destructive)] bg-[var(--destructive)] text-white",
+          isQuizTarget &&
+            "h-10 w-10 border-2 border-[var(--color-root)] bg-[var(--color-root)]/20 text-[var(--foreground)] ring-2 ring-[var(--color-root)]/35 disabled:opacity-100"
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
+        disabled={quizTargetOnly}
         aria-label={
           isSelectedVoicingTone && selectedVoicingLabel
             ? `${ariaLabel}, selected ${selectedVoicingLabel} voicing`
@@ -145,9 +153,11 @@ export const NoteCell = memo<NoteCellProps>(
         }
       >
         {quizMode
-          ? quizState === "idle"
-            ? ""
-            : note
+          ? isQuizTarget
+            ? "?"
+            : quizState === "idle"
+              ? ""
+              : note
           : showIntervals && interval
             ? interval
             : showNoteNames

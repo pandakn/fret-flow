@@ -26,6 +26,7 @@ interface FretboardProps {
     key: string
     status: "correct" | "incorrect"
   }
+  quizTarget?: { string: number; fret: number }
   className?: string
 }
 
@@ -113,6 +114,7 @@ export function Fretboard({
   onNoteClick,
   quizMode = false,
   quizFeedback,
+  quizTarget,
   className,
 }: FretboardProps) {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null)
@@ -207,6 +209,7 @@ export function Fretboard({
               onNoteClick={onNoteClick ?? handleNoNoteClick}
               quizMode={quizMode}
               quizFeedback={quizFeedback}
+              quizTarget={quizTarget}
             />
           ))}
         </div>
