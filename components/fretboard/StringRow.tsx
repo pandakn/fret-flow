@@ -19,6 +19,8 @@ interface StringRowProps {
   hoveredNote: string | null
   onNoteHover: (key: string | null) => void
   onNoteClick: (note: FretNote) => void
+  quizMode: boolean
+  quizFeedback?: { key: string; status: "correct" | "incorrect" }
 }
 
 const FRETLINE_BY_PRESET: Record<ColorPreset, string> = {
@@ -105,6 +107,8 @@ export function StringRow({
   hoveredNote,
   onNoteHover,
   onNoteClick,
+  quizMode,
+  quizFeedback,
 }: StringRowProps) {
   const stringNum = stringIndex + 1
   const stringThickness = 0.5 + stringIndex * 0.25
@@ -154,12 +158,22 @@ export function StringRow({
             isHovered={hoveredNote === openNoteKey}
             onNoteHover={onNoteHover}
             onNoteClick={onNoteClick}
-            aria-label={getArpeggioAriaLabel(
-              openNote,
-              stringNum,
-              openArpeggioStepIndexes,
-              arpeggioStepCount
-            )}
+            quizMode={quizMode}
+            quizState={
+              quizFeedback?.key === `${openNote.string}-${openNote.fret}`
+                ? quizFeedback.status
+                : "idle"
+            }
+            aria-label={
+              quizMode
+                ? `Hidden answer, fret ${openNote.fret} string ${stringNum}`
+                : getArpeggioAriaLabel(
+                    openNote,
+                    stringNum,
+                    openArpeggioStepIndexes,
+                    arpeggioStepCount
+                  )
+            }
           />
         ) : null}
       </div>
@@ -213,12 +227,22 @@ export function StringRow({
                 isHovered={hoveredNote === noteKey}
                 onNoteHover={onNoteHover}
                 onNoteClick={onNoteClick}
-                aria-label={getArpeggioAriaLabel(
-                  note,
-                  stringNum,
-                  arpeggioStepIndexes,
-                  arpeggioStepCount
-                )}
+                quizMode={quizMode}
+                quizState={
+                  quizFeedback?.key === `${note.string}-${note.fret}`
+                    ? quizFeedback.status
+                    : "idle"
+                }
+                aria-label={
+                  quizMode
+                    ? `Hidden answer, fret ${note.fret} string ${stringNum}`
+                    : getArpeggioAriaLabel(
+                        note,
+                        stringNum,
+                        arpeggioStepIndexes,
+                        arpeggioStepCount
+                      )
+                }
               />
             </div>
           )

@@ -21,6 +21,11 @@ interface FretboardProps {
   shapeFocus?: boolean
   arpeggio?: ResolvedArpeggio
   onNoteClick?: (note: FretNote) => void
+  quizMode?: boolean
+  quizFeedback?: {
+    key: string
+    status: "correct" | "incorrect"
+  }
   className?: string
 }
 
@@ -106,6 +111,8 @@ export function Fretboard({
   shapeFocus = false,
   arpeggio,
   onNoteClick,
+  quizMode = false,
+  quizFeedback,
   className,
 }: FretboardProps) {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null)
@@ -198,6 +205,8 @@ export function Fretboard({
               hoveredNote={hoveredNote}
               onNoteHover={handleNoteHover}
               onNoteClick={onNoteClick ?? handleNoNoteClick}
+              quizMode={quizMode}
+              quizFeedback={quizFeedback}
             />
           ))}
         </div>

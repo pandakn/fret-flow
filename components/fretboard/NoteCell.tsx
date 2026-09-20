@@ -53,6 +53,8 @@ interface NoteCellProps {
   isHovered: boolean
   onNoteHover: (noteKey: string | null) => void
   onNoteClick: (note: FretNote) => void
+  quizMode: boolean
+  quizState: "idle" | "correct" | "incorrect"
   "aria-label": string
 }
 
@@ -78,6 +80,8 @@ export const NoteCell = memo<NoteCellProps>(
     isHovered,
     onNoteHover,
     onNoteClick,
+    quizMode,
+    quizState,
     "aria-label": ariaLabel,
   }) => {
     const handleMouseEnter = useCallback(() => {
@@ -108,12 +112,14 @@ export const NoteCell = memo<NoteCellProps>(
         variant="ghost"
         className={cn(
           "relative z-20 flex items-center justify-center rounded-full p-0 font-mono font-bold transition-[opacity,transform,box-shadow] duration-300 ease-out",
-          isRoot
+          quizMode
+            ? "h-8 w-8 border border-[var(--border-2)] bg-[var(--surface)] text-sm text-[var(--foreground)] hover:scale-110 hover:border-[var(--foreground)]"
+            : isRoot
             ? "h-10 w-10 text-xl ring-2 ring-offset-1"
             : "h-9 w-9 border text-lg",
-          isRoot
+          !quizMode && isRoot
             ? "bg-(--color-deg1) text-[#faf9f7] ring-(--color-deg1)"
-            : interval
+            : !quizMode && interval
               ? INTERVAL_COLOR_CLASSES[interval]
               : undefined,
           RING_OFFSET_CLASSES[colorPreset],
@@ -123,7 +129,11 @@ export const NoteCell = memo<NoteCellProps>(
           (!isInFocus ||
             (shapeFocus && !isSelectedVoicingTone) ||
             (arpeggioStepCount > 0 && !isArpeggioPathTone && !isRoot)) &&
-            "opacity-20"
+            "opacity-20",
+          quizState === "correct" &&
+            "border-[var(--color-deg4)] bg-[var(--color-deg4)] text-white",
+          quizState === "incorrect" &&
+            "border-[var(--destructive)] bg-[var(--destructive)] text-white"
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -134,7 +144,15 @@ export const NoteCell = memo<NoteCellProps>(
             : ariaLabel
         }
       >
-        {showIntervals && interval ? interval : showNoteNames ? note : ""}
+        {quizMode
+          ? quizState === "idle"
+            ? ""
+            : note
+          : showIntervals && interval
+            ? interval
+            : showNoteNames
+              ? note
+              : ""}
         {arpeggioStepLabel ? (
           <span
             aria-hidden="true"
