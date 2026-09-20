@@ -9,6 +9,10 @@ import {
 } from "react"
 import type { IntervalName, NoteName } from "@/types/music"
 import { CHROMATIC } from "@/lib/notes"
+import {
+  getGuitarSampler,
+  startGuitarAudio,
+} from "@/components/audio/guitarSound"
 
 export type PlaybackStep = {
   interval: IntervalName
@@ -44,10 +48,12 @@ const SEMITONE_BY_INTERVAL: Record<IntervalName, number> = {
   "7": 11,
 }
 
-const BASE_HZ = 220
+// Scale playback has no fret position to supply an octave, so keep its root
+// in a useful guitar register and derive every interval from concert pitch.
+const BASE_HZ = 261.6255653005986 // C4
 
 /**
- * Plays an ordered sequence of intervals using Web Audio. The caller owns how
+ * Plays an ordered sequence of intervals using a recorded electric guitar. The caller owns how
  * the sequence is resolved, which lets scales and voicing-based arpeggios
  * share the same transport behaviour.
  */
@@ -62,7 +68,6 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
     id: number
     stop: () => void
   } | null>(null)
-  const ctxRef = useRef<AudioContext | null>(null)
   const startRef = useRef<(() => void) | null>(null)
   const sessionIdRef = useRef(0)
   const inputVersionRef = useRef(0)
@@ -120,58 +125,16 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
         BASE_HZ * Math.pow(2, (rootIndex + SEMITONE_BY_INTERVAL[interval]) / 12)
     )
 
-    type AudioCtxCtor = typeof AudioContext
-    type WindowWithAudio = Window & {
-      AudioContext?: AudioCtxCtor
-      webkitAudioContext?: AudioCtxCtor
-    }
-    const win = window as unknown as WindowWithAudio
-    const AC = win.AudioContext ?? win.webkitAudioContext
-    if (!AC) return
-
-    const ctx = new AC()
-    ctxRef.current = ctx
     const beat = 60 / Math.max(40, Math.min(200, currentBpm))
     const sessionId = sessionIdRef.current + 1
     sessionIdRef.current = sessionId
     const inputVersion = inputVersionRef.current
-    let t = ctx.currentTime + 0.05
-    const oscs: { osc: OscillatorNode; gain: GainNode }[] = []
-
-    freqs.forEach((freq) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = freq
-      osc.type = "triangle"
-      gain.gain.setValueAtTime(0, t)
-      gain.gain.linearRampToValueAtTime(0.2, t + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.001, t + beat * 0.85)
-      osc.start(t)
-      osc.stop(t + beat)
-      oscs.push({ osc, gain })
-      t += beat
-    })
-
-    const totalDur = (t - ctx.currentTime + 0.1) * 1000
     let timer: ReturnType<typeof setTimeout> | null = null
     let cancelled = false
+    let sampler: Awaited<ReturnType<typeof getGuitarSampler>> | null = null
 
     const finish = () => {
-      try {
-        oscs.forEach(({ osc }) => {
-          try {
-            osc.stop()
-          } catch {
-            /* already stopped */
-          }
-        })
-        ctx.close()
-      } catch {
-        /* noop */
-      }
-      if (ctxRef.current === ctx) ctxRef.current = null
+      sampler?.releaseAll()
       if (cancelled || activeSessionRef.current?.id !== sessionId) return
 
       activeSessionRef.current = null
@@ -182,30 +145,47 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
       setPlaying(false)
     }
 
-    timer = setTimeout(finish, totalDur)
-
     const stopSession = () => {
       cancelled = true
       if (timer) clearTimeout(timer)
-      try {
-        oscs.forEach(({ osc }) => {
-          try {
-            osc.stop()
-          } catch {
-            /* already stopped */
-          }
-        })
-        ctx.close()
-      } catch {
-        /* noop */
-      }
-      if (ctxRef.current === ctx) ctxRef.current = null
+      sampler?.releaseAll()
     }
 
     activeSessionRef.current = { id: sessionId, stop: stopSession }
-
     setPlayingInput({ root: currentRoot, sequence: currentSequence })
     setPlaying(true)
+
+    void (async () => {
+      try {
+        const tone = await startGuitarAudio()
+        if (cancelled || activeSessionRef.current?.id !== sessionId) return
+        sampler = await getGuitarSampler(tone)
+        if (cancelled || activeSessionRef.current?.id !== sessionId) {
+          sampler.releaseAll()
+          return
+        }
+
+        let time = tone.now() + 0.05
+        freqs.forEach((frequency) => {
+          sampler?.triggerAttackRelease(
+            frequency,
+            Math.min(Math.max(beat * 1.4, 0.4), 1.5),
+            time
+          )
+          time += beat
+        })
+
+        const totalDuration = (time - tone.now() + 0.1) * 1000
+        timer = setTimeout(finish, totalDuration)
+      } catch (error) {
+        console.error("Unable to start guitar playback", error)
+        if (activeSessionRef.current?.id !== sessionId) return
+
+        activeSessionRef.current = null
+        setPlaying(false)
+        setPlayingInput(null)
+      }
+    })()
   }, [])
 
   useLayoutEffect(() => {

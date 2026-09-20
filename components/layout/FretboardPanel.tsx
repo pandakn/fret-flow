@@ -2,10 +2,13 @@
 
 import { Fretboard } from "@/components/fretboard/Fretboard"
 import { useFretboard } from "@/components/fretboard/hooks/useFretboard"
+import { useGuitarSound } from "@/components/fretboard/hooks/useGuitarSound"
 import type { ChordVoicing } from "@/lib/chord-voicings"
 import type { ResolvedArpeggio } from "@/lib/arpeggios"
-import type { NoteName, TonalPattern } from "@/types/music"
+import { getStringFrequencyAtFret, getTuningById } from "@/lib/tunings"
+import type { FretNote, NoteName, TonalPattern } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
+import { useCallback } from "react"
 
 interface FretboardPanelProps {
   root: NoteName
@@ -40,6 +43,17 @@ export function FretboardPanel({
     tuningId,
     fretRange: { min: 0, max: 21 },
   })
+  const { playNote } = useGuitarSound()
+  const tuning = getTuningById(tuningId)
+  const handleNoteClick = useCallback(
+    (note: FretNote) => {
+      if (!tuning) return
+
+      const frequency = getStringFrequencyAtFret(tuning, note.string, note.fret)
+      if (frequency !== undefined) void playNote(frequency)
+    },
+    [playNote, tuning]
+  )
 
   return (
     <div className="flex flex-1 items-center justify-center">
@@ -54,6 +68,7 @@ export function FretboardPanel({
         selectedVoicing={selectedVoicing}
         shapeFocus={shapeFocus}
         arpeggio={arpeggio}
+        onNoteClick={handleNoteClick}
       />
     </div>
   )

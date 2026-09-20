@@ -12,6 +12,7 @@ Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 a
 - **Multiple Tunings** - Support for various guitar tunings
 - **Responsive Design** - Works seamlessly across desktop and mobile devices
 - **Dark Mode** - Built-in theme switching for comfortable viewing in any lighting
+- **Guitar Playback** - Hear fret clicks, scales, and arpeggios with a recorded electric-guitar sampler
 
 ## Tech Stack
 
@@ -24,8 +25,15 @@ Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 a
 | Utilities  | clsx, tailwind-merge, class-variance-authority |
 | Icons      | lucide-react                                   |
 | Theme      | next-themes                                    |
+| Audio      | Tone.js + recorded electric-guitar samples     |
 
 ## Getting Started
+
+### Audio sample attribution
+
+The electric-guitar playback uses the `guitar-electric` recordings from
+[`nbrosowsky/tonejs-instruments`](https://github.com/nbrosowsky/tonejs-instruments),
+licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 ### Prerequisites
 
