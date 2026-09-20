@@ -1,6 +1,6 @@
 import type { IntervalName, NoteName } from "@/types/music"
 
-export const PRACTICE_SCHEMA_VERSION = 1 as const
+export const PRACTICE_SCHEMA_VERSION = 2 as const
 
 export type ExerciseKind =
   | "fretboardRecall"
@@ -19,6 +19,46 @@ export type SessionStatus =
   | "paused"
   | "completed"
   | "abandoned"
+
+export type ChallengeSlot = "warmup" | "weakSpot" | "wildcard"
+export type ChallengeDifficulty = "steady" | "stretch" | "bold"
+
+export type ChallengeGoal =
+  | { metric: "accuracy"; target: number; baseline?: number }
+  | { metric: "responseTime"; target: number; baseline?: number }
+  | { metric: "timingVariability"; target: number; baseline?: number }
+  | {
+      metric: "cleanCount"
+      target: number
+      baseline?: number
+      label: "clean rounds" | "clean changes"
+    }
+  | { metric: "bpm"; target: number; baseline?: number }
+
+export type DailyMission = {
+  id: string
+  dayKey: string
+  slot: ChallengeSlot
+  title: string
+  description: string
+  reason: string
+  difficulty: ChallengeDifficulty
+  durationMinutes: number
+  modifierLabel: string
+  exercise: ExerciseDefinition
+  goal: ChallengeGoal
+}
+
+export type SessionChallenge = Pick<
+  DailyMission,
+  "id" | "dayKey" | "slot" | "title" | "goal" | "modifierLabel"
+>
+
+export type DailyChallengeState = {
+  dayKey: string
+  wildcardRerolls: number
+  wildcardSeed: number
+}
 
 type ExerciseBase = {
   id: string
@@ -44,6 +84,7 @@ export type TempoLadderExercise = ExerciseBase & {
   increment: number
   repetitionsPerLevel: number
   subdivision: 1 | 2 | 3 | 4
+  gapEveryBars?: number
 }
 
 export type TechniqueExercise = ExerciseBase & {
@@ -148,6 +189,7 @@ export type PracticeSession = {
   id: string
   exercise: ExerciseDefinition
   routineId?: string
+  challenge?: SessionChallenge
   status: SessionStatus
   startedAt: string
   updatedAt: string
@@ -190,10 +232,24 @@ export type PersonalBest = {
   verification: VerificationKind
 }
 
+export type MilestoneProgress = {
+  id: string
+  title: string
+  description: string
+  skill?: ExerciseKind
+  current: number
+  target: number
+  unit: "count" | "percent" | "bpm" | "milliseconds"
+  earned: boolean
+  verifiedOnly: boolean
+}
+
 export type PracticeDocument = {
   version: typeof PRACTICE_SCHEMA_VERSION
   savedExercises: ExerciseDefinition[]
   routines: RoutineDefinition[]
   sessions: PracticeSession[]
   activeSessionId?: string
+  dailyChallengeState: DailyChallengeState
+  acknowledgedMilestoneIds: string[]
 }

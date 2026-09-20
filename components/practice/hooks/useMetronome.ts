@@ -10,16 +10,18 @@ export function useMetronome({
   initialBpm = 80,
   subdivision = 1,
   beatsPerBar = 4,
+  initialGapEveryBars = 0,
 }: {
   initialBpm?: number
   subdivision?: number
   beatsPerBar?: number
+  initialGapEveryBars?: number
 } = {}) {
   const [bpm, setBpmState] = useState(clampBpm(initialBpm))
   const [playing, setPlaying] = useState(false)
   const [beat, setBeat] = useState(0)
   const [countingIn, setCountingIn] = useState(false)
-  const [gapEveryBars, setGapEveryBars] = useState(0)
+  const [gapEveryBars, setGapEveryBars] = useState(initialGapEveryBars)
   const contextRef = useRef<AudioContext | null>(null)
   const timerRef = useRef<number | null>(null)
   const nextNoteTimeRef = useRef(0)
@@ -69,7 +71,8 @@ export function useMetronome({
 
     const scheduler = () => {
       while (
-        nextNoteTimeRef.current < context.currentTime + SCHEDULE_AHEAD_SECONDS
+        nextNoteTimeRef.current <
+        context.currentTime + SCHEDULE_AHEAD_SECONDS
       ) {
         const index = noteIndexRef.current
         scheduleClick(nextNoteTimeRef.current, index)
@@ -77,13 +80,10 @@ export function useMetronome({
           0,
           (nextNoteTimeRef.current - context.currentTime) * 1000
         )
-        window.setTimeout(
-          () => {
-            setBeat(Math.floor(index / subdivision) % beatsPerBar)
-            if (index >= beatsPerBar * subdivision) setCountingIn(false)
-          },
-          delay
-        )
+        window.setTimeout(() => {
+          setBeat(Math.floor(index / subdivision) % beatsPerBar)
+          if (index >= beatsPerBar * subdivision) setCountingIn(false)
+        }, delay)
         nextNoteTimeRef.current += secondsPerSubdivision(bpm, subdivision)
         noteIndexRef.current += 1
       }

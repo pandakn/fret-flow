@@ -1,7 +1,11 @@
 import assert from "node:assert/strict"
 import { describe, test } from "node:test"
 import { createDefaultExercise } from "../lib/practice/exercises"
-import { getWeakTargets, nextTempo } from "../lib/practice/progression"
+import {
+  getDifficultyBand,
+  getWeakTargets,
+  nextTempo,
+} from "../lib/practice/progression"
 import type { PracticeSession } from "../types/practice"
 
 describe("practice progression", () => {
@@ -47,5 +51,10 @@ describe("practice progression", () => {
     if (exercise.kind !== "tempoLadder") throw new Error("Wrong exercise")
     assert.equal(nextTempo(exercise, 70, [true, true]), 75)
     assert.equal(nextTempo(exercise, 70, [false, false]), 65)
+  })
+
+  test("starts conservatively without enough comparable history", () => {
+    const exercise = createDefaultExercise("earTraining")
+    assert.equal(getDifficultyBand([], exercise), 0)
   })
 })

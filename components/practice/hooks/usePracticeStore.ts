@@ -7,12 +7,17 @@ import type {
   PracticeDocument,
   PracticeSession,
   RoutineDefinition,
+  SessionChallenge,
 } from "@/types/practice"
 
 export type PracticeStore = {
   document: PracticeDocument
   hydrated: boolean
-  startSession: (exercise: ExerciseDefinition, routineId?: string) => PracticeSession
+  startSession: (
+    exercise: ExerciseDefinition,
+    routineId?: string,
+    challenge?: SessionChallenge
+  ) => PracticeSession
   addAttempt: (sessionId: string, attempt: PracticeAttempt) => void
   setSessionStatus: (
     sessionId: string,
@@ -24,6 +29,8 @@ export type PracticeStore = {
   saveExercise: (exercise: ExerciseDefinition) => void
   removeExercise: (exerciseId: string) => void
   saveRoutine: (routine: RoutineDefinition) => void
+  rerollWildcard: (dayKey: string) => void
+  acknowledgeMilestone: (milestoneId: string) => void
   importData: (raw: string) => boolean
   exportData: () => string
 }
@@ -32,6 +39,7 @@ export const PracticeStoreContext = createContext<PracticeStore | null>(null)
 
 export function usePracticeStore(): PracticeStore {
   const store = useContext(PracticeStoreContext)
-  if (!store) throw new Error("usePracticeStore must be used inside PracticeProvider")
+  if (!store)
+    throw new Error("usePracticeStore must be used inside PracticeProvider")
   return store
 }

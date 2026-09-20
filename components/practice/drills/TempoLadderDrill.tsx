@@ -19,6 +19,7 @@ export function TempoLadderDrill({
   const metronome = useMetronome({
     initialBpm: exercise.startBpm,
     subdivision: exercise.subdivision,
+    initialGapEveryBars: exercise.gapEveryBars,
   })
   const [roundStartedAt, setRoundStartedAt] = useState(() => performance.now())
   const tapsRef = useRef<number[]>([])
@@ -55,17 +56,26 @@ export function TempoLadderDrill({
   return (
     <section className="mx-auto max-w-2xl space-y-8 text-center">
       <div>
-        <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">Tempo ladder</p>
-        <p className="mt-3 font-mono text-7xl font-bold tabular-nums">{metronome.bpm}</p>
+        <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          Tempo ladder
+        </p>
+        <p className="mt-3 font-mono text-7xl font-bold tabular-nums">
+          {metronome.bpm}
+        </p>
         <p className="text-sm text-muted-foreground">
-          {metronome.countingIn ? "Count in · " : "BPM · "}target {exercise.targetBpm}
+          {metronome.countingIn ? "Count in · " : "BPM · "}target{" "}
+          {exercise.targetBpm}
         </p>
       </div>
       <div className="flex justify-center gap-2" aria-label="Beat indicator">
         {Array.from({ length: 4 }, (_, index) => (
           <span
             key={index}
-            className={index === metronome.beat && metronome.playing ? "size-3 rounded-full bg-foreground" : "size-3 rounded-full bg-muted"}
+            className={
+              index === metronome.beat && metronome.playing
+                ? "size-3 rounded-full bg-foreground"
+                : "size-3 rounded-full bg-muted"
+            }
           />
         ))}
       </div>
@@ -79,28 +89,48 @@ export function TempoLadderDrill({
       <div className="grid gap-4 text-left sm:grid-cols-2">
         <label className="space-y-2 text-xs text-muted-foreground">
           <span>Click volume</span>
-          <Slider min={0} max={100} defaultValue={[22]} onValueChange={([value]) => metronome.setVolume(value / 100)} />
+          <Slider
+            min={0}
+            max={100}
+            defaultValue={[22]}
+            onValueChange={([value]) => metronome.setVolume(value / 100)}
+          />
         </label>
         <div className="flex items-end justify-center gap-2 sm:justify-end">
-          <Button variant="outline" onClick={tapTempo}>Tap tempo</Button>
+          <Button variant="outline" onClick={tapTempo}>
+            Tap tempo
+          </Button>
           <Button
             variant={metronome.gapEveryBars > 0 ? "default" : "outline"}
-            onClick={() => metronome.setGapEveryBars(metronome.gapEveryBars > 0 ? 0 : 4)}
+            onClick={() =>
+              metronome.setGapEveryBars(metronome.gapEveryBars > 0 ? 0 : 4)
+            }
           >
             Gap every 4th bar
           </Button>
         </div>
       </div>
       <div className="flex flex-wrap justify-center gap-3">
-        <Button onClick={metronome.playing ? metronome.stop : () => void metronome.start()}>
+        <Button
+          onClick={
+            metronome.playing ? metronome.stop : () => void metronome.start()
+          }
+        >
           {metronome.playing ? "Stop click" : "Start click"}
         </Button>
-        <Button variant="outline" onClick={() => recordRound(false)}>Missed</Button>
-        <Button variant="outline" onClick={() => recordRound(true)}>Clean round</Button>
-        <Button variant="ghost" onClick={onFinish}>Finish workout</Button>
+        <Button variant="outline" onClick={() => recordRound(false)}>
+          Missed
+        </Button>
+        <Button variant="outline" onClick={() => recordRound(true)}>
+          Clean round
+        </Button>
+        <Button variant="ghost" onClick={onFinish}>
+          Finish workout
+        </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        Play {exercise.repetitionsPerLevel} repetitions. Two clean rounds raise the tempo; two misses reduce it.
+        Play {exercise.repetitionsPerLevel} repetitions. Two clean rounds raise
+        the tempo; two misses reduce it.
       </p>
     </section>
   )

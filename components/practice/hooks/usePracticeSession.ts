@@ -1,10 +1,17 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import type { ExerciseDefinition, PracticeAttempt } from "@/types/practice"
+import type {
+  ExerciseDefinition,
+  PracticeAttempt,
+  SessionChallenge,
+} from "@/types/practice"
 import { usePracticeStore } from "./usePracticeStore"
 
-export function usePracticeSession(exercise: ExerciseDefinition) {
+export function usePracticeSession(
+  exercise: ExerciseDefinition,
+  challenge?: SessionChallenge
+) {
   const store = usePracticeStore()
   const [sessionId, setSessionId] = useState<string>()
   const [elapsedMs, setElapsedMs] = useState(0)
@@ -27,14 +34,14 @@ export function usePracticeSession(exercise: ExerciseDefinition) {
 
   const start = useCallback(
     (routineId?: string) => {
-      const next = store.startSession(exercise, routineId)
+      const next = store.startSession(exercise, routineId, challenge)
       setSessionId(next.id)
       accumulatedRef.current = 0
       runningSinceRef.current = performance.now()
       setElapsedMs(0)
       return next
     },
-    [exercise, store]
+    [challenge, exercise, store]
   )
 
   const pause = useCallback(() => {

@@ -15,7 +15,9 @@ import type {
   PracticeAttempt,
   PracticeSession,
   RoutineDefinition,
+  SessionChallenge,
 } from "@/types/practice"
+import { normalizeDailyChallengeState } from "@/lib/practice/challenges"
 import {
   PracticeStoreContext,
   type PracticeStore,
@@ -29,7 +31,11 @@ const createId = () =>
     : `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 export function PracticeProvider({ children }: { children: React.ReactNode }) {
-  const { value: document, setValue, hydrated } = useLocalStorage({
+  const {
+    value: document,
+    setValue,
+    hydrated,
+  } = useLocalStorage({
     key: PRACTICE_STORAGE_KEY,
     fallback: EMPTY_DOCUMENT,
     parse: parsePracticeDocument,
@@ -37,12 +43,17 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
   })
 
   const startSession = useCallback(
-    (exercise: ExerciseDefinition, routineId?: string) => {
+    (
+      exercise: ExerciseDefinition,
+      routineId?: string,
+      challenge?: SessionChallenge
+    ) => {
       const now = new Date().toISOString()
       const session: PracticeSession = {
         id: createId(),
         exercise,
         routineId,
+        challenge,
         status: "running",
         startedAt: now,
         updatedAt: now,
@@ -168,6 +179,44 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     [setValue]
   )
 
+  const rerollWildcard = useCallback(
+    (dayKey: string) => {
+      setValue((current) => {
+        const daily = normalizeDailyChallengeState(
+          current.dailyChallengeState,
+          dayKey
+        )
+        if (daily.wildcardRerolls >= 1) return current
+        return {
+          ...current,
+          dailyChallengeState: {
+            ...daily,
+            wildcardRerolls: daily.wildcardRerolls + 1,
+            wildcardSeed: daily.wildcardSeed + 1,
+          },
+        }
+      })
+    },
+    [setValue]
+  )
+
+  const acknowledgeMilestone = useCallback(
+    (milestoneId: string) => {
+      setValue((current) =>
+        current.acknowledgedMilestoneIds.includes(milestoneId)
+          ? current
+          : {
+              ...current,
+              acknowledgedMilestoneIds: [
+                ...current.acknowledgedMilestoneIds,
+                milestoneId,
+              ],
+            }
+      )
+    },
+    [setValue]
+  )
+
   const importData = useCallback(
     (raw: string) => {
       try {
@@ -201,6 +250,8 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       saveExercise,
       removeExercise,
       saveRoutine,
+      rerollWildcard,
+      acknowledgeMilestone,
       importData,
       exportData,
     }),
@@ -212,8 +263,10 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       importData,
       removeExercise,
+      rerollWildcard,
       saveExercise,
       saveRoutine,
+      acknowledgeMilestone,
       setSessionStatus,
       startSession,
     ]
