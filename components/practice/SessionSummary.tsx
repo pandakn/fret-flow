@@ -5,6 +5,7 @@ import { Check, Target, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { summarizeSession } from "@/lib/practice/scoring"
+import { getSessionReflection } from "@/lib/practice/reflection"
 import {
   formatChallengeGoal,
   formatChallengeValue,
@@ -55,6 +56,7 @@ export function SessionSummary({
 }) {
   const { document, acknowledgeMilestone } = usePracticeStore()
   const summary = summarizeSession(session)
+  const reflection = getSessionReflection(session, document.sessions)
   const challengeValue = session.challenge
     ? getChallengeValue(summary, session.challenge.goal)
     : null
@@ -130,6 +132,20 @@ export function SessionSummary({
             </div>
           ))}
         </dl>
+        {reflection ? (
+          <section
+            className="space-y-2 border-l-2 border-[var(--color-root)] bg-muted/25 px-5 py-4"
+            aria-labelledby="practice-reflection-heading"
+          >
+            <h2 id="practice-reflection-heading" className="font-semibold">
+              Take this into your next session
+            </h2>
+            <p className="text-sm">{reflection.observation}</p>
+            <p className="text-sm text-muted-foreground">
+              {reflection.nextStep}
+            </p>
+          </section>
+        ) : null}
         {session.challenge ? (
           <section
             className="border-l-2 border-[var(--color-root)] bg-muted/35 px-5 py-4"

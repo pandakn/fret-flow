@@ -19,7 +19,8 @@ const TEMPLATE_KINDS: ExerciseDefinition["kind"][] = [
 export const buildRoutine = (
   durationMinutes: 10 | 20 | 30,
   sessions: readonly PracticeSession[] = [],
-  savedExercises: readonly ExerciseDefinition[] = []
+  savedExercises: readonly ExerciseDefinition[] = [],
+  options: { focusExercise?: ExerciseDefinition; variation?: number } = {}
 ): RoutineDefinition => {
   const practiced = new Map<ExerciseDefinition["kind"], number>()
   sessions.forEach((session) => {
@@ -35,9 +36,23 @@ export const buildRoutine = (
   )
   const blockCount = durationMinutes === 10 ? 3 : durationMinutes === 20 ? 4 : 6
   const blockMinutes = Math.floor(durationMinutes / blockCount)
-  const blocks = orderedKinds.slice(0, blockCount).map((kind, index) => {
+  const focusKind = options.focusExercise?.kind
+  const supportingKinds = orderedKinds.filter((kind) => kind !== focusKind)
+  const variation = Math.max(0, Math.trunc(options.variation ?? 0))
+  const offset = variation % supportingKinds.length
+  const rotatedKinds = [
+    ...supportingKinds.slice(offset),
+    ...supportingKinds.slice(0, offset),
+  ]
+  const selectedKinds = focusKind
+    ? [focusKind, ...rotatedKinds.slice(0, blockCount - 1)]
+    : rotatedKinds.slice(0, blockCount)
+  const blocks = selectedKinds.map((kind, index) => {
     const saved = savedExercises.find((exercise) => exercise.kind === kind)
-    const exercise = saved ?? createDefaultExercise(kind)
+    const exercise =
+      kind === focusKind
+        ? options.focusExercise!
+        : (saved ?? createDefaultExercise(kind))
     return {
       id: `routine-block-${index}-${exercise.id}`,
       exercise,
@@ -51,7 +66,9 @@ export const buildRoutine = (
   return {
     id: `daily-${durationMinutes}`,
     name: `${durationMinutes}-minute daily practice`,
-    description: "A balanced routine weighted toward neglected skills.",
+    description: focusKind
+      ? "Today’s focus, with a changing mix of supporting skills."
+      : "A balanced routine weighted toward neglected skills.",
     durationMinutes,
     blocks,
   }

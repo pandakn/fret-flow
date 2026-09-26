@@ -1,8 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { usePracticeSession } from "./hooks/usePracticeSession"
 import { SessionSummary } from "./SessionSummary"
+import { PlayInContext, getPlayInContextPrompt } from "./PlayInContext"
 import { FretboardRecallDrill } from "./drills/FretboardRecallDrill"
 import { TempoLadderDrill } from "./drills/TempoLadderDrill"
 import { TechniqueDrill } from "./drills/TechniqueDrill"
@@ -44,6 +46,7 @@ export function PracticeSession({
       }
     : undefined
   const practice = usePracticeSession(exercise, challenge)
+  const [showApplication, setShowApplication] = useState(false)
   const pathStage =
     exercise.kind === "fretboardRecall" ? exercise.path : undefined
 
@@ -95,7 +98,13 @@ export function PracticeSession({
   const sharedProps = {
     attempts: practice.session.attempts,
     onAttempt: practice.addAttempt,
-    onFinish: practice.complete,
+    onFinish: () => {
+      if (getPlayInContextPrompt(exercise)) {
+        setShowApplication(true)
+      } else {
+        practice.complete()
+      }
+    },
   }
 
   return (
@@ -158,6 +167,8 @@ export function PracticeSession({
             Resume session
           </Button>
         </div>
+      ) : showApplication ? (
+        <PlayInContext exercise={exercise} onFinish={practice.complete} />
       ) : exercise.kind === "fretboardRecall" ? (
         <FretboardRecallDrill exercise={exercise} {...sharedProps} />
       ) : exercise.kind === "tempoLadder" ? (
