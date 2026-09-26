@@ -3,12 +3,15 @@
 import type { ResolvedArpeggio } from "@/lib/arpeggios"
 import { getIntervalFamily, INTERVAL_FAMILY_COLORS } from "@/lib/colors"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ArpeggioSequenceProps {
   arpeggio?: ResolvedArpeggio
 }
 
 export function ArpeggioSequence({ arpeggio }: ArpeggioSequenceProps) {
+  const { t } = useI18n()
   return (
     <section
       style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
@@ -21,12 +24,12 @@ export function ArpeggioSequence({ arpeggio }: ArpeggioSequenceProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Picking sequence
+        {t("pickingSequence")}
       </div>
       {arpeggio ? (
         <ol
           className="flex flex-col gap-1"
-          aria-label="Arpeggio picking sequence"
+          aria-label={t("pickingSequence")}
         >
           {arpeggio.steps.map((step) => {
             const family = getIntervalFamily(step.interval)
@@ -65,7 +68,7 @@ export function ArpeggioSequence({ arpeggio }: ArpeggioSequenceProps) {
                   className="text-[13px] font-semibold"
                   style={{ color: "var(--text)" }}
                 >
-                  {step.note}
+                  {spellIntervalNote(arpeggio.voicing.root, step.interval, step.note)}
                 </span>
                 <span
                   className="ml-auto text-[10px]"
@@ -74,7 +77,7 @@ export function ArpeggioSequence({ arpeggio }: ArpeggioSequenceProps) {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  {step.interval} · S{step.string + 1} · F{step.fret}
+                  {step.interval} · {t("string")} {step.string + 1} · {t("fret")} {step.fret}
                 </span>
               </li>
             )
@@ -88,7 +91,7 @@ export function ArpeggioSequence({ arpeggio }: ArpeggioSequenceProps) {
             fontFamily: "var(--font-mono)",
           }}
         >
-          No compatible arpeggio for this root, chord, and tuning.
+          {t("noArpeggio")}
         </p>
       )}
     </section>

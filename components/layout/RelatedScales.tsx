@@ -3,6 +3,9 @@
 import { CHROMATIC } from "@/lib/notes"
 import { SCALES } from "@/lib/scales"
 import type { NoteName } from "@/types/music"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { scaleLabel } from "@/lib/i18n/music-labels"
+import { getKeyLabel } from "@/lib/theory/spelling"
 
 interface RelatedScalesProps {
   root: NoteName
@@ -57,6 +60,7 @@ const SCALE_FRIEND: Record<string, Friend[]> = {
 }
 
 export function RelatedScales({ root, scaleId }: RelatedScalesProps) {
+  const { locale, t } = useI18n()
   const friends = SCALE_FRIEND[scaleId] ?? [
     { id: "major" },
     { id: "natural_minor" },
@@ -71,7 +75,7 @@ export function RelatedScales({ root, scaleId }: RelatedScalesProps) {
       if (!friend) return null
       const idx = (rootIndex + (f.relativeShift ?? 0)) % 12
       const noteRoot = CHROMATIC[idx]
-      return `${noteRoot} ${friend.name}${f.labelSuffix ?? ""}`
+      return `${getKeyLabel(noteRoot)} ${scaleLabel(locale, friend.id, friend.name)}`
     })
     .filter(Boolean) as string[]
 
@@ -90,22 +94,21 @@ export function RelatedScales({ root, scaleId }: RelatedScalesProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Related scales
+        {t("relatedScales")}
       </div>
       <div className="flex flex-col gap-1">
         {items.map((label) => (
-          <button
+          <div
             key={label}
-            className="rounded-md text-left text-[12px] font-semibold transition-colors hover:bg-[var(--surface2)]"
+            className="rounded-md text-left text-[12px] font-semibold"
             style={{
               border: "1px solid var(--border)",
               padding: "7px 9px",
               color: "var(--text)",
             }}
-            type="button"
           >
             {label}
-          </button>
+          </div>
         ))}
       </div>
     </section>

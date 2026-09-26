@@ -1,7 +1,10 @@
 import { cn } from "@/lib/utils"
 import type { PracticeSession } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function FretboardHeatmap({ sessions }: { sessions: readonly PracticeSession[] }) {
+  const { locale } = useI18n()
   const positions = new Map<string, { correct: number; total: number }>()
   sessions.forEach((session) => session.attempts.forEach((attempt) => {
     const { string, fret } = attempt.target
@@ -18,7 +21,7 @@ export function FretboardHeatmap({ sessions }: { sessions: readonly PracticeSess
       className="overflow-x-auto"
       tabIndex={0}
       role="region"
-      aria-label="Scrollable fretboard recall heatmap"
+      aria-label={practiceCopy(locale, "Scrollable fretboard recall heatmap")}
     >
       <div className="min-w-[680px]">
         <div className="mb-2 grid grid-cols-[32px_repeat(13,1fr)] gap-1 font-mono text-[9px] text-muted-foreground">
@@ -30,7 +33,7 @@ export function FretboardHeatmap({ sessions }: { sessions: readonly PracticeSess
             return <div key={string} className="grid grid-cols-[32px_repeat(13,1fr)] gap-1"><span className="self-center font-mono text-[9px] text-muted-foreground">S{6 - string}</span>{Array.from({ length: 13 }, (_, fret) => {
               const value = positions.get(`${string}-${fret}`)
               const accuracy = value ? value.correct / value.total : null
-              return <span key={fret} title={value ? `String ${string + 1}, fret ${fret}: ${Math.round((accuracy ?? 0) * 100)}%` : `String ${string + 1}, fret ${fret}: not practiced`} className={cn("h-6 border", accuracy === null && "bg-muted/25", accuracy !== null && accuracy < 0.5 && "bg-[var(--destructive)]/70", accuracy !== null && accuracy >= 0.5 && accuracy < 0.8 && "bg-[var(--color-root)]/55", accuracy !== null && accuracy >= 0.8 && "bg-[var(--color-deg4)]/70")} />
+              return <span key={fret} title={value ? practiceCopy(locale, "String {string}, fret {fret}: {accuracy}%", { string: string + 1, fret, accuracy: Math.round((accuracy ?? 0) * 100) }) : practiceCopy(locale, "String {string}, fret {fret}: not practiced", { string: string + 1, fret })} className={cn("h-6 border", accuracy === null && "bg-muted/25", accuracy !== null && accuracy < 0.5 && "bg-[var(--destructive)]/70", accuracy !== null && accuracy >= 0.5 && accuracy < 0.8 && "bg-[var(--color-root)]/55", accuracy !== null && accuracy >= 0.8 && "bg-[var(--color-deg4)]/70")} />
             })}</div>
           })}
         </div>

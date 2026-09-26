@@ -4,6 +4,9 @@ import { getChordById, getChordNotes } from "@/lib/chords"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { ColorPresetPicker } from "./ColorPresetPicker"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { chordLabel } from "@/lib/i18n/music-labels"
+import { getKeyLabel, spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ChordInfoProps {
   root: NoteName
@@ -20,11 +23,12 @@ export function ChordInfo({
   colorPreset,
   onColorPresetChange,
 }: ChordInfoProps) {
+  const { locale, t } = useI18n()
   const chord = getChordById(chordId)
   if (!chord) return null
 
   const notes = getChordNotes(root, chord.formula)
-  const chordName = `${root}${chord.symbol}`
+  const chordName = `${getKeyLabel(root)}${chord.symbol}`
 
   return (
     <header
@@ -40,7 +44,7 @@ export function ChordInfo({
           className="text-[20px] font-extrabold tracking-[-0.4px]"
           style={{ color: "var(--text)" }}
         >
-          {chordName} {chord.name}
+          {chordName} {chordLabel(locale, chord.id, chord.name)}
           {titleSuffix ? ` ${titleSuffix}` : ""}
         </h1>
         <p
@@ -50,7 +54,7 @@ export function ChordInfo({
             fontFamily: "var(--font-mono)",
           }}
         >
-          {notes.join(" · ")} &nbsp;·&nbsp; {chord.intervals.length} tones
+          {notes.map((note, index) => spellIntervalNote(root, chord.intervals[index], note)).join(" · ")} &nbsp;·&nbsp; {chord.intervals.length} {t("tones")}
         </p>
       </div>
 

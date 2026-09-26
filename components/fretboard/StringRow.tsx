@@ -1,11 +1,17 @@
 import { NoteCell } from "./NoteCell"
-import type { FretNote, IntervalName } from "@/types/music"
+import type { FretNote, NoteName } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { intervalLabel } from "@/lib/i18n/music-labels"
+import { messages } from "@/lib/i18n/messages"
+import type { Locale } from "@/lib/i18n/locales"
+import { spellIntervalNote } from "@/lib/theory/spelling"
 
 interface StringRowProps {
   stringIndex: number
   fretNotes: FretNote[]
+  displayRoot?: NoteName
   showNoteNames: boolean
   showIntervals: boolean
   rootOnly: boolean
@@ -46,27 +52,20 @@ const STRING_BY_PRESET: Record<ColorPreset, string> = {
   red: "var(--fretboard-red-string)",
 }
 
-const INTERVAL_ARIA_LABELS: Record<IntervalName, string> = {
-  R: "root",
-  b2: "flat second",
-  "2": "second",
-  b3: "minor third",
-  "3": "major third",
-  "4": "fourth",
-  b5: "diminished fifth",
-  "#4": "augmented fourth",
-  "5": "fifth",
-  b6: "flat sixth",
-  "#5": "augmented fifth",
-  "6": "sixth",
-  b7: "minor seventh",
-  "7": "major seventh",
-}
+const getDisplayNote = (note: FretNote, displayRoot?: NoteName): string =>
+  displayRoot && note.interval
+    ? spellIntervalNote(displayRoot, note.interval, note.note)
+    : note.note
 
-const getAriaLabel = (note: FretNote, stringNum: number): string =>
-  `${note.note}, ${
-    note.interval ? INTERVAL_ARIA_LABELS[note.interval] : "note"
-  }, fret ${note.fret} string ${stringNum}`
+const getAriaLabel = (
+  note: FretNote,
+  stringNum: number,
+  locale: Locale,
+  displayRoot?: NoteName
+): string =>
+  `${getDisplayNote(note, displayRoot)}, ${
+    note.interval ? intervalLabel(locale, note.interval) : messages[locale].note
+  }, ${messages[locale].fret} ${note.fret} ${messages[locale].string} ${stringNum}`
 
 const getNoteKey = (stringIndex: number, fret: number): string =>
   `${stringIndex}-${fret}`
@@ -78,23 +77,26 @@ const getArpeggioAriaLabel = (
   note: FretNote,
   stringNum: number,
   stepIndexes: readonly number[] | undefined,
-  stepCount: number
+  stepCount: number,
+  locale: Locale,
+  displayRoot?: NoteName
 ): string => {
-  const baseLabel = getAriaLabel(note, stringNum)
+  const baseLabel = getAriaLabel(note, stringNum, locale, displayRoot)
   if (!stepIndexes || stepIndexes.length === 0 || stepCount === 0) {
     return baseLabel
   }
 
   if (stepIndexes.length === 1) {
-    return `${baseLabel}, arpeggio step ${stepIndexes[0]} of ${stepCount}`
+    return `${baseLabel}, ${messages[locale].arpeggioStep} ${stepIndexes[0]} / ${stepCount}`
   }
 
-  return `${baseLabel}, arpeggio steps ${stepIndexes.join(" and ")} of ${stepCount}`
+  return `${baseLabel}, ${messages[locale].arpeggioSteps} ${stepIndexes.join(", ")} / ${stepCount}`
 }
 
 export function StringRow({
   stringIndex,
   fretNotes,
+  displayRoot,
   showNoteNames,
   showIntervals,
   rootOnly,
@@ -112,6 +114,7 @@ export function StringRow({
   quizFeedback,
   quizTarget,
 }: StringRowProps) {
+  const { locale, t } = useI18n()
   const stringNum = stringIndex + 1
   const stringThickness = 0.5 + stringIndex * 0.25
 
@@ -137,6 +140,7 @@ export function StringRow({
         {openNote ? (
           <NoteCell
             note={openNote.note}
+            displayNote={getDisplayNote(openNote, displayRoot)}
             interval={openNote.interval}
             stringIndex={openNote.string}
             fret={openNote.fret}
@@ -157,6 +161,7 @@ export function StringRow({
             arpeggioStepIndexes={openArpeggioStepIndexes}
             arpeggioStepCount={arpeggioStepCount}
             selectedVoicingLabel={selectedVoicingLabel}
+            selectedWord={t("selected")}
             isHovered={hoveredNote === openNoteKey}
             onNoteHover={onNoteHover}
             onNoteClick={onNoteClick}
@@ -174,14 +179,16 @@ export function StringRow({
             aria-label={
               quizTarget?.string === openNote.string &&
               quizTarget.fret === openNote.fret
-                ? `Target position, fret ${openNote.fret} string ${openNote.string + 1}`
+                ? `${t("targetPosition")}, ${t("fret")} ${openNote.fret} ${t("string")} ${openNote.string + 1}`
                 : quizMode
-                  ? `Hidden answer, fret ${openNote.fret} string ${stringNum}`
+                  ? `${t("hiddenAnswer")}, ${t("fret")} ${openNote.fret} ${t("string")} ${stringNum}`
                   : getArpeggioAriaLabel(
                       openNote,
                       stringNum,
                       openArpeggioStepIndexes,
-                      arpeggioStepCount
+                      arpeggioStepCount,
+                      locale,
+                      displayRoot
                     )
             }
           />
@@ -215,6 +222,7 @@ export function StringRow({
             >
               <NoteCell
                 note={note.note}
+                displayNote={getDisplayNote(note, displayRoot)}
                 interval={note.interval}
                 stringIndex={note.string}
                 fret={note.fret}
@@ -234,6 +242,7 @@ export function StringRow({
                 arpeggioStepIndexes={arpeggioStepIndexes}
                 arpeggioStepCount={arpeggioStepCount}
                 selectedVoicingLabel={selectedVoicingLabel}
+                selectedWord={t("selected")}
                 isHovered={hoveredNote === noteKey}
                 onNoteHover={onNoteHover}
                 onNoteClick={onNoteClick}
@@ -251,14 +260,16 @@ export function StringRow({
                 aria-label={
                   quizTarget?.string === note.string &&
                   quizTarget.fret === note.fret
-                    ? `Target position, fret ${note.fret} string ${note.string + 1}`
+                    ? `${t("targetPosition")}, ${t("fret")} ${note.fret} ${t("string")} ${note.string + 1}`
                     : quizMode
-                      ? `Hidden answer, fret ${note.fret} string ${stringNum}`
+                      ? `${t("hiddenAnswer")}, ${t("fret")} ${note.fret} ${t("string")} ${stringNum}`
                       : getArpeggioAriaLabel(
                           note,
                           stringNum,
                           arpeggioStepIndexes,
-                          arpeggioStepCount
+                          arpeggioStepCount,
+                          locale,
+                          displayRoot
                         )
                 }
               />

@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import type { NoteName } from "@/types/music"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { getKeyLabel } from "@/lib/theory/spelling"
 
 interface KeySelectorProps {
   value: NoteName
@@ -24,6 +26,7 @@ const KEYS: NoteName[] = [
 ]
 
 export function KeySelector({ value, onChange }: KeySelectorProps) {
+  const { t } = useI18n()
   return (
     <section
       style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
@@ -36,7 +39,7 @@ export function KeySelector({ value, onChange }: KeySelectorProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Root key
+        {t("rootKey")}
       </div>
       <div className="grid grid-cols-4 gap-1">
         {KEYS.map((key) => (
@@ -57,7 +60,7 @@ export function KeySelector({ value, onChange }: KeySelectorProps) {
             }}
             aria-pressed={value === key}
           >
-            {key}
+            {getKeyLabel(key)}
           </button>
         ))}
       </div>

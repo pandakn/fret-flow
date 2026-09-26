@@ -3,12 +3,13 @@ import type { ColorPreset } from "@/types/fretboard"
 
 interface FretMarkersProps {
   fretCount: number
+  fretStart?: number
   colorPreset: ColorPreset
 }
 
 export const FretMarkers = memo<FretMarkersProps>(
-  ({ fretCount, colorPreset }) => {
-    const FRET_MARKERS = [3, 5, 7, 9, 12]
+  ({ fretCount, fretStart = 1, colorPreset }) => {
+    const FRET_MARKERS = [3, 5, 7, 9, 12, 15]
     const DOUBLE_MARKER_FRETS = [12]
 
     const markerColor = `var(--fretboard-${colorPreset}-marker)`
@@ -16,10 +17,10 @@ export const FretMarkers = memo<FretMarkersProps>(
     return (
       <div
         className="pointer-events-none absolute inset-0 flex"
-        style={{ left: "42px" }}
+        style={{ left: "56px" }}
       >
         {Array.from({ length: fretCount }, (_, i) => {
-          const fretNum = i + 1
+          const fretNum = fretStart + i
           if (!FRET_MARKERS.includes(fretNum))
             return <div key={fretNum} className="flex-1" />
           return (

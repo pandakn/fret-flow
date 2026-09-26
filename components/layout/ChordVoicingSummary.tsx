@@ -1,6 +1,8 @@
 "use client"
 
 import type { ChordVoicing } from "@/lib/chord-voicings"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { voicingLabel } from "@/lib/i18n/music-labels"
 
 interface ChordVoicingSummaryProps {
   voicing?: ChordVoicing
@@ -11,6 +13,7 @@ export function ChordVoicingSummary({
   voicing,
   label,
 }: ChordVoicingSummaryProps) {
+  const { locale, t } = useI18n()
   return (
     <section
       style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
@@ -23,7 +26,7 @@ export function ChordVoicingSummary({
           fontFamily: "var(--font-mono)",
         }}
       >
-        Selected{label ? ` ${label.toLowerCase()}` : ""} voicing
+        {t("selectedVoicing")}{label ? ` · ${label}` : ""}
       </div>
       {voicing ? (
         <div className="flex flex-col gap-1.5">
@@ -31,7 +34,7 @@ export function ChordVoicingSummary({
             className="text-[12px] font-semibold"
             style={{ color: "var(--text)" }}
           >
-            {voicing.label}
+            {voicingLabel(locale, voicing)}
           </div>
           <div
             className="rounded-md px-2 py-1.5 text-[11px]"
@@ -41,7 +44,7 @@ export function ChordVoicingSummary({
               color: "var(--text)",
               fontFamily: "var(--font-mono)",
             }}
-            aria-label={`Fingering: ${voicing.frets.map((fret) => fret ?? "X").join(", ")}`}
+            aria-label={`${t("fingering")}: ${voicing.frets.map((fret) => fret ?? "X").join(", ")}`}
           >
             {voicing.frets.map((fret) => fret ?? "X").join(" · ")}
           </div>
@@ -53,7 +56,7 @@ export function ChordVoicingSummary({
                 fontFamily: "var(--font-mono)",
               }}
             >
-              Barre fret {voicing.barre.fret}, strings{" "}
+              {t("barreFret")} {voicing.barre.fret}, {t("strings")}{" "}
               {6 - voicing.barre.fromString}–{6 - voicing.barre.toString}
             </p>
           )}
@@ -66,7 +69,7 @@ export function ChordVoicingSummary({
             fontFamily: "var(--font-mono)",
           }}
         >
-          No compatible voicing for this root and tuning.
+          {t("noVoicing")}
         </p>
       )}
     </section>

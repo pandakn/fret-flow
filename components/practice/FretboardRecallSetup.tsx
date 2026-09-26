@@ -13,6 +13,8 @@ import {
 import { createDefaultExercise } from "@/lib/practice/exercises"
 import { cn } from "@/lib/utils"
 import type { FretboardRecallExercise } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function FretboardRecallSetup({
   onBack,
@@ -21,6 +23,7 @@ export function FretboardRecallSetup({
   onBack: () => void
   onStart: (exercise: FretboardRecallExercise) => void
 }) {
+  const { locale } = useI18n()
   const [initial] = useState(() => createDefaultExercise("fretboardRecall"))
   if (initial.kind !== "fretboardRecall")
     throw new Error("Expected fretboard exercise")
@@ -46,14 +49,14 @@ export function FretboardRecallSetup({
     <Card className="mx-auto max-w-2xl border-[var(--border-2)] shadow-none">
       <CardHeader>
         <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
-          Drill setup
+          {practiceCopy(locale, "Drill setup")}
         </p>
-        <CardTitle className="text-3xl">Fretboard recall</CardTitle>
+        <CardTitle className="text-3xl">{practiceCopy(locale, "Fretboard recall")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-7">
         <fieldset>
           <legend className="mb-3 text-sm font-medium">
-            What do you want to recall?
+            {practiceCopy(locale, "What do you want to recall?")}
           </legend>
           <div className="grid grid-cols-3 gap-2">
             {(["note", "root", "interval"] as const).map((option) => (
@@ -64,13 +67,13 @@ export function FretboardRecallSetup({
                 onClick={() => setRecall(option)}
                 className="capitalize"
               >
-                {option}
+                {practiceCopy(locale, option)}
               </Button>
             ))}
           </div>
         </fieldset>
         <fieldset>
-          <legend className="mb-3 text-sm font-medium">Prompt direction</legend>
+          <legend className="mb-3 text-sm font-medium">{practiceCopy(locale, "Prompt direction")}</legend>
           <div className="grid grid-cols-3 gap-2">
             {(
               [
@@ -85,7 +88,7 @@ export function FretboardRecallSetup({
                 variant={promptDirection === value ? "default" : "outline"}
                 onClick={() => setPromptDirection(value)}
               >
-                {label}
+                {practiceCopy(locale, label)}
               </Button>
             ))}
           </div>
@@ -95,7 +98,7 @@ export function FretboardRecallSetup({
             htmlFor="fret-range"
             className="mb-3 block text-sm font-medium"
           >
-            Fret range
+            {practiceCopy(locale, "Fret range")}
           </label>
           <Select
             value={String(maxFret)}
@@ -107,14 +110,14 @@ export function FretboardRecallSetup({
             <SelectContent>
               {[5, 7, 9, 12, 15].map((fret) => (
                 <SelectItem key={fret} value={String(fret)}>
-                  Frets 0–{fret}
+                  {practiceCopy(locale, "Frets 0–{fret}", { fret })}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <fieldset>
-          <legend className="mb-3 text-sm font-medium">Strings</legend>
+          <legend className="mb-3 text-sm font-medium">{practiceCopy(locale, "Strings")}</legend>
           <div className="grid grid-cols-6 gap-2">
             {Array.from({ length: 6 }, (_, index) => (
               <button
@@ -134,12 +137,12 @@ export function FretboardRecallSetup({
             ))}
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            String 1 is the low E string.
+            {practiceCopy(locale, "String 1 is the low E string.")}
           </p>
         </fieldset>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onBack}>
-            Back
+            {practiceCopy(locale, "Back")}
           </Button>
           <Button
             onClick={() =>
@@ -153,7 +156,7 @@ export function FretboardRecallSetup({
               })
             }
           >
-            Start drill
+            {practiceCopy(locale, "Start drill")}
           </Button>
         </div>
       </CardContent>

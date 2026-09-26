@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import type { NoteName } from "@/types/music"
 import { useState } from "react"
 import { type PlaybackStep, usePlayback } from "./hooks/usePlayback"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 interface PlaybackControlsProps {
   root: NoteName
@@ -19,12 +20,13 @@ export function PlaybackControls({
   playLabel,
   unavailableLabel,
 }: PlaybackControlsProps) {
+  const { t } = useI18n()
   const [bpm, setBpm] = useState(80)
   const [loop, setLoop] = useState(false)
   const { playing, toggle } = usePlayback({ root, sequence, bpm, loop })
   const isAvailable = sequence.length > 0
   const buttonLabel = playing
-    ? "Stop"
+    ? t("stop")
     : isAvailable
       ? playLabel
       : unavailableLabel
@@ -42,7 +44,7 @@ export function PlaybackControls({
           fontFamily: "var(--font-mono)",
         }}
       >
-        Playback
+        {t("playback")}
       </div>
       <Button
         onClick={toggle}
@@ -86,7 +88,7 @@ export function PlaybackControls({
             }}
           />
         )}
-        {playing ? "Stop" : isAvailable ? playLabel : unavailableLabel}
+        {playing ? t("stop") : isAvailable ? playLabel : unavailableLabel}
       </Button>
       <div className="mt-2 flex items-center gap-1.5">
         <span
@@ -135,7 +137,7 @@ export function PlaybackControls({
           aria-pressed={loop}
           type="button"
         >
-          Loop
+          {t("loop")}
         </Button>
       </div>
     </section>

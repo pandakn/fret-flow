@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { CSSProperties, ReactNode } from "react"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 interface CollapsiblePanelProps {
   side: "left" | "right"
@@ -42,6 +43,7 @@ export function CollapsiblePanel({
   className,
   style,
 }: CollapsiblePanelProps) {
+  const { t } = useI18n()
   const isLeft = side === "left"
   // icon points in the direction the panel will move on click
   const Icon = open
@@ -52,7 +54,9 @@ export function CollapsiblePanel({
       ? ChevronRight
       : ChevronLeft
 
-  const label = open ? `Collapse ${side} panel` : `Expand ${side} panel`
+  const label = open
+    ? t(isLeft ? "collapseLeft" : "collapseRight")
+    : t(isLeft ? "expandLeft" : "expandRight")
 
   return (
     <aside

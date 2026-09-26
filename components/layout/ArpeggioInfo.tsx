@@ -5,6 +5,9 @@ import { getChordById, getChordNotes } from "@/lib/chords"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { ColorPresetPicker } from "./ColorPresetPicker"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { chordLabel, voicingLabel } from "@/lib/i18n/music-labels"
+import { getKeyLabel, spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ArpeggioInfoProps {
   root: NoteName
@@ -21,6 +24,7 @@ export function ArpeggioInfo({
   colorPreset,
   onColorPresetChange,
 }: ArpeggioInfoProps) {
+  const { locale, t } = useI18n()
   const chord = getChordById(chordId)
   if (!chord) return null
 
@@ -40,8 +44,8 @@ export function ArpeggioInfo({
           className="text-[20px] font-extrabold tracking-[-0.4px]"
           style={{ color: "var(--text)" }}
         >
-          {root}
-          {chord.symbol} {chord.name} Arpeggio
+          {getKeyLabel(root)}
+          {chord.symbol} {chordLabel(locale, chord.id, chord.name)} {t("arpeggios")}
         </h1>
         <p
           className="mt-[3px] text-[10px]"
@@ -50,8 +54,8 @@ export function ArpeggioInfo({
             fontFamily: "var(--font-mono)",
           }}
         >
-          {notes.join(" · ")} &nbsp;·&nbsp; {chord.intervals.length} tones
-          {voicing ? ` · ${voicing.label}` : ""}
+          {notes.map((note, index) => spellIntervalNote(root, chord.intervals[index], note)).join(" · ")} &nbsp;·&nbsp; {chord.intervals.length} {t("tones")}
+          {voicing ? ` · ${voicingLabel(locale, voicing)}` : ""}
         </p>
       </div>
 

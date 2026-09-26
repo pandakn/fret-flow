@@ -9,6 +9,8 @@ import { nextTempo } from "@/lib/practice/progression"
 import { calculateTapTempo } from "@/lib/practice/metronome"
 import type { TempoLadderExercise } from "@/types/practice"
 import type { DrillProps } from "./types"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function TempoLadderDrill({
   exercise,
@@ -16,6 +18,7 @@ export function TempoLadderDrill({
   onAttempt,
   onFinish,
 }: DrillProps<TempoLadderExercise>) {
+  const { locale } = useI18n()
   const metronome = useMetronome({
     initialBpm: exercise.startBpm,
     subdivision: exercise.subdivision,
@@ -57,17 +60,17 @@ export function TempoLadderDrill({
     <section className="mx-auto max-w-2xl space-y-8 text-center">
       <div>
         <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-          Tempo ladder
+          {practiceCopy(locale, "Tempo ladder")}
         </p>
         <p className="mt-3 font-mono text-7xl font-bold tabular-nums">
           {metronome.bpm}
         </p>
         <p className="text-sm text-muted-foreground">
-          {metronome.countingIn ? "Count in · " : "BPM · "}target{" "}
+          {practiceCopy(locale, metronome.countingIn ? "Count in · " : "BPM · ")}{practiceCopy(locale, "target")}{" "}
           {exercise.targetBpm}
         </p>
       </div>
-      <div className="flex justify-center gap-2" aria-label="Beat indicator">
+      <div className="flex justify-center gap-2" aria-label={practiceCopy(locale, "Beat indicator")}>
         {Array.from({ length: 4 }, (_, index) => (
           <span
             key={index}
@@ -84,11 +87,11 @@ export function TempoLadderDrill({
         max={240}
         value={[metronome.bpm]}
         onValueChange={([value]) => metronome.setBpm(value)}
-        aria-label="Tempo"
+        aria-label={practiceCopy(locale, "Tempo")}
       />
       <div className="grid gap-4 text-left sm:grid-cols-2">
         <label className="space-y-2 text-xs text-muted-foreground">
-          <span>Click volume</span>
+          <span>{practiceCopy(locale, "Click volume")}</span>
           <Slider
             min={0}
             max={100}
@@ -98,7 +101,7 @@ export function TempoLadderDrill({
         </label>
         <div className="flex items-end justify-center gap-2 sm:justify-end">
           <Button variant="outline" onClick={tapTempo}>
-            Tap tempo
+            {practiceCopy(locale, "Tap tempo")}
           </Button>
           <Button
             variant={metronome.gapEveryBars > 0 ? "default" : "outline"}
@@ -106,7 +109,7 @@ export function TempoLadderDrill({
               metronome.setGapEveryBars(metronome.gapEveryBars > 0 ? 0 : 4)
             }
           >
-            Gap every 4th bar
+            {practiceCopy(locale, "Gap every 4th bar")}
           </Button>
         </div>
       </div>
@@ -116,21 +119,22 @@ export function TempoLadderDrill({
             metronome.playing ? metronome.stop : () => void metronome.start()
           }
         >
-          {metronome.playing ? "Stop click" : "Start click"}
+          {practiceCopy(locale, metronome.playing ? "Stop click" : "Start click")}
         </Button>
         <Button variant="outline" onClick={() => recordRound(false)}>
-          Missed
+          {practiceCopy(locale, "Missed")}
         </Button>
         <Button variant="outline" onClick={() => recordRound(true)}>
-          Clean round
+          {practiceCopy(locale, "Clean round")}
         </Button>
         <Button variant="ghost" onClick={onFinish}>
-          Finish workout
+          {practiceCopy(locale, "Finish workout")}
         </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        Play {exercise.repetitionsPerLevel} repetitions. Two clean rounds raise
-        the tempo; two misses reduce it.
+        {practiceCopy(locale, "Play {repetitions} repetitions. Two clean rounds raise the tempo; two misses reduce it.", {
+          repetitions: exercise.repetitionsPerLevel,
+        })}
       </p>
     </section>
   )

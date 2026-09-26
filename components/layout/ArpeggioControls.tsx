@@ -5,11 +5,12 @@ import type { ArpeggioDirection } from "@/lib/arpeggios"
 import type { ChordVoicing } from "@/lib/chord-voicings"
 import { cn } from "@/lib/utils"
 import { VoicingGroups } from "./VoicingGroups"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
-const DIRECTIONS: { direction: ArpeggioDirection; label: string }[] = [
-  { direction: "ascending", label: "Ascending" },
-  { direction: "descending", label: "Descending" },
-  { direction: "upAndDown", label: "Up & down" },
+const DIRECTIONS: { direction: ArpeggioDirection; label: "ascending" | "descending" | "upAndDown" }[] = [
+  { direction: "ascending", label: "ascending" },
+  { direction: "descending", label: "descending" },
+  { direction: "upAndDown", label: "upAndDown" },
 ]
 
 interface ArpeggioControlsProps {
@@ -27,6 +28,7 @@ export function ArpeggioControls({
   direction,
   onDirectionChange,
 }: ArpeggioControlsProps) {
+  const { t } = useI18n()
   return (
     <section
       style={{ borderTop: "1px solid var(--border)", padding: "10px 32px" }}
@@ -40,7 +42,7 @@ export function ArpeggioControls({
             fontFamily: "var(--font-mono)",
           }}
         >
-          Voicings
+          {t("voicings")}
         </div>
         <div
           className="inline-flex rounded-md"
@@ -50,7 +52,7 @@ export function ArpeggioControls({
             padding: "2px",
           }}
           role="group"
-          aria-label="Arpeggio direction"
+          aria-label={t("direction")}
         >
           {DIRECTIONS.map(({ direction: option, label }) => (
             <Button
@@ -68,7 +70,7 @@ export function ArpeggioControls({
               style={{ fontFamily: "var(--font-mono)" }}
               aria-pressed={direction === option}
             >
-              {label}
+              {t(label)}
             </Button>
           ))}
         </div>

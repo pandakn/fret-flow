@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import { TUNINGS } from "@/lib/tunings"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { tuningLabel } from "@/lib/i18n/music-labels"
 
 interface TuningSelectorProps {
   value: string
@@ -14,6 +16,7 @@ export function TuningSelector({
   onChange,
   className,
 }: TuningSelectorProps) {
+  const { locale, t: translate } = useI18n()
   const current = TUNINGS.find((t) => t.id === value)
 
   return (
@@ -29,7 +32,7 @@ export function TuningSelector({
           fontFamily: "var(--font-mono)",
         }}
       >
-        Tuning
+        {translate("tuning")}
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex flex-wrap gap-1">
@@ -65,7 +68,7 @@ export function TuningSelector({
               fontFamily: "var(--font-mono)",
             }}
           >
-            {current.name}
+            {tuningLabel(locale, current.id, current.name)}
           </div>
         )}
       </div>

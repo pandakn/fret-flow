@@ -5,6 +5,9 @@ import { SCALES } from "@/lib/scales"
 import type { NoteName } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
 import { ColorPresetPicker } from "./ColorPresetPicker"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { scaleLabel } from "@/lib/i18n/music-labels"
+import { getKeyLabel, spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ScaleInfoProps {
   root: NoteName
@@ -36,14 +39,14 @@ export function ScaleInfo({
   colorPreset,
   onColorPresetChange,
 }: ScaleInfoProps) {
+  const { locale, t } = useI18n()
   const scale = SCALES.find((s) => s.id === scaleId)
   if (!scale) return null
 
   const rootIndex = CHROMATIC.indexOf(root)
   const noteList = scale.intervals
-    .map(
-      (interval) =>
-        CHROMATIC[(rootIndex + (SEMITONE_BY_INTERVAL[interval] ?? 0)) % 12]
+    .map((interval) =>
+      spellIntervalNote(root, interval, CHROMATIC[(rootIndex + (SEMITONE_BY_INTERVAL[interval] ?? 0)) % 12])
     )
     .join(" · ")
 
@@ -61,7 +64,7 @@ export function ScaleInfo({
           className="text-[20px] font-extrabold tracking-[-0.4px]"
           style={{ color: "var(--text)" }}
         >
-          {root} {scale.name}
+          {getKeyLabel(root)} {scaleLabel(locale, scale.id, scale.name)}
         </h1>
         <p
           className="mt-[3px] text-[10px]"
@@ -70,7 +73,7 @@ export function ScaleInfo({
             fontFamily: "var(--font-mono)",
           }}
         >
-          {noteList} &nbsp;·&nbsp; {scale.intervals.length} notes
+          {noteList} &nbsp;·&nbsp; {scale.intervals.length} {t("notes")}
         </p>
       </div>
 

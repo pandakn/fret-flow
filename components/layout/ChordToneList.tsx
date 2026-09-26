@@ -3,24 +3,10 @@
 import { getChordById, getChordNotes } from "@/lib/chords"
 import { getIntervalFamily, INTERVAL_FAMILY_COLORS } from "@/lib/colors"
 import { cn } from "@/lib/utils"
-import type { IntervalName, NoteName } from "@/types/music"
-
-const INTERVAL_LABELS: Record<IntervalName, string> = {
-  R: "Root",
-  b2: "Minor second",
-  "2": "Major second",
-  b3: "Minor third",
-  "3": "Major third",
-  "4": "Perfect fourth",
-  b5: "Diminished fifth",
-  "#4": "Augmented fourth",
-  "5": "Perfect fifth",
-  b6: "Minor sixth",
-  "#5": "Augmented fifth",
-  "6": "Major sixth",
-  b7: "Minor seventh",
-  "7": "Major seventh",
-}
+import type { NoteName } from "@/types/music"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { intervalLabel } from "@/lib/i18n/music-labels"
+import { spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ChordToneListProps {
   root: NoteName
@@ -31,8 +17,9 @@ interface ChordToneListProps {
 export function ChordToneList({
   root,
   chordId,
-  label = "Chord",
+  label,
 }: ChordToneListProps) {
+  const { locale, t } = useI18n()
   const chord = getChordById(chordId)
   if (!chord) return null
 
@@ -50,7 +37,7 @@ export function ChordToneList({
           fontFamily: "var(--font-mono)",
         }}
       >
-        {label} tones
+        {label ?? t("chord")} {t("tones")}
       </div>
       <div className="flex flex-col gap-0.5">
         {chord.intervals.map((interval, index) => {
@@ -90,7 +77,7 @@ export function ChordToneList({
                   className="text-[13px] font-semibold"
                   style={{ color: "var(--text)" }}
                 >
-                  {notes[index]}
+                  {spellIntervalNote(root, interval, notes[index])}
                 </span>
               </div>
               <div className="text-right">
@@ -112,7 +99,7 @@ export function ChordToneList({
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  {INTERVAL_LABELS[interval]}
+                  {intervalLabel(locale, interval)}
                 </div>
               </div>
             </div>

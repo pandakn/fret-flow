@@ -2,10 +2,13 @@ import { Check, LockKeyhole } from "lucide-react"
 import { getMilestoneProgress } from "@/lib/practice/milestones"
 import { cn } from "@/lib/utils"
 import type { PracticeSession } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 const formatProgress = (
   value: number,
-  unit: ReturnType<typeof getMilestoneProgress>[number]["unit"]
+  unit: ReturnType<typeof getMilestoneProgress>[number]["unit"],
+  locale: "en" | "th"
 ) => {
   switch (unit) {
     case "percent":
@@ -13,7 +16,7 @@ const formatProgress = (
     case "bpm":
       return `${Math.round(value)} BPM`
     case "milliseconds":
-      return value === 0 ? "No timing sample" : `${Math.round(value)}ms`
+      return value === 0 ? practiceCopy(locale, "No timing sample") : `${Math.round(value)}ms`
     case "count":
       return String(Math.round(value))
   }
@@ -24,6 +27,7 @@ export function MasteryMilestones({
 }: {
   sessions: readonly PracticeSession[]
 }) {
+  const { locale } = useI18n()
   const milestones = getMilestoneProgress(sessions)
   const earned = milestones.filter((milestone) => milestone.earned)
   const next = milestones
@@ -44,7 +48,7 @@ export function MasteryMilestones({
     <div className="space-y-5">
       <div className="flex items-baseline justify-between border-b pb-3">
         <span className="font-mono text-xs text-muted-foreground">
-          Mastery marks
+          {practiceCopy(locale, "Mastery marks")}
         </span>
         <span className="font-mono text-sm font-semibold">
           {earned.length}/{milestones.length}
@@ -70,15 +74,14 @@ export function MasteryMilestones({
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Your first mastery mark appears when a measured skill crosses its
-          threshold.
+          {practiceCopy(locale, "Your first mastery mark appears when a measured skill crosses its threshold.")}
         </p>
       )}
 
       {next.length > 0 ? (
         <div>
           <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
-            Closest next
+            {practiceCopy(locale, "Closest next")}
           </p>
           <ul className="space-y-4">
             {next.map(({ milestone, percent }) => (
@@ -86,11 +89,11 @@ export function MasteryMilestones({
                 <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
                   <span className="flex items-center gap-2">
                     <LockKeyhole className="size-3.5" aria-hidden="true" />
-                    {milestone.title}
+                    {localizePracticeText(locale, milestone.title)}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    {formatProgress(milestone.current, milestone.unit)} /{" "}
-                    {formatProgress(milestone.target, milestone.unit)}
+                    {formatProgress(milestone.current, milestone.unit, locale)} /{" "}
+                    {formatProgress(milestone.target, milestone.unit, locale)}
                   </span>
                 </div>
                 <div className="h-1.5 overflow-hidden bg-muted">

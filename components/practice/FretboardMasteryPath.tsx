@@ -9,6 +9,8 @@ import {
   getFretboardPathProgress,
 } from "@/lib/practice/paths"
 import type { FretboardRecallExercise, PracticeSession } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function FretboardMasteryPath({
   sessions,
@@ -17,6 +19,7 @@ export function FretboardMasteryPath({
   sessions: readonly PracticeSession[]
   onStart: (exercise: FretboardRecallExercise) => void
 }) {
+  const { locale } = useI18n()
   const progress = getFretboardPathProgress(sessions)
   const { currentStage: stage, currentEvidence: evidence } = progress
   const coveragePercent = Math.round(evidence.coverage * 100)
@@ -38,36 +41,42 @@ export function FretboardMasteryPath({
             <div className="flex items-center gap-2 text-[var(--color-root)]">
               <Map className="size-4" aria-hidden="true" />
               <p className="font-mono text-[10px] tracking-[0.18em] uppercase">
-                Fretboard path · Stage {stage.order} of 5
+                {practiceCopy(locale, "Fretboard path · Stage {current} of {total}", { current: stage.order, total: 5 })}
               </p>
             </div>
-            <CardTitle className="text-2xl">{stage.name}</CardTitle>
+            <CardTitle className="text-2xl">{localizePracticeText(locale, stage.name)}</CardTitle>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              {stage.why}
+              {localizePracticeText(locale, stage.why)}
             </p>
           </CardHeader>
           <CardContent>
             <div className="max-w-2xl">
               <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                <span>Target coverage</span>
+                <span>{practiceCopy(locale, "Target coverage")}</span>
                 <span className="font-mono text-xs tabular-nums">
                   {coveragePercent}% / {targetCoverage}%
                 </span>
               </div>
               <Progress
                 value={Math.min(100, (coveragePercent / targetCoverage) * 100)}
-                aria-label={`${stage.name} target coverage: ${coveragePercent}% of ${targetCoverage}% required`}
+                aria-label={practiceCopy(locale, "target coverage: {current}% of {target}% required", {
+                  current: coveragePercent,
+                  target: targetCoverage,
+                })}
               />
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs text-muted-foreground">
-                <span>{Math.round(evidence.accuracy * 100)}% accuracy</span>
+                <span>{practiceCopy(locale, "{value}% accuracy", { value: Math.round(evidence.accuracy * 100) })}</span>
                 <span>
-                  {evidence.sessionCount}/{stage.thresholds.sessions} sessions
+                  {practiceCopy(locale, "{current}/{total} sessions", {
+                    current: evidence.sessionCount,
+                    total: stage.thresholds.sessions,
+                  })}
                 </span>
-                <span>{progress.dueReviewCount} targets due</span>
+                <span>{practiceCopy(locale, "{count} targets due", { count: progress.dueReviewCount })}</span>
                 {evidence.checkpointCompleted ? (
                   <span className="flex items-center gap-1 text-foreground">
                     <CheckCircle2 className="size-3.5" aria-hidden="true" />
-                    Checkpoint recorded
+                    {practiceCopy(locale, "Checkpoint recorded")}
                   </span>
                 ) : null}
               </div>
@@ -76,14 +85,14 @@ export function FretboardMasteryPath({
         </div>
         <div className="flex min-w-64 flex-col justify-center gap-2 border-t bg-muted/20 p-6 lg:border-t-0 lg:border-l">
           <Button onClick={() => start(false)}>
-            Continue review
+            {practiceCopy(locale, "Continue review")}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Button>
           <Button variant="outline" onClick={() => start(true)}>
-            Check mastery
+            {practiceCopy(locale, "Check mastery")}
           </Button>
           <p className="mt-1 text-center text-xs text-muted-foreground">
-            Checkpoints sample the whole stage without hiding free practice.
+            {practiceCopy(locale, "Checkpoints sample the whole stage without hiding free practice.")}
           </p>
         </div>
       </div>

@@ -1,6 +1,8 @@
 "use client"
 
 import { SCALES } from "@/lib/scales"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import type { MessageKey } from "@/lib/i18n/messages"
 
 interface StatsGridProps {
   scaleId: string
@@ -20,37 +22,38 @@ const TONALITY_BY_SCALE: Record<string, string> = {
   harmonic_minor: "Minor",
 }
 
-const GENRE_BY_SCALE: Record<string, string> = {
-  major: "Pop",
-  natural_minor: "Rock",
-  pentatonic_major: "Pop",
-  pentatonic_minor: "Blues",
-  blues: "Blues",
-  dorian: "Jazz",
-  phrygian: "Metal",
-  lydian: "Film",
-  mixolydian: "Rock",
-  harmonic_minor: "Classical",
+const GENRE_BY_SCALE: Record<string, MessageKey> = {
+  major: "pop",
+  natural_minor: "rock",
+  pentatonic_major: "pop",
+  pentatonic_minor: "blues",
+  blues: "blues",
+  dorian: "jazz",
+  phrygian: "metal",
+  lydian: "film",
+  mixolydian: "rock",
+  harmonic_minor: "classical",
 }
 
 export function StatsGrid({ scaleId, stringCount = 6 }: StatsGridProps) {
+  const { t } = useI18n()
   const scale = SCALES.find((s) => s.id === scaleId)
   if (!scale) return null
 
   const noteCount = scale.intervals.length
   const totalPositions = noteCount * stringCount
-  const tonality = TONALITY_BY_SCALE[scaleId] ?? "—"
-  const genre = GENRE_BY_SCALE[scaleId] ?? "—"
+  const tonality = TONALITY_BY_SCALE[scaleId] === "Major" ? t("major") : t("minor")
+  const genre = GENRE_BY_SCALE[scaleId] ? t(GENRE_BY_SCALE[scaleId]) : "—"
 
   return (
     <div
       className="grid grid-cols-2 gap-1.5"
       style={{ padding: "0 16px 14px" }}
     >
-      <StatCard value={noteCount} label="Notes" />
-      <StatCard value={totalPositions} label="Positions" />
-      <StatCard value={tonality} label="Tonality" />
-      <StatCard value={genre} label="Common in" />
+      <StatCard value={noteCount} label={t("notes")} />
+      <StatCard value={totalPositions} label={t("positions")} />
+      <StatCard value={tonality} label={t("tonality")} />
+      <StatCard value={genre} label={t("commonIn")} />
     </div>
   )
 }

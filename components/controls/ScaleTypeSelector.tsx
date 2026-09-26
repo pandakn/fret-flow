@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import { SCALES, type Scale } from "@/lib/scales"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { scaleLabel } from "@/lib/i18n/music-labels"
 
 interface ScaleTypeSelectorProps {
   value: string
@@ -14,8 +16,9 @@ export function ScaleTypeSelector({
   value,
   onChange,
   scales = SCALES,
-  label = "Scale",
+  label,
 }: ScaleTypeSelectorProps) {
+  const { locale, t } = useI18n()
   return (
     <section
       className="flex flex-col"
@@ -34,7 +37,7 @@ export function ScaleTypeSelector({
           fontFamily: "var(--font-mono)",
         }}
       >
-        <span>{label}</span>
+        <span>{label ?? t("scale")}</span>
         <span>{scales.length}</span>
       </div>
       <div
@@ -61,7 +64,7 @@ export function ScaleTypeSelector({
             }}
             aria-pressed={value === scale.id}
           >
-            {scale.name}
+            {scaleLabel(locale, scale.id, scale.name)}
           </button>
         ))}
       </div>

@@ -44,10 +44,12 @@ import type { NoteName } from "@/types/music"
 import { useEffect, useMemo, useState } from "react"
 import { createDefaultExercise } from "@/lib/practice/exercises"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 const TRIAD_CHORD_TYPES = getTriadChordTypes()
 
 export function Explorer() {
+  const { t } = useI18n()
   const { saveExercise } = usePracticeStore()
   const [root, setRoot] = useState<NoteName>("C")
   const [mode, setMode] = useState<ExplorerMode>("scales")
@@ -261,7 +263,7 @@ export function Explorer() {
               value={scaleId}
               onChange={setScaleId}
               scales={mode === "modes" ? MODES : undefined}
-              label={mode === "modes" ? "Mode" : undefined}
+              label={mode === "modes" ? t("mode") : undefined}
             />
           ) : (
             <ChordTypeSelector
@@ -280,7 +282,7 @@ export function Explorer() {
                     : setChordId
               }
               chords={mode === "triads" ? TRIAD_CHORD_TYPES : undefined}
-              label={mode === "triads" ? "Triad" : undefined}
+              label={mode === "triads" ? t("triads") : undefined}
             />
           )}
           <TuningSelector value={tuningId} onChange={setTuningId} />
@@ -316,7 +318,7 @@ export function Explorer() {
             <ChordInfo
               root={root}
               chordId={mode === "triads" ? triadId : chordId}
-              titleSuffix={mode === "triads" ? "Triad" : undefined}
+              titleSuffix={mode === "triads" ? t("triads") : undefined}
               colorPreset={colorPreset}
               onColorPresetChange={setColorPreset}
             />
@@ -387,7 +389,7 @@ export function Explorer() {
               onDisplayModeChange={
                 mode === "triads" ? setTriadDisplayMode : setChordDisplayMode
               }
-              label={mode === "triads" ? "Triad" : undefined}
+              label={mode === "triads" ? t("triads") : undefined}
             />
           )}
         </main>
@@ -423,7 +425,7 @@ export function Explorer() {
               <ChordToneList
                 root={root}
                 chordId={mode === "triads" ? triadId : chordId}
-                label={mode === "triads" ? "Triad" : undefined}
+                label={mode === "triads" ? t("triads") : undefined}
               />
               <ChordVoicingSummary
                 voicing={activeVoicing}

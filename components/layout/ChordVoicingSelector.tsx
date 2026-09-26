@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import type { ChordVoicing } from "@/lib/chord-voicings"
 import { Button } from "@/components/ui/button"
 import { VoicingGroups } from "./VoicingGroups"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 export type ChordDisplayMode = "toneMap" | "shapeFocus"
 
@@ -22,8 +23,9 @@ export function ChordVoicingSelector({
   onChange,
   displayMode,
   onDisplayModeChange,
-  label = "Chord",
+  label,
 }: ChordVoicingSelectorProps) {
+  const { t } = useI18n()
   return (
     <section
       style={{ borderTop: "1px solid var(--border)", padding: "10px 32px" }}
@@ -37,7 +39,7 @@ export function ChordVoicingSelector({
             fontFamily: "var(--font-mono)",
           }}
         >
-          Voicings
+          {t("voicings")}
         </div>
         <div
           className="inline-flex rounded-md"
@@ -47,12 +49,12 @@ export function ChordVoicingSelector({
             padding: "2px",
           }}
           role="group"
-          aria-label={`${label} map display`}
+          aria-label={`${label ?? t("chord")} ${t("displayMode")}`}
         >
           {(
             [
-              ["toneMap", "Tone map"],
-              ["shapeFocus", "Shape focus"],
+              ["toneMap", t("toneMap")],
+              ["shapeFocus", t("shapeFocus")],
             ] as const
           ).map(([mode, label]) => (
             <Button

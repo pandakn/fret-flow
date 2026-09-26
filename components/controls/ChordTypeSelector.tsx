@@ -3,6 +3,8 @@
 import { CHORDS, type ChordType } from "@/lib/chords"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { chordLabel } from "@/lib/i18n/music-labels"
 
 interface ChordTypeSelectorProps {
   value: string
@@ -15,8 +17,9 @@ export function ChordTypeSelector({
   value,
   onChange,
   chords = CHORDS,
-  label = "Chord",
+  label,
 }: ChordTypeSelectorProps) {
+  const { locale, t } = useI18n()
   return (
     <section
       className="flex min-h-0 flex-1 flex-col"
@@ -30,7 +33,7 @@ export function ChordTypeSelector({
           fontFamily: "var(--font-mono)",
         }}
       >
-        <span>{label}</span>
+        <span>{label ?? t("chord")}</span>
         <span>{chords.length}</span>
       </div>
       <div className="flex min-h-0 flex-col gap-1 overflow-y-auto">
@@ -57,7 +60,7 @@ export function ChordTypeSelector({
               }}
               aria-pressed={isSelected}
             >
-              {chord.name}
+              {chordLabel(locale, chord.id, chord.name)}
               {chord.symbol && (
                 <span
                   className="ml-1.5 text-[10px] font-medium"

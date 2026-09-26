@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 const POSITIONS = [
   { id: "full", label: "Full", range: { min: 0, max: 21 } },
@@ -34,6 +35,7 @@ export function PositionTabs({
   focusMode,
   onFocusModeChange,
 }: PositionTabsProps) {
+  const { t } = useI18n()
   return (
     <div
       className="flex items-center gap-2.5 bg-[var(--surface)]"
@@ -47,7 +49,7 @@ export function PositionTabs({
           fontFamily: "var(--font-mono)",
         }}
       >
-        Position
+        {t("position")}
       </span>
       <div className="flex gap-0.5">
         {POSITIONS.map((pos) => (
@@ -69,7 +71,7 @@ export function PositionTabs({
             }}
             aria-pressed={value === pos.id}
           >
-            {pos.label}
+            {pos.id === "full" ? t("full") : pos.id === "open" ? t("open") : pos.label}
           </button>
         ))}
       </div>
@@ -82,14 +84,14 @@ export function PositionTabs({
           className="cursor-pointer text-[10px] font-medium"
           style={{ fontFamily: "var(--font-mono)" }}
         >
-          Focus form
+          {t("focusForm")}
         </label>
         <Switch
           id="position-focus"
           checked={focusMode}
           onCheckedChange={onFocusModeChange}
           disabled={value === "full"}
-          aria-label="Focus selected scale form"
+          aria-label={t("focusSelectedScale")}
         />
       </div>
     </div>

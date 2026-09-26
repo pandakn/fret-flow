@@ -38,7 +38,7 @@ export function FretboardPanel({
   shapeFocus = false,
   arpeggio,
 }: FretboardPanelProps) {
-  const { fretNotesByString, fretCount } = useFretboard({
+  const { fretNotesByString, fretCount, fretStart } = useFretboard({
     root,
     pattern,
     tuningId,
@@ -60,7 +60,9 @@ export function FretboardPanel({
     <div className="flex flex-1 items-center justify-center">
       <Fretboard
         fretNotes={fretNotesByString}
+        displayRoot={root}
         fretCount={fretCount}
+        fretStart={fretStart}
         colorPreset={colorPreset}
         showNoteNames={showNoteNames}
         showIntervals={showIntervals}

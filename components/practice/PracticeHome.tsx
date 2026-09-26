@@ -39,6 +39,8 @@ import { RoutineBuilder } from "./RoutineBuilder"
 import { FretboardRecallSetup } from "./FretboardRecallSetup"
 import { DailyMissionBoard } from "./DailyMissionBoard"
 import { FretboardMasteryPath } from "./FretboardMasteryPath"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 const EXERCISES: {
   kind: ExerciseKind
@@ -97,6 +99,7 @@ const EXERCISES: {
 ]
 
 export function PracticeHome() {
+  const { locale } = useI18n()
   const { document, hydrated } = usePracticeStore()
   const [dayKey, setDayKey] = useState(() => getLocalDayKey(new Date()))
   const [routineOpen, setRoutineOpen] = useState(false)
@@ -172,7 +175,7 @@ export function PracticeHome() {
         onExit={leaveSession}
         continueLabel={
           routineId && queueIndex < queue.length - 1
-            ? "Next routine block"
+            ? practiceCopy(locale, "Next routine block")
             : undefined
         }
       />
@@ -198,16 +201,16 @@ export function PracticeHome() {
       <header className="grid gap-6 border-b pb-8 md:grid-cols-[1fr_auto] md:items-end">
         <div>
           <p className="font-mono text-xs tracking-[0.22em] text-muted-foreground uppercase">
-            Deliberate practice
+            {practiceCopy(locale, "Deliberate practice")}
           </p>
           <h1 className="mt-2 max-w-3xl text-4xl leading-tight font-semibold sm:text-5xl">
-            Turn fretboard knowledge into playing you can measure.
+            {practiceCopy(locale, "Turn fretboard knowledge into playing you can measure.")}
           </h1>
         </div>
         <div className="font-mono text-sm text-muted-foreground">
           {hydrated
-            ? `${completedSessionCount} ${completedSessionCount === 1 ? "session" : "sessions"} logged`
-            : "Loading practice history…"}
+            ? `${completedSessionCount} ${practiceCopy(locale, completedSessionCount === 1 ? "session" : "sessions")} ${practiceCopy(locale, "logged")}`
+            : practiceCopy(locale, "Loading practice history…")}
         </div>
       </header>
 
@@ -218,18 +221,22 @@ export function PracticeHome() {
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-              Today’s practice · {dayKey}
+              {practiceCopy(locale, "Today’s practice · {day}", { day: dayKey })}
             </p>
             <h2
               id="todays-practice-heading"
               className="mt-2 text-2xl font-semibold sm:text-3xl"
             >
-              Start where you are today.
+              {practiceCopy(locale, "Start where you are today.")}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {warmup
-                ? `${warmup.exercise.name} · ${warmup.modifierLabel}. About ${warmup.durationMinutes} minutes to get moving.`
-                : "A small, focused way to begin."}
+                ? practiceCopy(locale, "{name} · {modifier}. About {duration} minutes to get moving.", {
+                    name: localizePracticeText(locale, warmup.exercise.name),
+                    modifier: localizePracticeText(locale, warmup.modifierLabel),
+                    duration: warmup.durationMinutes,
+                  })
+                : practiceCopy(locale, "A small, focused way to begin.")}
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
@@ -238,7 +245,7 @@ export function PracticeHome() {
               disabled={!hydrated || !warmup}
               onClick={() => warmup && startMission(warmup)}
             >
-              {warmupComplete ? "Replay quick warmup" : "Start quick warmup"}
+              {practiceCopy(locale, warmupComplete ? "Replay quick warmup" : "Start quick warmup")}
             </Button>
             <Button
               className="min-h-11"
@@ -247,14 +254,14 @@ export function PracticeHome() {
               aria-controls="practice-routine-builder"
               aria-expanded={routineOpen}
             >
-              Build a full set
+              {practiceCopy(locale, "Build a full set")}
             </Button>
           </div>
         </div>
         <p className="mt-5 border-t pt-4 font-mono text-xs text-muted-foreground">
           {warmupComplete
-            ? "Warmup logged today. You can replay it whenever you like."
-            : "Even a short session counts as practice."}
+            ? practiceCopy(locale, "Warmup logged today. You can replay it whenever you like.")
+            : practiceCopy(locale, "Even a short session counts as practice.")}
         </p>
       </section>
 
@@ -264,7 +271,7 @@ export function PracticeHome() {
             variant="ghost"
             className="min-h-11 w-full justify-between border-b px-0 text-left text-lg font-semibold"
           >
-            Plan a full set
+            {practiceCopy(locale, "Plan a full set")}
             <ChevronDown
               className={cn(
                 "size-4 transition-transform",
@@ -284,13 +291,13 @@ export function PracticeHome() {
       <section aria-labelledby="more-practice-heading" className="space-y-5">
         <div>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-            Explore at your pace
+            {practiceCopy(locale, "Explore at your pace")}
           </p>
           <h2
             id="more-practice-heading"
             className="mt-1 text-2xl font-semibold"
           >
-            More ways to practice
+            {practiceCopy(locale, "More ways to practice")}
           </h2>
         </div>
         <Collapsible>
@@ -299,7 +306,7 @@ export function PracticeHome() {
               variant="ghost"
               className="min-h-11 w-full justify-between border-b px-0 text-left text-lg font-semibold"
             >
-              Fretboard mastery path
+              {practiceCopy(locale, "Fretboard mastery path")}
               <ChevronDown className="size-4" aria-hidden="true" />
             </Button>
           </CollapsibleTrigger>
@@ -317,7 +324,7 @@ export function PracticeHome() {
               variant="ghost"
               className="min-h-11 w-full justify-between border-b px-0 text-left text-lg font-semibold"
             >
-              Choose an individual drill
+              {practiceCopy(locale, "Choose an individual drill")}
               <ChevronDown className="size-4" aria-hidden="true" />
             </Button>
           </CollapsibleTrigger>
@@ -326,26 +333,26 @@ export function PracticeHome() {
               <div className="mb-4 flex items-end justify-between">
                 <div>
                   <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-                    Focused work
+                    {practiceCopy(locale, "Focused work")}
                   </p>
                   <h3 id="drills-heading" className="text-2xl font-semibold">
-                    Choose a drill
+                    {practiceCopy(locale, "Choose a drill")}
                   </h3>
                 </div>
               </div>
               <div className="grid gap-px overflow-hidden border bg-border sm:grid-cols-2 lg:grid-cols-4">
-                {EXERCISES.map(({ kind, icon: Icon, label, measure }) => (
+                  {EXERCISES.map(({ kind, icon: Icon, label, measure }) => (
                   <Card
                     key={kind}
                     className="rounded-none border-0 shadow-none"
                   >
                     <CardHeader>
                       <Icon className="size-5" aria-hidden="true" />
-                      <CardTitle className="pt-5 text-lg">{label}</CardTitle>
+                      <CardTitle className="pt-5 text-lg">{practiceCopy(locale, label)}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="min-h-10 text-sm text-muted-foreground">
-                        {measure}
+                        {practiceCopy(locale, measure)}
                       </p>
                       <Button
                         className="mt-5 w-full"
@@ -356,7 +363,7 @@ export function PracticeHome() {
                             : startExercise(createDefaultExercise(kind))
                         }
                       >
-                        Start drill
+                        {practiceCopy(locale, "Start drill")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -373,7 +380,7 @@ export function PracticeHome() {
                 variant="ghost"
                 className="min-h-11 w-full justify-between border-b px-0 text-left text-lg font-semibold"
               >
-                Saved exercises
+                {practiceCopy(locale, "Saved exercises")}
                 <ChevronDown className="size-4" aria-hidden="true" />
               </Button>
             </CollapsibleTrigger>

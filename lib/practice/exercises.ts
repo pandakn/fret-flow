@@ -9,6 +9,7 @@ import type {
   PracticeTarget,
 } from "@/types/practice"
 import type { IntervalName, NoteName } from "@/types/music"
+import { getChordById, getChordNotes } from "@/lib/chords"
 
 export type RandomSource = () => number
 
@@ -351,17 +352,48 @@ export type ConstructionPrompt = {
   choices: NoteName[]
   expected: NoteName
   interval: IntervalName
+  category: ConstructionExercise["category"]
+  chordId?: string
+}
+
+const CONSTRUCTION_SEMITONES: Record<IntervalName, number> = {
+  R: 0,
+  b2: 1,
+  "2": 2,
+  b3: 3,
+  "3": 4,
+  "4": 5,
+  b5: 6,
+  "#4": 6,
+  "5": 7,
+  b6: 8,
+  "#5": 8,
+  "6": 9,
+  b7: 10,
+  "7": 11,
 }
 
 export const generateConstructionPrompt = (
   exercise: ConstructionExercise,
   random: RandomSource = Math.random
 ): ConstructionPrompt => {
-  const interval = INTERVALS[1 + boundedIndex(INTERVALS.length - 1, random)]
-  const expected =
-    CHROMATIC[
-      (CHROMATIC.indexOf(exercise.root) + INTERVALS.indexOf(interval)) % 12
-    ]
+  const requestedChord = exercise.chordId
+    ? getChordById(exercise.chordId)
+    : undefined
+  const defaultChordId = exercise.category === "seventh" ? "major_7" : "major"
+  const chord = requestedChord ?? getChordById(defaultChordId)
+  const isChordQuestion = exercise.category === "triad" || exercise.category === "seventh"
+  const chordIntervals = chord?.intervals.slice(1) ?? []
+  const interval = isChordQuestion && chordIntervals.length > 0
+    ? chordIntervals[boundedIndex(chordIntervals.length, random)]
+    : INTERVALS[1 + boundedIndex(INTERVALS.length - 1, random)]
+  const chordNotes = chord ? getChordNotes(exercise.root, chord.formula) : []
+  const chordIndex = chord?.intervals.indexOf(interval) ?? -1
+  const expected = isChordQuestion && chordIndex > 0
+    ? chordNotes[chordIndex]
+    : CHROMATIC[
+        (CHROMATIC.indexOf(exercise.root) + CONSTRUCTION_SEMITONES[interval]) % 12
+      ]
   const choices = [expected]
   while (choices.length < 4) {
     const choice = CHROMATIC[boundedIndex(CHROMATIC.length, random)]
@@ -370,9 +402,13 @@ export const generateConstructionPrompt = (
   choices.sort(() => random() - 0.5)
 
   return {
-    prompt: `Which note is ${interval} above ${exercise.root}?`,
+    prompt: isChordQuestion && chord
+      ? `Which note is ${interval} in ${exercise.root}${chord.symbol} chord?`
+      : `Which note is ${interval} above ${exercise.root}?`,
     choices,
     expected,
     interval,
+    category: exercise.category,
+    chordId: isChordQuestion ? chord?.id : undefined,
   }
 }

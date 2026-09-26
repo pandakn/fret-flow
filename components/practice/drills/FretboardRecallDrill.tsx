@@ -15,6 +15,9 @@ import { getWeakTargets } from "@/lib/practice/progression"
 import type { FretboardRecallExercise } from "@/types/practice"
 import type { FretNote, TonalPattern } from "@/types/music"
 import type { DrillProps } from "./types"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
+import { spellNoteInKey } from "@/lib/theory/spelling"
 
 const CHROMATIC_PATTERN: TonalPattern = {
   formula: Array.from({ length: 12 }, () => 1),
@@ -40,6 +43,7 @@ export function FretboardRecallDrill({
   onAttempt,
   onFinish,
 }: DrillProps<FretboardRecallExercise>) {
+  const { locale } = useI18n()
   const { document } = usePracticeStore()
   const weakTargets = useMemo(
     () => getWeakTargets(document.sessions),
@@ -56,7 +60,7 @@ export function FretboardRecallDrill({
   const promptedAtRef = useRef(0)
   const lockedRef = useRef(false)
   const advanceTimerRef = useRef<number | undefined>(undefined)
-  const { fretNotesByString, fretCount } = useFretboard({
+  const { fretNotesByString, fretCount, fretStart } = useFretboard({
     root: exercise.root,
     pattern: CHROMATIC_PATTERN,
     tuningId: "standard",
@@ -151,26 +155,38 @@ export function FretboardRecallDrill({
   )
 
   const questionNumber = Math.min(attempts.length + 1, exercise.questionCount)
+  const displayText = (text: string) => {
+    const localized = localizePracticeText(locale, text)
+    if (locale !== "th") return localized
+    return localized.replace(/\b[A-G]#?\b/g, (note) =>
+      spellNoteInKey(exercise.root, note as typeof exercise.root)
+    )
+  }
 
   return (
     <section aria-labelledby="recall-prompt" className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-            Question {questionNumber} / {exercise.questionCount}
+            {practiceCopy(locale, "Question {current} / {total}", {
+              current: questionNumber,
+              total: exercise.questionCount,
+            })}
           </p>
           <h2 id="recall-prompt" className="mt-1 text-2xl font-semibold">
-            {prompt.prompt}
+            {displayText(prompt.prompt)}
           </h2>
         </div>
         <p aria-live="polite" className="min-h-6 font-mono text-sm">
-          {feedback?.answer ??
-            (prompt.direction === "namePosition"
-              ? "Choose the note name"
-              : "Choose a position on the fretboard")}
+          {feedback
+            ? displayText(feedback.answer)
+            : practiceCopy(locale, prompt.direction === "namePosition"
+                ? "Choose the note name"
+                : "Choose a position on the fretboard")}
         </p>
       </div>
       <Fretboard
+        fretStart={fretStart}
         fretNotes={fretNotesByString}
         fretCount={fretCount}
         colorPreset="minimal"
@@ -185,7 +201,7 @@ export function FretboardRecallDrill({
       {prompt.direction === "namePosition" ? (
         <div
           className="mx-auto grid max-w-2xl grid-cols-3 gap-2 sm:grid-cols-6"
-          aria-label="Note choices"
+          aria-label={practiceCopy(locale, "Note choices")}
         >
           {prompt.choices.map((choice) => (
             <Button
@@ -194,7 +210,7 @@ export function FretboardRecallDrill({
               disabled={feedback !== undefined}
               onClick={() => handleNameAnswer(choice)}
             >
-              {choice}
+              {locale === "th" ? spellNoteInKey(exercise.root, choice) : choice}
             </Button>
           ))}
         </div>

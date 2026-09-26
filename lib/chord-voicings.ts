@@ -1,5 +1,9 @@
 import type { NoteName } from "@/types/music"
 import { getChordById, getChordNotes, type ChordType } from "./chords"
+import {
+  getCagedMajorShapes,
+  type CagedShapeId,
+} from "./theory/caged"
 import { getNoteAtFret, CHROMATIC } from "./notes"
 import type { Tuning } from "./tunings"
 
@@ -47,6 +51,7 @@ export type ChordVoicingTemplate =
 export type ChordVoicing = {
   id: string
   chordId: string
+  cagedShape?: CagedShapeId
   root: NoteName
   label: string
   position: ChordVoicingPosition
@@ -168,6 +173,11 @@ const SHAPES: Record<
     open: [0, 2, 0, 0, 0, 0],
     barre: [null, 0, 2, 0, 1, 0],
     upNeck: [0, 2, 0, 0, 0, 0],
+  },
+  half_diminished_7: {
+    open: [0, 1, 2, 0, null, 0],
+    barre: [null, 0, 1, 0, 1, null],
+    upNeck: [0, 1, 2, 0, null, 0],
   },
   major_7: {
     open: [0, 2, 1, 1, 0, 0],
@@ -375,6 +385,39 @@ export const getChordVoicings = (
       fretRange
     )
     return voicing ? [voicing] : []
+  })
+}
+
+/** Returns the five movable major CAGED shapes as normal fretboard voicings. */
+export const getCagedMajorVoicings = (
+  root: NoteName,
+  tuning: Tuning,
+  fretRange: ChordVoicingFretRange = DEFAULT_CHORD_VOICING_FRET_RANGE
+): ChordVoicing[] => {
+  const chord = getChordById("major")
+  if (!chord || tuning.id !== "standard" || !isSixStringTuning(tuning)) {
+    return []
+  }
+
+  return getCagedMajorShapes(root, fretRange).flatMap((shape) => {
+    const voicing: ChordVoicing = {
+      id: `caged-major-${shape.shape.toLowerCase()}`,
+      chordId: chord.id,
+      cagedShape: shape.shape,
+      root,
+      label: `${shape.shape} shape`,
+      position: shape.minFret === 0 ? "open" : "up-neck",
+      tuningId: tuning.id,
+      frets: shape.frets,
+      activePositions: shape.positions.map(({ string, fret }) => ({
+        string,
+        fret,
+      })),
+    }
+
+    return isResolvedChordVoicingValid(voicing, chord, tuning, fretRange)
+      ? [voicing]
+      : []
   })
 }
 

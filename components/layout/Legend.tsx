@@ -2,6 +2,8 @@
 
 import { getIntervalFamily, INTERVAL_FAMILY_COLORS } from "@/lib/colors"
 import type { IntervalName } from "@/types/music"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { intervalLabel } from "@/lib/i18n/music-labels"
 
 const SCALE_ITEMS: { family: 1 | 2 | 3 | 4; label: string }[] = [
   { family: 1, label: "Root (1)" },
@@ -10,39 +12,25 @@ const SCALE_ITEMS: { family: 1 | 2 | 3 | 4; label: string }[] = [
   { family: 4, label: "6th / 7th" },
 ]
 
-const CHORD_LABELS: Record<IntervalName, string> = {
-  R: "Root (1)",
-  b2: "Flat 2nd (b2)",
-  "2": "2nd (2)",
-  b3: "Minor 3rd (b3)",
-  "3": "Major 3rd (3)",
-  "4": "4th (4)",
-  b5: "Diminished 5th (b5)",
-  "#4": "Augmented 4th (#4)",
-  "5": "5th (5)",
-  b6: "Flat 6th (b6)",
-  "#5": "Augmented 5th (#5)",
-  "6": "6th (6)",
-  b7: "Minor 7th (b7)",
-  "7": "Major 7th (7)",
-}
-
 interface LegendProps {
   activeIntervals?: readonly IntervalName[]
 }
 
 export function Legend({ activeIntervals }: LegendProps) {
+  const { locale, t } = useI18n()
   const items = activeIntervals
     ? activeIntervals.flatMap((interval) => {
         const family = getIntervalFamily(interval)
         return family
-          ? [{ key: interval, family, label: CHORD_LABELS[interval] }]
+          ? [{ key: interval, family, label: `${intervalLabel(locale, interval)} (${interval})` }]
           : []
       })
     : SCALE_ITEMS.map(({ family, label }) => ({
         key: String(family),
         family,
-        label,
+        label: locale === "th"
+          ? family === 1 ? `${t("rootKey")} (1)` : family === 2 ? t("scaleFamily23") : family === 3 ? t("scaleFamily45") : t("scaleFamily67")
+          : label,
       }))
 
   return (
@@ -58,7 +46,7 @@ export function Legend({ activeIntervals }: LegendProps) {
           fontFamily: "var(--font-mono)",
         }}
       >
-        Legend
+        {t("legend")}
       </span>
       {items.map(({ key, family, label }) => (
         <div

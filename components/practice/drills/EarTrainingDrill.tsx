@@ -8,6 +8,9 @@ import type { EarTrainingExercise } from "@/types/practice"
 import type { IntervalName } from "@/types/music"
 import type { DrillProps } from "./types"
 import { CHROMATIC } from "@/lib/notes"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { practiceCopy } from "@/lib/i18n/practice-messages"
+import { getKeyLabel } from "@/lib/theory/spelling"
 
 const CHOICES: { label: string; interval: IntervalName; semitones: number }[] =
   [
@@ -25,6 +28,7 @@ export function EarTrainingDrill({
   onAttempt,
   onFinish,
 }: DrillProps<EarTrainingExercise>) {
+  const { locale } = useI18n()
   const { playNote } = useGuitarSound()
   const [answerIndex, setAnswerIndex] = useState(() =>
     Math.floor(Math.random() * CHOICES.length)
@@ -77,13 +81,13 @@ export function EarTrainingDrill({
   return (
     <section className="mx-auto max-w-2xl space-y-7 text-center">
       <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-        Ear training · {attempts.length + 1}/{exercise.questionCount}
+        {practiceCopy(locale, "Ear training")} · {attempts.length + 1}/{exercise.questionCount}
       </p>
-      <h2 className="text-3xl font-semibold">What interval do you hear?</h2>
+      <h2 className="text-3xl font-semibold">{practiceCopy(locale, "What interval do you hear?")}</h2>
       <p className="text-sm text-muted-foreground">
-        Reference root: {exercise.root}
+        {practiceCopy(locale, "Reference root:")} {locale === "th" ? getKeyLabel(exercise.root) : exercise.root}
       </p>
-      <Button onClick={() => void play()}>Play interval</Button>
+      <Button onClick={() => void play()}>{practiceCopy(locale, "Play interval")}</Button>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {CHOICES.map((choice) => (
           <Button
@@ -91,7 +95,7 @@ export function EarTrainingDrill({
             variant="outline"
             onClick={() => choose(choice)}
           >
-            {choice.label}
+            {practiceCopy(locale, choice.label)}
           </Button>
         ))}
       </div>

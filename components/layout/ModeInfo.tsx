@@ -4,6 +4,9 @@ import { getModeById, getModeContext } from "@/lib/scales"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { ColorPresetPicker } from "./ColorPresetPicker"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { chordLabel, scaleLabel } from "@/lib/i18n/music-labels"
+import { getKeyLabel, spellIntervalNote } from "@/lib/theory/spelling"
 
 interface ModeInfoProps {
   root: NoteName
@@ -18,6 +21,7 @@ export function ModeInfo({
   colorPreset,
   onColorPresetChange,
 }: ModeInfoProps) {
+  const { locale, t } = useI18n()
   const mode = getModeById(modeId)
   if (!mode) return null
 
@@ -37,7 +41,7 @@ export function ModeInfo({
           className="text-[20px] font-extrabold tracking-[-0.4px]"
           style={{ color: "var(--text)" }}
         >
-          {root} {mode.name}
+          {getKeyLabel(root)} {scaleLabel(locale, mode.id, mode.name)}
         </h1>
         <div
           className="mt-[3px] flex flex-wrap gap-x-3 gap-y-1 text-[10px]"
@@ -47,15 +51,15 @@ export function ModeInfo({
           }}
         >
           <span>
-            Parent: {context.parentRoot} Major (degree {context.parentDegree})
+            {t("parent")}: {getKeyLabel(context.parentRoot)} {t("major")} ({t("degree")} {context.parentDegree})
           </span>
           <span>
-            Characteristic tone: {context.characteristicNote} (
+            {t("characteristicTone")}: {spellIntervalNote(root, context.characteristicInterval, context.characteristicNote)} (
             {context.characteristicInterval})
           </span>
           <span>
-            Fits: {root}
-            {context.chordSymbol} ({context.chordLabel})
+            {t("fits")}: {getKeyLabel(root)}
+            {context.chordSymbol} ({chordLabel(locale, context.chordSymbol === "m7" ? "minor_7" : context.chordSymbol === "maj7" ? "major_7" : "dominant_7", context.chordLabel)})
           </span>
         </div>
       </div>

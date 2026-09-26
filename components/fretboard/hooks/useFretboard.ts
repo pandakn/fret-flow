@@ -17,7 +17,8 @@ export function useFretboard({
 }: UseFretboardProps) {
   const tuning = getTuningById(tuningId)
 
-  const fretCount = fretRange.max - fretRange.min + 1
+  const fretStart = Math.max(1, fretRange.min)
+  const fretCount = Math.max(0, fretRange.max - fretStart + 1)
 
   const fretNotes =
     pattern && tuning
@@ -45,6 +46,7 @@ export function useFretboard({
     selectedTuningId: tuningId,
     fretNotesByString,
     fretCount,
+    fretStart,
     pattern,
     tuning,
   }

@@ -9,12 +9,15 @@ import { buildRoutine } from "@/lib/practice/routines"
 import { getLocalDayKey } from "@/lib/practice/statistics"
 import { usePracticeStore } from "./hooks/usePracticeStore"
 import type { ExerciseDefinition, RoutineDefinition } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function RoutineBuilder({
   onStart,
 }: {
   onStart: (routine: RoutineDefinition) => void
 }) {
+  const { locale } = useI18n()
   const { document, saveRoutine } = usePracticeStore()
   const [duration, setDuration] = useState<10 | 20 | 30>(20)
   const [dayKey, setDayKey] = useState(() => getLocalDayKey(new Date()))
@@ -64,9 +67,9 @@ export function RoutineBuilder({
       <CardHeader className="flex-row items-end justify-between space-y-0">
         <div>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-            Adaptive routine
+            {practiceCopy(locale, "Adaptive routine")}
           </p>
-          <CardTitle className="mt-1">Today’s set</CardTitle>
+          <CardTitle className="mt-1">{practiceCopy(locale, "Today’s set")}</CardTitle>
         </div>
         <div className="flex gap-1">
           {([10, 20, 30] as const).map((minutes) => (
@@ -79,7 +82,7 @@ export function RoutineBuilder({
                 setOrder([])
               }}
             >
-              {minutes} min
+              {minutes} {practiceCopy(locale, "min")}
             </Button>
           ))}
         </div>
@@ -87,11 +90,11 @@ export function RoutineBuilder({
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            Today’s focus:{" "}
+            {practiceCopy(locale, "Today’s focus:")}{" "}
             <span className="font-medium text-foreground">
-              {focus?.exercise.name ?? "Fretboard recall"}
+              {localizePracticeText(locale, focus?.exercise.name ?? "Fretboard recall")}
             </span>
-            . Shuffle the supporting drills to keep this skill in the set.
+            {practiceCopy(locale, ". Shuffle the supporting drills to keep this skill in the set.")}
           </p>
           <Button
             variant="outline"
@@ -101,7 +104,7 @@ export function RoutineBuilder({
               setOrder([])
             }}
           >
-            <Shuffle aria-hidden="true" /> Shuffle set
+            <Shuffle aria-hidden="true" /> {practiceCopy(locale, "Shuffle set")}
           </Button>
         </div>
         <ol className="divide-y border-y">
@@ -112,21 +115,21 @@ export function RoutineBuilder({
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
-                  {block.exercise.name}
+                  {localizePracticeText(locale, block.exercise.name)}
                   {index === 0 ? (
                     <span className="ml-2 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
-                      Today’s focus
+                      {practiceCopy(locale, "Today’s focus")}
                     </span>
                   ) : null}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {block.durationMinutes} min · {block.exercise.description}
+                  {block.durationMinutes} {practiceCopy(locale, "min")} · {localizePracticeText(locale, block.exercise.description)}
                 </p>
               </div>
               <Button
                 size="icon-xs"
                 variant="ghost"
-                aria-label={`Move ${block.exercise.name} up`}
+                aria-label={practiceCopy(locale, "Move {name} up", { name: localizePracticeText(locale, block.exercise.name) })}
                 disabled={index <= 1}
                 onClick={() => move(index, -1)}
               >
@@ -135,7 +138,7 @@ export function RoutineBuilder({
               <Button
                 size="icon-xs"
                 variant="ghost"
-                aria-label={`Move ${block.exercise.name} down`}
+                aria-label={practiceCopy(locale, "Move {name} down", { name: localizePracticeText(locale, block.exercise.name) })}
                 disabled={index === 0 || index === blocks.length - 1}
                 onClick={() => move(index, 1)}
               >
@@ -146,9 +149,9 @@ export function RoutineBuilder({
         </ol>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => saveRoutine(routine)}>
-            Save routine
+            {practiceCopy(locale, "Save routine")}
           </Button>
-          <Button onClick={() => onStart(routine)}>Start routine</Button>
+          <Button onClick={() => onStart(routine)}>{practiceCopy(locale, "Start routine")}</Button>
         </div>
       </CardContent>
     </Card>

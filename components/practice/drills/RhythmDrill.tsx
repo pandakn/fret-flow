@@ -7,6 +7,8 @@ import { createAttempt } from "@/lib/practice/exercises"
 import { getNearestBeatOffset } from "@/lib/practice/metronome"
 import type { RhythmExercise } from "@/types/practice"
 import type { DrillProps } from "./types"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function RhythmDrill({
   exercise,
@@ -14,6 +16,7 @@ export function RhythmDrill({
   onAttempt,
   onFinish,
 }: DrillProps<RhythmExercise>) {
+  const { locale } = useI18n()
   const subdivision =
     exercise.pattern === "quarters"
       ? 1
@@ -69,10 +72,10 @@ export function RhythmDrill({
       }}
     >
       <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-        {exercise.pattern} · {exercise.bpm} BPM
+        {localizePracticeText(locale, exercise.pattern)} · {exercise.bpm} BPM
       </p>
-      <h2 className="text-3xl font-semibold">Lock into the pulse</h2>
-      <div className="flex justify-center gap-2">
+      <h2 className="text-3xl font-semibold">{practiceCopy(locale, "Lock into the pulse")}</h2>
+      <div className="flex justify-center gap-2" aria-label={practiceCopy(locale, "Beat indicator")}>
         {Array.from({ length: exercise.beatsPerBar }, (_, index) => (
           <span
             key={index}
@@ -88,21 +91,21 @@ export function RhythmDrill({
         <Button
           onClick={metronome.playing ? metronome.stop : () => void start()}
         >
-          {metronome.playing ? "Stop" : "Start"}
+          {practiceCopy(locale, metronome.playing ? "Stop" : "Start")}
         </Button>
         <Button
           variant="outline"
           className="h-20 min-w-48 text-lg"
           onClick={tap}
         >
-          Tap · Space
+          {practiceCopy(locale, "Tap · Space")}
         </Button>
       </div>
       <p className="font-mono text-sm">
-        {attempts.length} / {targetTaps} taps
+        {attempts.length} / {targetTaps} {practiceCopy(locale, "taps")}
       </p>
       <Button variant="ghost" onClick={onFinish}>
-        Finish rhythm test
+        {practiceCopy(locale, "Finish rhythm test")}
       </Button>
     </section>
   )

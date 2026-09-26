@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMetronome } from "./hooks/useMetronome"
 import type { ExerciseDefinition } from "@/types/practice"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 export function getPlayInContextPrompt(
   exercise: ExerciseDefinition
@@ -31,6 +33,7 @@ export function PlayInContext({
   exercise: ExerciseDefinition
   onFinish: () => void
 }) {
+  const { locale } = useI18n()
   const metronome = useMetronome({
     initialBpm:
       exercise.kind === "technique" || exercise.kind === "rhythm"
@@ -53,17 +56,17 @@ export function PlayInContext({
     <Card className="mx-auto max-w-2xl border-[var(--color-root)]/45 bg-card/80">
       <CardHeader className="text-center">
         <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-          Optional · play it in context
+          {practiceCopy(locale, "Optional · play it in context")}
         </p>
-        <CardTitle>Make it music</CardTitle>
+        <CardTitle>{practiceCopy(locale, "Make it music")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 text-center">
         <p className="text-muted-foreground">
-          Try four bars, then continue whenever you&apos;re ready.
+          {practiceCopy(locale, "Try four bars, then continue whenever you're ready.")}
         </p>
-        <p className="text-lg leading-relaxed">{prompt}</p>
+        <p className="text-lg leading-relaxed">{localizePracticeText(locale, prompt)}</p>
         <p className="font-mono text-sm text-muted-foreground">
-          {metronome.bpm} BPM · click is optional
+          {practiceCopy(locale, "{bpm} BPM · click is optional", { bpm: metronome.bpm })}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Button
@@ -72,12 +75,12 @@ export function PlayInContext({
               metronome.playing ? metronome.stop : () => void metronome.start()
             }
           >
-            {metronome.playing ? "Stop click" : "Start click"}
+            {practiceCopy(locale, metronome.playing ? "Stop click" : "Start click")}
           </Button>
-          <Button onClick={finish}>View session summary</Button>
+          <Button onClick={finish}>{practiceCopy(locale, "View session summary")}</Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          This is free play; it does not affect your exercise score.
+          {practiceCopy(locale, "This is free play; it does not affect your exercise score.")}
         </p>
       </CardContent>
     </Card>

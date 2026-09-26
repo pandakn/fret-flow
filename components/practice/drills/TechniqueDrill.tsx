@@ -6,6 +6,8 @@ import { useMetronome } from "@/components/practice/hooks/useMetronome"
 import { createAttempt } from "@/lib/practice/exercises"
 import type { TechniqueExercise } from "@/types/practice"
 import type { DrillProps } from "./types"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
 
 const LABELS: Record<TechniqueExercise["technique"], string> = {
   "alternate-picking": "Down–up evenly on every note",
@@ -16,6 +18,7 @@ const LABELS: Record<TechniqueExercise["technique"], string> = {
 }
 
 export function TechniqueDrill({ exercise, onAttempt, onFinish }: DrillProps<TechniqueExercise>) {
+  const { locale } = useI18n()
   const metronome = useMetronome({ initialBpm: exercise.bpm, subdivision: 2 })
   const [startedAt, setStartedAt] = useState(() => performance.now())
   const record = (clean: boolean) => {
@@ -32,14 +35,14 @@ export function TechniqueDrill({ exercise, onAttempt, onFinish }: DrillProps<Tec
   }
   return (
     <section className="mx-auto max-w-2xl space-y-6 text-center">
-      <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">{exercise.technique.replaceAll("-", " ")}</p>
-      <h2 className="text-3xl font-semibold">{LABELS[exercise.technique]}</h2>
-      <p className="text-muted-foreground">{exercise.root} {exercise.scaleId.replaceAll("_", " ")} · {metronome.bpm} BPM</p>
+      <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">{localizePracticeText(locale, exercise.technique.replaceAll("-", " "))}</p>
+      <h2 className="text-3xl font-semibold">{practiceCopy(locale, LABELS[exercise.technique])}</h2>
+      <p className="text-muted-foreground">{exercise.root} {localizePracticeText(locale, exercise.scaleId.replaceAll("_", " "))} · {metronome.bpm} BPM</p>
       <div className="flex flex-wrap justify-center gap-3">
-        <Button onClick={metronome.playing ? metronome.stop : () => void metronome.start()}>{metronome.playing ? "Stop click" : "Start click"}</Button>
-        <Button variant="outline" onClick={() => record(false)}>Missed</Button>
-        <Button variant="outline" onClick={() => record(true)}>Clean</Button>
-        <Button variant="ghost" onClick={onFinish}>Finish</Button>
+        <Button onClick={metronome.playing ? metronome.stop : () => void metronome.start()}>{practiceCopy(locale, metronome.playing ? "Stop click" : "Start click")}</Button>
+        <Button variant="outline" onClick={() => record(false)}>{practiceCopy(locale, "Missed")}</Button>
+        <Button variant="outline" onClick={() => record(true)}>{practiceCopy(locale, "Clean")}</Button>
+        <Button variant="ghost" onClick={onFinish}>{practiceCopy(locale, "Finish")}</Button>
       </div>
     </section>
   )

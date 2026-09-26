@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   buildDailyMissions,
-  formatChallengeGoal,
-  formatChallengeValue,
   getBestMissionSession,
   getChallengeValue,
   getMissionSessions,
@@ -19,6 +17,13 @@ import { getLocalDayKey } from "@/lib/practice/statistics"
 import { cn } from "@/lib/utils"
 import type { DailyMission } from "@/types/practice"
 import { usePracticeStore } from "./hooks/usePracticeStore"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import {
+  localizeChallengeGoal,
+  localizeChallengeValue,
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
 
 const SLOT_LABELS: Record<DailyMission["slot"], string> = {
   warmup: "01 · Tune-up",
@@ -37,6 +42,7 @@ export function DailyMissionBoard({
 }: {
   onStart: (mission: DailyMission) => void
 }) {
+  const { locale } = useI18n()
   const { document, hydrated, rerollWildcard } = usePracticeStore()
   const [dayKey, setDayKey] = useState(() => getLocalDayKey(new Date()))
 
@@ -73,20 +79,22 @@ export function DailyMissionBoard({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-            Daily signal · {dayKey}
+            {practiceCopy(locale, "Daily signal · {day}", { day: dayKey })}
           </p>
           <h2
             id="daily-missions-heading"
             className="mt-1 text-2xl font-semibold"
           >
-            Three missions. One useful session.
+            {practiceCopy(locale, "Three missions. One useful session.")}
           </h2>
         </div>
         <div className="flex items-center gap-3">
           <div
             className="flex gap-1.5"
             role="img"
-            aria-label={`${completedCount} of 3 daily missions complete`}
+            aria-label={practiceCopy(locale, "{count} of 3 daily missions complete", {
+              count: completedCount,
+            })}
           >
             {missions.map((mission) => (
               <span
@@ -131,7 +139,7 @@ export function DailyMissionBoard({
               <CardHeader className="space-y-4">
                 <div className="flex items-center justify-between gap-3 font-mono text-[10px] tracking-[0.14em] uppercase">
                   <span className="text-muted-foreground">
-                    {SLOT_LABELS[mission.slot]}
+                    {practiceCopy(locale, SLOT_LABELS[mission.slot])}
                   </span>
                   <span
                     className={cn(
@@ -141,17 +149,17 @@ export function DailyMissionBoard({
                   >
                     {complete
                       ? goalMet
-                        ? "Goal cleared"
-                        : "Attempted"
-                      : DIFFICULTY_LABELS[mission.difficulty]}
+                        ? practiceCopy(locale, "Goal cleared")
+                        : practiceCopy(locale, "Attempted")
+                      : practiceCopy(locale, DIFFICULTY_LABELS[mission.difficulty])}
                   </span>
                 </div>
                 <div>
                   <CardTitle className="text-xl leading-tight">
-                    {mission.title.split(" · ").at(-1)}
+                    {localizePracticeText(locale, mission.title.split(" · ").at(-1) ?? mission.title)}
                   </CardTitle>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {mission.description}
+                    {localizePracticeText(locale, mission.description)}
                   </p>
                 </div>
               </CardHeader>
@@ -163,9 +171,9 @@ export function DailyMissionBoard({
                       aria-hidden="true"
                     />
                     <div>
-                      <p className="sr-only">Goal</p>
+                      <p className="sr-only">{practiceCopy(locale, "Goal")}</p>
                       <p className="font-medium">
-                        {formatChallengeGoal(mission.goal)}
+                        {localizeChallengeGoal(locale, mission.goal)}
                       </p>
                     </div>
                   </div>
@@ -175,14 +183,14 @@ export function DailyMissionBoard({
                       aria-hidden="true"
                     />
                     <div>
-                      <p className="sr-only">Variation</p>
-                      <p>{mission.modifierLabel}</p>
+                      <p className="sr-only">{practiceCopy(locale, "Variation")}</p>
+                      <p>{localizePracticeText(locale, mission.modifierLabel)}</p>
                     </div>
                   </div>
                 </div>
 
                 <p className="min-h-10 text-xs leading-relaxed text-muted-foreground">
-                  {mission.reason}
+                  {localizePracticeText(locale, mission.reason)}
                 </p>
 
                 {bestValue !== null ? (
@@ -191,8 +199,9 @@ export function DailyMissionBoard({
                     aria-live="polite"
                   >
                     <Check className="size-4" aria-hidden="true" />
-                    Best today:{" "}
-                    {formatChallengeValue(
+                    {practiceCopy(locale, "Best today:")}{" "}
+                    {localizeChallengeValue(
+                      locale,
                       bestValue,
                       mission.goal.metric,
                       mission.goal.metric === "cleanCount"
@@ -202,7 +211,7 @@ export function DailyMissionBoard({
                   </p>
                 ) : (
                   <p className="font-mono text-xs text-muted-foreground">
-                    About {mission.durationMinutes} min
+                    {practiceCopy(locale, "about {minutes} min", { minutes: mission.durationMinutes })}
                   </p>
                 )}
 
@@ -212,14 +221,14 @@ export function DailyMissionBoard({
                     variant={complete ? "outline" : "default"}
                     onClick={() => onStart(mission)}
                   >
-                    {complete ? "Replay" : "Start mission"}
+                    {practiceCopy(locale, complete ? "Replay" : "Start mission")}
                   </Button>
                   {mission.slot === "wildcard" ? (
                     <Button
                       size="icon"
                       variant="ghost"
-                      aria-label="Reroll today's wildcard mission"
-                      title="One wildcard reroll per day"
+                      aria-label={practiceCopy(locale, "Reroll today's wildcard mission")}
+                      title={practiceCopy(locale, "One wildcard reroll per day")}
                       disabled={
                         dailyState.wildcardRerolls >= 1 || wildcardComplete
                       }
@@ -239,7 +248,7 @@ export function DailyMissionBoard({
           className="border-l-2 border-[var(--color-root)] bg-muted/40 px-4 py-3 text-sm"
           role="status"
         >
-          Daily set complete. Three different skills, one stronger practice day.
+          {practiceCopy(locale, "Daily set complete. Three different skills, one stronger practice day.")}
         </p>
       ) : null}
     </section>

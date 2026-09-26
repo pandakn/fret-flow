@@ -154,6 +154,7 @@ export type ConstructionExercise = ExerciseBase & {
   kind: "construction"
   category: "interval" | "triad" | "seventh" | "inversion"
   root: NoteName
+  chordId?: string
   questionCount: number
 }
 

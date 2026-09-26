@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 export type DisplayMode = "degrees" | "notes" | "rootOnly"
 
@@ -9,13 +10,14 @@ interface DisplayOptionsProps {
   onChange: (mode: DisplayMode) => void
 }
 
-const OPTIONS: { id: DisplayMode; label: string }[] = [
-  { id: "notes", label: "Notes" },
-  { id: "degrees", label: "Degrees" },
-  { id: "rootOnly", label: "Root only" },
+const OPTIONS: { id: DisplayMode; label: "notes" | "degrees" | "rootOnly" }[] = [
+  { id: "notes", label: "notes" },
+  { id: "degrees", label: "degrees" },
+  { id: "rootOnly", label: "rootOnly" },
 ]
 
 export function DisplayOptions({ value, onChange }: DisplayOptionsProps) {
+  const { t } = useI18n()
   return (
     <div
       className="inline-flex rounded-md"
@@ -25,7 +27,7 @@ export function DisplayOptions({ value, onChange }: DisplayOptionsProps) {
         gap: "2px",
       }}
       role="tablist"
-      aria-label="Display mode"
+      aria-label={t("displayMode")}
     >
       {OPTIONS.map((opt) => {
         const active = value === opt.id
@@ -47,7 +49,7 @@ export function DisplayOptions({ value, onChange }: DisplayOptionsProps) {
               fontFamily: "var(--font-mono)",
             }}
           >
-            {opt.label}
+            {t(opt.label)}
           </button>
         )
       })}

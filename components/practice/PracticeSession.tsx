@@ -15,7 +15,12 @@ import { PositionConnectionDrill } from "./drills/PositionConnectionDrill"
 import { ConstructionDrill } from "./drills/ConstructionDrill"
 import type { ExerciseDefinition } from "@/types/practice"
 import type { DailyMission } from "@/types/practice"
-import { formatChallengeGoal } from "@/lib/practice/challenges"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import {
+  localizeChallengeGoal,
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
 
 const formatTime = (milliseconds: number) => {
   const seconds = Math.floor(milliseconds / 1000)
@@ -35,6 +40,7 @@ export function PracticeSession({
   continueLabel?: string
   mission?: DailyMission
 }) {
+  const { locale } = useI18n()
   const challenge = mission
     ? {
         id: mission.id,
@@ -55,27 +61,27 @@ export function PracticeSession({
       <div className="mx-auto flex min-h-[65vh] max-w-2xl flex-col items-center justify-center text-center">
         <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
           {pathStage
-            ? `${pathStage.checkpoint ? "Mastery checkpoint" : "Path review"} · ${pathStage.stageId.replaceAll("-", " ")}`
-            : "Ready"}
+            ? `${practiceCopy(locale, pathStage.checkpoint ? "Mastery checkpoint" : "Path review")} · ${localizePracticeText(locale, pathStage.stageId.replaceAll("-", " "))}`
+            : practiceCopy(locale, "Ready")}
         </p>
-        <h1 className="mt-3 text-4xl font-semibold">{exercise.name}</h1>
+        <h1 className="mt-3 text-4xl font-semibold">{localizePracticeText(locale, exercise.name)}</h1>
         <p className="mt-4 max-w-lg text-muted-foreground">
-          {exercise.description}
+          {localizePracticeText(locale, exercise.description)}
         </p>
         {mission ? (
           <div className="mt-5 border-y px-5 py-3 text-sm">
-            <p className="font-medium">{formatChallengeGoal(mission.goal)}</p>
+            <p className="font-medium">{localizeChallengeGoal(locale, mission.goal)}</p>
             <p className="mt-1 text-muted-foreground">
-              {mission.modifierLabel}
+              {localizePracticeText(locale, mission.modifierLabel)}
             </p>
           </div>
         ) : null}
         <div className="mt-8 flex gap-3">
           <Button variant="ghost" onClick={onExit}>
-            Back
+            {practiceCopy(locale, "Back")}
           </Button>
           <Button size="lg" onClick={() => practice.start(routineId)}>
-            Start session
+            {practiceCopy(locale, "Start session")}
           </Button>
         </div>
       </div>
@@ -112,9 +118,9 @@ export function PracticeSession({
       <header className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-            Active session
+            {practiceCopy(locale, "Active session")}
           </p>
-          <h1 className="text-xl font-semibold">{exercise.name}</h1>
+          <h1 className="text-xl font-semibold">{localizePracticeText(locale, exercise.name)}</h1>
         </div>
         <div className="flex items-center gap-2">
           <span className="min-w-16 font-mono text-sm tabular-nums">
@@ -129,10 +135,10 @@ export function PracticeSession({
                 : practice.pause
             }
           >
-            {practice.session.status === "paused" ? "Resume" : "Pause"}
+            {practiceCopy(locale, practice.session.status === "paused" ? "Resume" : "Pause")}
           </Button>
           <Button variant="ghost" size="sm" onClick={practice.abandon}>
-            End
+            {practiceCopy(locale, "End")}
           </Button>
         </div>
       </header>
@@ -140,19 +146,19 @@ export function PracticeSession({
       {mission ? (
         <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-[var(--color-root)] bg-muted/40 px-4 py-3 text-sm">
           <span className="font-medium">
-            {formatChallengeGoal(mission.goal)}
+            {localizeChallengeGoal(locale, mission.goal)}
           </span>
-          <span className="text-muted-foreground">{mission.modifierLabel}</span>
+          <span className="text-muted-foreground">{localizePracticeText(locale, mission.modifierLabel)}</span>
         </div>
       ) : null}
 
       {pathStage ? (
         <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-[var(--color-root)] bg-muted/40 px-4 py-3 text-sm">
           <span className="font-medium capitalize">
-            {pathStage.stageId.replaceAll("-", " ")}
+            {localizePracticeText(locale, pathStage.stageId.replaceAll("-", " "))}
           </span>
           <span className="text-muted-foreground">
-            {pathStage.checkpoint ? "Mastery checkpoint" : "Adaptive review"}
+            {practiceCopy(locale, pathStage.checkpoint ? "Mastery checkpoint" : "Adaptive review")}
           </span>
         </div>
       ) : null}
@@ -160,11 +166,11 @@ export function PracticeSession({
       {practice.session.status === "paused" ? (
         <div className="flex min-h-[45vh] flex-col items-center justify-center text-center">
           <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
-            Paused
+            {practiceCopy(locale, "Paused")}
           </p>
-          <h2 className="mt-2 text-3xl font-semibold">Take a breath</h2>
+          <h2 className="mt-2 text-3xl font-semibold">{practiceCopy(locale, "Take a breath")}</h2>
           <Button className="mt-6" onClick={practice.resume}>
-            Resume session
+            {practiceCopy(locale, "Resume session")}
           </Button>
         </div>
       ) : showApplication ? (

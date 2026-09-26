@@ -29,6 +29,29 @@ describe("practice exercises", () => {
     assert.ok(prompt.choices.includes(prompt.expected))
   })
 
+  test("construction categories ask for tones from their selected chord", () => {
+    const triad = createDefaultExercise("construction")
+    if (triad.kind !== "construction") throw new Error("Wrong exercise")
+    let triadDraw = 0
+
+    const minorThird = generateConstructionPrompt(
+      { ...triad, root: "C", category: "triad", chordId: "minor" },
+      () => triadDraw++ === 0 ? 0 : (triadDraw * 0.19) % 1
+    )
+    assert.equal(minorThird.category, "triad")
+    assert.equal(minorThird.interval, "b3")
+    assert.equal(minorThird.expected, "D#")
+
+    let seventhDraw = 0
+    const majorSeventh = generateConstructionPrompt(
+      { ...triad, root: "C", category: "seventh", chordId: "major_7" },
+      () => seventhDraw++ === 0 ? 0.99 : (seventhDraw * 0.23) % 1
+    )
+    assert.equal(majorSeventh.category, "seventh")
+    assert.equal(majorSeventh.interval, "7")
+    assert.equal(majorSeventh.expected, "B")
+  })
+
   test("generates an explicit position-to-note prompt", () => {
     const exercise = createDefaultExercise("fretboardRecall")
     if (exercise.kind !== "fretboardRecall") throw new Error("Wrong exercise")

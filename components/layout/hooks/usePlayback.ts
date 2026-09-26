@@ -21,6 +21,8 @@ export type PlaybackStep = {
    * playback derives a pitch from its interval and root as before.
    */
   frequency?: number
+  /** Exact pitches to sound together for a chord event. */
+  frequencies?: readonly number[]
 }
 
 interface UsePlaybackArgs {
@@ -119,10 +121,14 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
     const rootIndex = CHROMATIC.indexOf(currentRoot)
     if (rootIndex === -1) return
 
-    const freqs = currentSequence.map(
-      ({ interval, frequency }) =>
-        frequency ??
-        BASE_HZ * Math.pow(2, (rootIndex + SEMITONE_BY_INTERVAL[interval]) / 12)
+    const freqs = currentSequence.map(({ interval, frequency, frequencies }) =>
+      frequencies && frequencies.length > 0
+        ? frequencies
+        : [
+            frequency ??
+              BASE_HZ *
+                Math.pow(2, (rootIndex + SEMITONE_BY_INTERVAL[interval]) / 12),
+          ]
     )
 
     const beat = 60 / Math.max(40, Math.min(200, currentBpm))
@@ -160,10 +166,9 @@ export function usePlayback({ root, sequence, bpm, loop }: UsePlaybackArgs) {
         return
       }
 
-      sampler.triggerAttackRelease(
-        freqs[noteIndex],
-        noteDuration,
-        tone.now() + 0.05
+      const startTime = tone.now() + 0.05
+      freqs[noteIndex].forEach((frequency) =>
+        sampler?.triggerAttackRelease(frequency, noteDuration, startTime)
       )
       noteIndex += 1
 

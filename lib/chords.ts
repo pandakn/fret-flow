@@ -21,6 +21,13 @@ export const CHORDS: ChordType[] = [
   chord("dominant_7", "Dominant 7", "7", [4, 3, 3, 2], ["R", "3", "5", "b7"]),
   chord("minor_7", "Minor 7", "m7", [3, 4, 3, 2], ["R", "b3", "5", "b7"]),
   chord("major_7", "Major 7", "maj7", [4, 3, 4, 1], ["R", "3", "5", "7"]),
+  chord(
+    "half_diminished_7",
+    "Half-Diminished 7",
+    "ø7",
+    [3, 3, 4, 2],
+    ["R", "b3", "b5", "b7"]
+  ),
   chord("diminished", "Diminished", "dim", [3, 3, 6], ["R", "b3", "b5"]),
   chord("augmented", "Augmented", "aug", [4, 4, 4], ["R", "3", "#5"]),
   chord("sus2", "Sus2", "sus2", [2, 5, 5], ["R", "2", "5"]),

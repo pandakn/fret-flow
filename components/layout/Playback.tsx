@@ -9,6 +9,7 @@ import { getScaleById } from "@/lib/scales"
 import { getStringFrequencyAtFret, getTuningById } from "@/lib/tunings"
 import type { NoteName } from "@/types/music"
 import { PlaybackControls } from "./PlaybackControls"
+import { useI18n } from "@/components/i18n/LocaleProvider"
 
 interface PlaybackProps {
   root: NoteName
@@ -17,6 +18,7 @@ interface PlaybackProps {
 }
 
 export function Playback({ root, scaleId, tuningId }: PlaybackProps) {
+  const { t } = useI18n()
   const sequence = useMemo(() => {
     const scale = getScaleById(scaleId)
     const tuning = getTuningById(tuningId)
@@ -43,8 +45,8 @@ export function Playback({ root, scaleId, tuningId }: PlaybackProps) {
     <PlaybackControls
       root={root}
       sequence={sequence}
-      playLabel="Play scale"
-      unavailableLabel="Scale unavailable"
+      playLabel={t("playScale")}
+      unavailableLabel={t("scaleUnavailable")}
     />
   )
 }

@@ -6,12 +6,16 @@ import { FretMarkers } from "./FretMarkers"
 import { cn } from "@/lib/utils"
 import type { ChordVoicing } from "@/lib/chord-voicings"
 import type { ResolvedArpeggio } from "@/lib/arpeggios"
-import type { FretNote } from "@/types/music"
+import type { FretNote, NoteName } from "@/types/music"
 import type { ColorPreset } from "@/types/fretboard"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { voicingLabel } from "@/lib/i18n/music-labels"
 
 interface FretboardProps {
   fretNotes: FretNote[][]
+  displayRoot?: NoteName
   fretCount: number
+  fretStart?: number
   showNoteNames?: boolean
   showIntervals?: boolean
   rootOnly?: boolean
@@ -102,7 +106,9 @@ const handleNoNoteClick = () => {}
 
 export function Fretboard({
   fretNotes,
+  displayRoot,
   fretCount,
+  fretStart = 1,
   showNoteNames = true,
   showIntervals = false,
   rootOnly = false,
@@ -117,6 +123,7 @@ export function Fretboard({
   quizTarget,
   className,
 }: FretboardProps) {
+  const { locale } = useI18n()
   const [hoveredNote, setHoveredNote] = useState<string | null>(null)
 
   const colors = PRESETS[colorPreset]
@@ -163,14 +170,14 @@ export function Fretboard({
           <div className="w-14 shrink-0" />
           {Array.from({ length: fretCount }, (_, i) => (
             <div
-              key={i + 1}
+              key={fretStart + i}
               className="flex-1 text-center font-mono text-[10px] font-semibold"
               style={{
                 color: "var(--foreground)",
                 opacity: 1,
               }}
             >
-              {i + 1}
+              {fretStart + i}
             </div>
           ))}
         </div>
@@ -179,28 +186,31 @@ export function Fretboard({
           className="relative overflow-hidden rounded-none"
           style={{ background: colors.bg }}
         >
-          <div
-            className="absolute top-0 bottom-0 left-14 z-10"
-            style={{
-              width: "3px",
-              backgroundColor: colors.nut,
-            }}
-          />
+          {fretStart === 1 ? (
+            <div
+              className="absolute top-0 bottom-0 left-14 z-10"
+              style={{
+                width: "3px",
+                backgroundColor: colors.nut,
+              }}
+            />
+          ) : null}
 
-          <FretMarkers fretCount={fretCount} colorPreset={colorPreset} />
+          <FretMarkers fretCount={fretCount} fretStart={fretStart} colorPreset={colorPreset} />
 
           {fretNotes.map((notes, stringIndex) => (
             <StringRow
               key={stringIndex}
               stringIndex={stringIndex}
               fretNotes={notes}
+              displayRoot={displayRoot}
               showNoteNames={showNoteNames}
               showIntervals={showIntervals}
               rootOnly={rootOnly}
               focusRange={focusRange}
               colorPreset={colorPreset}
               selectedVoicingFrets={selectedVoicingFrets}
-              selectedVoicingLabel={selectedVoicing?.label}
+              selectedVoicingLabel={selectedVoicing ? voicingLabel(locale, selectedVoicing) : undefined}
               shapeFocus={isShapeFocus}
               arpeggioPathSteps={arpeggioPathSteps}
               arpeggioStepCount={arpeggio?.steps.length ?? 0}

@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button"
 import type { ChordVoicing, ChordVoicingPosition } from "@/lib/chord-voicings"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { voicingLabel, voicingPositionLabel } from "@/lib/i18n/music-labels"
 
 export const VOICING_GROUPS: ReadonlyArray<{
   position: ChordVoicingPosition
@@ -27,9 +29,10 @@ export function VoicingGroups({
   onChange,
   ariaLabelSuffix = "",
 }: VoicingGroupsProps) {
+  const { locale, t } = useI18n()
   return (
     <div className="mt-2 flex flex-wrap gap-4">
-      {VOICING_GROUPS.map(({ position, label }) => {
+      {VOICING_GROUPS.map(({ position }) => {
         const choices = voicings.filter(
           (voicing) => voicing.position === position
         )
@@ -42,12 +45,12 @@ export function VoicingGroups({
                 fontFamily: "var(--font-mono)",
               }}
             >
-              {label}
+              {voicingPositionLabel(locale, position)}
             </span>
             <div
               className="flex flex-wrap gap-1"
               role="group"
-              aria-label={`${label} ${ariaLabelSuffix}voicings`}
+              aria-label={`${voicingPositionLabel(locale, position)} ${ariaLabelSuffix}${t("voicings")}`}
             >
               {choices.length > 0 ? (
                 choices.map((voicing) => {
@@ -73,7 +76,7 @@ export function VoicingGroups({
                       }}
                       aria-pressed={isSelected}
                     >
-                      {voicing.label}
+                      {voicingLabel(locale, voicing)}
                     </Button>
                   )
                 })
@@ -85,7 +88,7 @@ export function VoicingGroups({
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  None available
+                  {t("noneAvailable")}
                 </span>
               )}
             </div>

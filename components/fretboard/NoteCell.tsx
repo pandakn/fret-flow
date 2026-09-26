@@ -34,6 +34,7 @@ const RING_OFFSET_CLASSES: Record<ColorPreset, string> = {
 
 interface NoteCellProps {
   note: NoteName
+  displayNote?: string
   interval: IntervalName | null
   stringIndex: number
   fret: number
@@ -48,6 +49,7 @@ interface NoteCellProps {
   isSelectedVoicingTone: boolean
   shapeFocus: boolean
   selectedVoicingLabel?: string
+  selectedWord: string
   arpeggioStepIndexes?: readonly number[]
   arpeggioStepCount: number
   isHovered: boolean
@@ -63,6 +65,7 @@ interface NoteCellProps {
 export const NoteCell = memo<NoteCellProps>(
   ({
     note,
+    displayNote,
     interval,
     stringIndex,
     fret,
@@ -77,6 +80,7 @@ export const NoteCell = memo<NoteCellProps>(
     isSelectedVoicingTone,
     shapeFocus,
     selectedVoicingLabel,
+    selectedWord,
     arpeggioStepIndexes,
     arpeggioStepCount,
     isHovered,
@@ -148,7 +152,7 @@ export const NoteCell = memo<NoteCellProps>(
         disabled={quizTargetOnly}
         aria-label={
           isSelectedVoicingTone && selectedVoicingLabel
-            ? `${ariaLabel}, selected ${selectedVoicingLabel} voicing`
+            ? `${ariaLabel}, ${selectedWord} ${selectedVoicingLabel}`
             : ariaLabel
         }
       >
@@ -157,11 +161,11 @@ export const NoteCell = memo<NoteCellProps>(
             ? "?"
             : quizState === "idle"
               ? ""
-              : note
+              : displayNote ?? note
           : showIntervals && interval
             ? interval
             : showNoteNames
-              ? note
+              ? displayNote ?? note
               : ""}
         {arpeggioStepLabel ? (
           <span

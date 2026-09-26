@@ -3,6 +3,18 @@
 import { cn } from "@/lib/utils"
 import type { ColorPreset } from "@/types/fretboard"
 import type { CSSProperties } from "react"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+
+const THAI_PRESET_NAMES: Record<ColorPreset, string> = {
+  minimal: "มินิมอล",
+  natural: "ธรรมชาติ",
+  light: "สว่าง",
+  dark: "มืด",
+  blue: "น้ำเงิน",
+  purple: "ม่วง",
+  green: "เขียว",
+  red: "แดง",
+}
 
 const PRESET_PILLS: ColorPreset[] = [
   "minimal",
@@ -32,14 +44,15 @@ interface ColorPresetPickerProps {
 }
 
 export function ColorPresetPicker({ value, onChange }: ColorPresetPickerProps) {
+  const { locale, t } = useI18n()
   return (
-    <div className="flex gap-1" aria-label="Fretboard color preset">
+    <div className="flex gap-1" role="group" aria-label={t("colorPreset")}>
       {PRESET_PILLS.map((preset) => (
         <button
           key={preset}
           type="button"
           onClick={() => onChange(preset)}
-          title={preset}
+          title={locale === "th" ? THAI_PRESET_NAMES[preset] : preset}
           className={cn(
             "h-4 w-4 rounded-full transition-all",
             value === preset && "ring-2 ring-offset-1"
@@ -54,7 +67,7 @@ export function ColorPresetPicker({ value, onChange }: ColorPresetPickerProps) {
                 value === preset ? "var(--surface)" : undefined,
             } as CSSProperties
           }
-          aria-label={`Color preset: ${preset}`}
+          aria-label={`${t("colorPreset")}: ${locale === "th" ? THAI_PRESET_NAMES[preset] : preset}`}
           aria-pressed={value === preset}
         />
       ))}
