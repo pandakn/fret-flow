@@ -20,6 +20,29 @@ type LearningCopy = {
   verifiedLabel: string
   selfReportedLabel: string
   skillEvidence: string
+  objectiveProgress: string
+  noCheckYet: string
+  needsPractice: string
+  checkPassedStatus: string
+  reviewDue: string
+  latestCheck: string
+  guidedCount: string
+  applicationCount: string
+  startQuickCheck: string
+  openLesson: string
+  reviewTarget: string
+  dueContext: string
+  duePosition: string
+  dueDegree: string
+  dueInterval: string
+  countIn: string
+  countInBeat: string
+  changeEveryBar: string
+  beatOfBar: string
+  guidedTempo: string
+  decreaseTempo: string
+  increaseTempo: string
+  groovePrompt: string
   skillNames: Record<SkillId, string>
   names: Record<ExerciseTemplateId, string>
   descriptions: Record<ExerciseTemplateId, string>
@@ -62,6 +85,31 @@ export const learningCopy: Record<Locale, LearningCopy> = {
     verifiedLabel: "Checked by the app",
     selfReportedLabel: "Includes self reports",
     skillEvidence: "Skill evidence",
+    objectiveProgress: "Lesson progress",
+    noCheckYet: "No check yet",
+    needsPractice: "Needs practice",
+    checkPassedStatus: "Quick Check passed",
+    reviewDue: "Review due",
+    latestCheck: "Latest check: {correct}/{attempts} · {date}",
+    guidedCount: "Guided sessions: {count}",
+    applicationCount: "Grooves tried: {count}",
+    startQuickCheck: "Take Quick Check",
+    openLesson: "Open lesson",
+    reviewTarget: "Review due target",
+    dueContext: "{skill} · key {key}",
+    duePosition: "string {string}, fret {fret}",
+    dueDegree: "degree {degree}",
+    dueInterval: "interval {interval}",
+    countIn: "Count in: one bar, then change chords each bar.",
+    countInBeat: "Count in · {beat} of 4",
+    changeEveryBar:
+      "Play {chord} in this bar. Prepare {next} for the next bar.",
+    beatOfBar: "Beat {beat} of 4",
+    guidedTempo: "Tempo: {bpm} BPM",
+    decreaseTempo: "Decrease tempo",
+    increaseTempo: "Increase tempo",
+    groovePrompt:
+      "Play four bars: {first}, {second}, {first}, {second}. Change on beat one, then try a different strumming pattern.",
     skillNames: {
       "interval.construct": "Build intervals",
       "triad.construct": "Build triads",
@@ -146,6 +194,30 @@ export const learningCopy: Record<Locale, LearningCopy> = {
     verifiedLabel: "แอปตรวจคำตอบแล้ว",
     selfReportedLabel: "รวมผลที่ประเมินด้วยตนเอง",
     skillEvidence: "ผลการฝึกตามทักษะ",
+    objectiveProgress: "ความคืบหน้าบทเรียน",
+    noCheckYet: "ยังไม่ได้เช็กความเข้าใจ",
+    needsPractice: "ควรฝึกเพิ่ม",
+    checkPassedStatus: "ผ่านการเช็กความเข้าใจ",
+    reviewDue: "ถึงเวลาทบทวน",
+    latestCheck: "ผลเช็กล่าสุด: {correct}/{attempts} · {date}",
+    guidedCount: "ครั้งที่ฝึกตามแนวทาง: {count}",
+    applicationCount: "ครั้งที่ลองเล่นกรูฟ: {count}",
+    startQuickCheck: "เริ่มเช็กความเข้าใจ",
+    openLesson: "เปิดบทเรียน",
+    reviewTarget: "ทบทวนหัวข้อที่ถึงกำหนด",
+    dueContext: "{skill} · คีย์ {key}",
+    duePosition: "สาย {string} เฟรต {fret}",
+    dueDegree: "ขั้นที่ {degree}",
+    dueInterval: "อินเทอร์วัล {interval}",
+    countIn: "นับเข้า 1 ห้อง แล้วเปลี่ยนคอร์ดทุกห้อง",
+    countInBeat: "นับเข้า · จังหวะที่ {beat} จาก 4",
+    changeEveryBar: "เล่น {chord} ในห้องนี้ เตรียม {next} สำหรับห้องถัดไป",
+    beatOfBar: "จังหวะที่ {beat} จาก 4",
+    guidedTempo: "ความเร็ว: {bpm} BPM",
+    decreaseTempo: "ลดความเร็ว",
+    increaseTempo: "เพิ่มความเร็ว",
+    groovePrompt:
+      "เล่นสี่ห้อง: {first}, {second}, {first}, {second} เปลี่ยนคอร์ดที่จังหวะแรก แล้วลองเปลี่ยนรูปแบบการตีคอร์ด",
     skillNames: {
       "interval.construct": "สร้างอินเทอร์วัล",
       "triad.construct": "สร้างไตรแอด",

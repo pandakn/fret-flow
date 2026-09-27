@@ -20,6 +20,12 @@ export default async function PracticePage({
       <Navbar />
       <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <LearnPracticeEntry
+          reviewRequest={
+            typeof query.reviewSkill === "string" &&
+            typeof query.reviewKey === "string"
+              ? { skillId: query.reviewSkill, key: query.reviewKey }
+              : undefined
+          }
           initialExercise={
             practiceParams && isLocale(lang)
               ? createLearnExercise(practiceParams, lang)

@@ -54,7 +54,12 @@ export function getDueLearningTargets(
       }
       current.count++
       if (attempt.correct) current.correct++
-      current.last = Math.max(current.last, Date.parse(attempt.createdAt))
+      const attemptedAt = Date.parse(attempt.createdAt)
+      if (attemptedAt >= current.last) {
+        current.last = attemptedAt
+        current.assignment = assignment
+        current.target = attempt.target
+      }
       stats.set(id, current)
     }
   }

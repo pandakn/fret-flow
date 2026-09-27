@@ -16,6 +16,8 @@ import { PersonalBests } from "./PersonalBests"
 import { MasteryMilestones } from "./MasteryMilestones"
 import { FretboardPathProgress } from "./FretboardPathProgress"
 import { useI18n } from "@/components/i18n/LocaleProvider"
+import { ObjectiveProgress } from "@/components/learn/ObjectiveProgress"
+import { LESSON_IDS } from "@/lib/i18n/lessons"
 import {
   localizePracticeText,
   practiceCopy,
@@ -116,6 +118,19 @@ export function ProgressDashboard() {
           </div>
         ))}
       </dl>
+      <section
+        aria-labelledby="objective-progress-heading"
+        className="space-y-4"
+      >
+        <h2 id="objective-progress-heading" className="text-2xl font-semibold">
+          {learningCopy[locale].objectiveProgress}
+        </h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          {LESSON_IDS.map((id) => (
+            <ObjectiveProgress key={id} lessonId={id} />
+          ))}
+        </div>
+      </section>
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Card className="shadow-none">
           <CardHeader>

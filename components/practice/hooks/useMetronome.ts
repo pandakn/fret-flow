@@ -20,10 +20,12 @@ export function useMetronome({
   const [bpm, setBpmState] = useState(clampBpm(initialBpm))
   const [playing, setPlaying] = useState(false)
   const [beat, setBeat] = useState(0)
+  const [bar, setBar] = useState(0)
   const [countingIn, setCountingIn] = useState(false)
   const [gapEveryBars, setGapEveryBars] = useState(initialGapEveryBars)
   const contextRef = useRef<AudioContext | null>(null)
   const timerRef = useRef<number | null>(null)
+  const pendingBeatTimersRef = useRef<number[]>([])
   const nextNoteTimeRef = useRef(0)
   const noteIndexRef = useRef(0)
   const volumeRef = useRef(0.22)
@@ -55,8 +57,11 @@ export function useMetronome({
   const stop = useCallback(() => {
     if (timerRef.current !== null) window.clearInterval(timerRef.current)
     timerRef.current = null
+    pendingBeatTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    pendingBeatTimersRef.current = []
     setPlaying(false)
     setBeat(0)
+    setBar(0)
     setCountingIn(false)
   }, [])
 
@@ -80,10 +85,15 @@ export function useMetronome({
           0,
           (nextNoteTimeRef.current - context.currentTime) * 1000
         )
-        window.setTimeout(() => {
+        const beatTimer = window.setTimeout(() => {
+          pendingBeatTimersRef.current = pendingBeatTimersRef.current.filter(
+            (timer) => timer !== beatTimer
+          )
           setBeat(Math.floor(index / subdivision) % beatsPerBar)
+          setBar(Math.floor(index / (beatsPerBar * subdivision)))
           if (index >= beatsPerBar * subdivision) setCountingIn(false)
         }, delay)
+        pendingBeatTimersRef.current.push(beatTimer)
         nextNoteTimeRef.current += secondsPerSubdivision(bpm, subdivision)
         noteIndexRef.current += 1
       }
@@ -103,6 +113,9 @@ export function useMetronome({
   useEffect(() => {
     return () => {
       if (timerRef.current !== null) window.clearInterval(timerRef.current)
+      pendingBeatTimersRef.current.forEach((timer) =>
+        window.clearTimeout(timer)
+      )
       void contextRef.current?.close()
     }
   }, [])
@@ -112,6 +125,7 @@ export function useMetronome({
     setBpm,
     playing,
     beat,
+    bar,
     countingIn,
     gapEveryBars,
     setGapEveryBars,

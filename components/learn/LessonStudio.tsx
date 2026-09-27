@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useMemo, useState } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Navbar } from "@/components/layout/Navbar"
+import { ObjectiveProgress } from "@/components/learn/ObjectiveProgress"
 import { FretboardPanel } from "@/components/layout/FretboardPanel"
 import { PlaybackControls } from "@/components/layout/PlaybackControls"
 import type { PlaybackStep } from "@/components/layout/hooks/usePlayback"
@@ -243,6 +244,13 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] sm:text-base">
             {copy.summary}
           </p>
+          <div className="mt-5 max-w-2xl">
+            <ObjectiveProgress
+              lessonId={lessonId}
+              quickCheckHref={quickCheckHref}
+              practiceHref={practiceHref}
+            />
+          </div>
         </header>
 
         <div className="mt-6 grid gap-7 lg:grid-cols-[240px_minmax(0,1fr)]">

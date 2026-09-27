@@ -11,6 +11,7 @@ import { localePath } from "@/lib/i18n/locales"
 import { learningPracticeHref } from "@/lib/learning/links"
 import { getWeakLessonRecommendation } from "@/lib/learning/evidence"
 import { getExerciseDisplayText } from "@/lib/learning/exercises"
+import { getQuickCheckResult } from "@/lib/learning/objective-progress"
 import { getSessionReflection } from "@/lib/practice/reflection"
 import {
   getChallengeValue,
@@ -71,14 +72,7 @@ export function SessionSummary({
   const reflection = getSessionReflection(session, document.sessions)
   const learning = session.learning ?? session.exercise.learning
   const weakLesson = getWeakLessonRecommendation(session, document.sessions)
-  const quickCheckPassed =
-    learning?.origin === "quick-check" &&
-    session.status === "completed" &&
-    session.attempts.length >= 4 &&
-    session.attempts.every(
-      (attempt) => attempt.verification === "app-verified"
-    ) &&
-    summary.accuracy >= 0.75
+  const quickCheckPassed = getQuickCheckResult(session)?.passed ?? false
   const nextPracticeHref = learning
     ? learningPracticeHref(locale, learning, "guided-practice")
     : null

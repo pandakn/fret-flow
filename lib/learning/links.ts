@@ -2,6 +2,15 @@ import type { Locale } from "@/lib/i18n/locales"
 import { localePath } from "@/lib/i18n/locales"
 import type { LearningAssignment, LearningOrigin } from "@/types/learning"
 import { getLesson } from "./catalog"
+import type { DueTarget } from "./review"
+
+export function learningReviewHref(locale: Locale, due: DueTarget): string {
+  const query = new URLSearchParams({
+    reviewSkill: due.skillId,
+    reviewKey: due.key,
+  })
+  return `${localePath(locale, "/practice")}?${query.toString()}`
+}
 
 export function learningPracticeHref(
   locale: Locale,

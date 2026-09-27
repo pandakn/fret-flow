@@ -51,11 +51,15 @@ export function PlayInContext({
     beatsPerBar: exercise.kind === "rhythm" ? exercise.beatsPerBar : 4,
   })
   const prompt = exercise.learning
-    ? (
-        (isSkillId(exercise.learning.skillIds[0])
-          ? learningCopy[locale].createPrompts[exercise.learning.skillIds[0]]
-          : undefined) ?? learningCopy[locale].createPrompt
-      ).replaceAll("{key}", getKeyLabel(exercise.learning.context.key))
+    ? exercise.kind === "chordTransition"
+      ? learningCopy[locale].groovePrompt
+          .replaceAll("{first}", exercise.chordA)
+          .replaceAll("{second}", exercise.chordB)
+      : (
+          (isSkillId(exercise.learning.skillIds[0])
+            ? learningCopy[locale].createPrompts[exercise.learning.skillIds[0]]
+            : undefined) ?? learningCopy[locale].createPrompt
+        ).replaceAll("{key}", getKeyLabel(exercise.learning.context.key))
     : getPlayInContextPrompt(exercise)
 
   if (!prompt) return null

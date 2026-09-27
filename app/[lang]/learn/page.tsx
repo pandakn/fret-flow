@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Card } from "@/components/ui/card"
+import { ObjectiveProgress } from "@/components/learn/ObjectiveProgress"
 import { isLocale, localePath } from "@/lib/i18n/locales"
 import { messages } from "@/lib/i18n/messages"
 import { LESSON_IDS, lessons } from "@/lib/i18n/lessons"
@@ -74,6 +75,7 @@ export default async function LearnPage({
                   <p className="mt-3 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
                     {lesson.summary}
                   </p>
+                  <ObjectiveProgress lessonId={id} compact />
                 </Link>
               </Card>
             )
