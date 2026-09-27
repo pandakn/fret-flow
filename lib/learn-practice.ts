@@ -1,52 +1,117 @@
-import { getChordById } from "./chords"
 import { CHROMATIC } from "./notes"
-import { createDefaultExercise } from "./practice/exercises"
+import { getChordById } from "./chords"
+import { getDiatonicTriads } from "./theory/diatonic"
+import { getLesson, getObjective, resolveTemplate } from "./learning/catalog"
+import { createLearningExercise } from "./learning/exercises"
 import { isLessonId, type LessonId } from "./i18n/lessons"
-import { getKeyLabel } from "./theory/spelling"
 import type { ExerciseDefinition } from "@/types/practice"
+import type {
+  LearningAssignment,
+  LearningContext,
+  LearningOrigin,
+} from "@/types/learning"
 import type { NoteName } from "@/types/music"
 import type { Locale } from "./i18n/locales"
 
 export type LearnPracticeParams = {
   lesson: LessonId
   root: NoteName
+  key?: NoteName
   chordId?: string
+  degree?: number
   secondChord?: string
   minFret?: number
   maxFret?: number
+  mode?: LearningOrigin
+}
+
+const note = (value: unknown): value is NoteName =>
+  typeof value === "string" && CHROMATIC.includes(value as NoteName)
+const fret = (value: unknown) => {
+  const number = Number(value)
+  return typeof value === "string" &&
+    Number.isInteger(number) &&
+    number >= 0 &&
+    number <= 21
+    ? number
+    : undefined
 }
 
 export function parseLearnPracticeParams(
   values: Record<string, string | string[] | undefined>
 ): LearnPracticeParams | null {
-  const lesson = values.lesson
-  const root = values.root
-  if (typeof lesson !== "string" || !isLessonId(lesson)) return null
-  if (typeof root !== "string" || !CHROMATIC.includes(root as NoteName))
+  if (
+    typeof values.lesson !== "string" ||
+    !isLessonId(values.lesson) ||
+    !note(values.root)
+  )
     return null
-  const chordId =
-    typeof values.chordId === "string" && getChordById(values.chordId)
-      ? values.chordId
-      : undefined
-  const secondChord =
-    typeof values.secondChord === "string" && values.secondChord.length <= 12
-      ? values.secondChord
-      : undefined
-  const minFret = Number(values.minFret)
-  const maxFret = Number(values.maxFret)
+  const minFret = fret(values.minFret)
+  const maxFret = fret(values.maxFret)
+  if (minFret !== undefined && maxFret !== undefined && minFret > maxFret)
+    return null
+  const degree =
+    typeof values.degree === "string" ? Number(values.degree) : undefined
   return {
-    lesson,
-    root: root as NoteName,
-    chordId,
-    secondChord,
-    minFret:
-      Number.isInteger(minFret) && minFret >= 0 && minFret <= 21
-        ? minFret
+    lesson: values.lesson,
+    root: values.root,
+    chordId:
+      typeof values.chordId === "string" && getChordById(values.chordId)
+        ? values.chordId
         : undefined,
-    maxFret:
-      Number.isInteger(maxFret) && maxFret >= 0 && maxFret <= 21
-        ? maxFret
+    secondChord:
+      typeof values.secondChord === "string" && values.secondChord.length <= 12
+        ? values.secondChord
         : undefined,
+    minFret,
+    maxFret,
+    ...(note(values.key) ? { key: values.key } : {}),
+    ...(Number.isInteger(degree) && degree! >= 1 && degree! <= 7
+      ? { degree }
+      : {}),
+    ...(values.mode === "quick-check" || values.mode === "review"
+      ? { mode: values.mode }
+      : {}),
+  }
+}
+
+export function resolveLearnAssignment(
+  params: LearnPracticeParams
+): LearningAssignment | null {
+  const lesson = getLesson(params.lesson)
+  const objective = lesson && getObjective(lesson.objectiveIds[0])
+  const template =
+    objective &&
+    resolveTemplate(
+      objective.id,
+      params.mode === "quick-check" ? "recognize" : objective.level
+    )
+  if (!objective || !template) return null
+  const key = params.key ?? params.root
+  const degree =
+    params.degree ??
+    (key !== params.root
+      ? getDiatonicTriads(key).find((chord) => chord.root === params.root)
+          ?.degree
+      : undefined)
+  const context: LearningContext = {
+    key,
+    root: params.root,
+    chordId: params.chordId,
+    degree,
+    secondChord: params.secondChord,
+    minFret: params.minFret,
+    maxFret: params.maxFret,
+  }
+  return {
+    templateId: template.id,
+    skillIds: template.skillIds.filter((id) =>
+      objective.skillIds.some((skill) => skill === id)
+    ),
+    objectiveId: objective.id,
+    lessonId: params.lesson,
+    origin: params.mode ?? "guided-practice",
+    context,
   }
 }
 
@@ -54,72 +119,8 @@ export function createLearnExercise(
   params: LearnPracticeParams,
   locale: Locale = "en"
 ): ExerciseDefinition {
-  const { lesson, root } = params
-  const rootLabel = getKeyLabel(root)
-  const id = `learn-${lesson}-${root}-${params.chordId ?? ""}`
-  if (lesson === "caged") {
-    const base = createDefaultExercise("fretboardRecall")
-    if (base.kind !== "fretboardRecall") return base
-    return {
-      ...base,
-      id,
-      name:
-        locale === "th"
-          ? `หารูท CAGED ในคีย์ ${rootLabel}`
-          : `${rootLabel} CAGED roots`,
-      description:
-        locale === "th"
-          ? "หาโน้ตรูทในช่วงเฟรตนี้"
-          : "Find the root notes in this part of the fretboard.",
-      recall: "root",
-      root,
-      fretRange: {
-        min: params.minFret ?? 0,
-        max: Math.max(params.minFret ?? 0, params.maxFret ?? 12),
-      },
-    }
-  }
-
-  if (lesson === "progressions") {
-    const base = createDefaultExercise("chordTransition")
-    if (base.kind !== "chordTransition") return base
-    return {
-      ...base,
-      id,
-      name:
-        locale === "th"
-          ? `ฝึกเปลี่ยนคอร์ดในคีย์ ${rootLabel}`
-          : `${rootLabel} progression changes`,
-      description:
-        locale === "th"
-          ? "ฝึกเปลี่ยนระหว่างคอร์ดสองตัวให้เสียงชัด"
-          : "Change cleanly between two chords in the progression.",
-      chordA: `${rootLabel}${getChordById(params.chordId ?? "major")?.symbol ?? ""}`,
-      chordB: params.secondChord ?? "G",
-    }
-  }
-
-  const base = createDefaultExercise("construction")
-  if (base.kind !== "construction") return base
-  const category =
-    lesson === "sevenths"
-      ? "seventh"
-      : lesson === "intervals"
-        ? "interval"
-        : "triad"
-  return {
-    ...base,
-    id,
-    name:
-      locale === "th"
-        ? `สร้าง${category === "seventh" ? "คอร์ดเซเวนธ์" : category === "triad" ? "ไตรแอด" : "อินเทอร์วัล"}ในคีย์ ${rootLabel}`
-        : `${rootLabel} ${category} construction`,
-    description:
-      locale === "th"
-        ? "ระบุโน้ตที่ประกอบเป็นเสียงนี้"
-        : "Identify the notes that build this sound.",
-    category,
-    root,
-    chordId: params.chordId,
-  }
+  const assignment = resolveLearnAssignment(params)
+  const exercise = assignment && createLearningExercise(assignment, locale)
+  if (!exercise) throw new Error(`No exercise for lesson ${params.lesson}`)
+  return exercise
 }

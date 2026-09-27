@@ -5,11 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMetronome } from "./hooks/useMetronome"
 import type { ExerciseDefinition } from "@/types/practice"
 import { useI18n } from "@/components/i18n/LocaleProvider"
-import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
+import {
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
+import { learningCopy } from "@/lib/i18n/learning"
+import { getKeyLabel } from "@/lib/theory/spelling"
+import { isSkillId } from "@/lib/learning/catalog"
 
 export function getPlayInContextPrompt(
   exercise: ExerciseDefinition
 ): string | null {
+  if (exercise.learning) return "Create four bars with this idea."
   switch (exercise.kind) {
     case "technique":
       return `Improvise a short phrase in ${exercise.root} ${exercise.scaleId.replaceAll("_", " ")}. Use ${exercise.technique.replaceAll("-", " ")} in one bar, then answer it with a different phrase.`
@@ -31,7 +38,7 @@ export function PlayInContext({
   onFinish,
 }: {
   exercise: ExerciseDefinition
-  onFinish: () => void
+  onFinish: (status: "tried" | "skipped") => void
 }) {
   const { locale } = useI18n()
   const metronome = useMetronome({
@@ -43,13 +50,19 @@ export function PlayInContext({
           : 80,
     beatsPerBar: exercise.kind === "rhythm" ? exercise.beatsPerBar : 4,
   })
-  const prompt = getPlayInContextPrompt(exercise)
+  const prompt = exercise.learning
+    ? (
+        (isSkillId(exercise.learning.skillIds[0])
+          ? learningCopy[locale].createPrompts[exercise.learning.skillIds[0]]
+          : undefined) ?? learningCopy[locale].createPrompt
+      ).replaceAll("{key}", getKeyLabel(exercise.learning.context.key))
+    : getPlayInContextPrompt(exercise)
 
   if (!prompt) return null
 
-  const finish = () => {
+  const finish = (status: "tried" | "skipped") => {
     metronome.stop()
-    onFinish()
+    onFinish(status)
   }
 
   return (
@@ -62,11 +75,18 @@ export function PlayInContext({
       </CardHeader>
       <CardContent className="space-y-5 text-center">
         <p className="text-muted-foreground">
-          {practiceCopy(locale, "Try four bars, then continue whenever you're ready.")}
+          {practiceCopy(
+            locale,
+            "Try four bars, then continue whenever you're ready."
+          )}
         </p>
-        <p className="text-lg leading-relaxed">{localizePracticeText(locale, prompt)}</p>
+        <p className="text-lg leading-relaxed">
+          {localizePracticeText(locale, prompt)}
+        </p>
         <p className="font-mono text-sm text-muted-foreground">
-          {practiceCopy(locale, "{bpm} BPM · click is optional", { bpm: metronome.bpm })}
+          {practiceCopy(locale, "{bpm} BPM · click is optional", {
+            bpm: metronome.bpm,
+          })}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Button
@@ -75,12 +95,25 @@ export function PlayInContext({
               metronome.playing ? metronome.stop : () => void metronome.start()
             }
           >
-            {practiceCopy(locale, metronome.playing ? "Stop click" : "Start click")}
+            {practiceCopy(
+              locale,
+              metronome.playing ? "Stop click" : "Start click"
+            )}
           </Button>
-          <Button onClick={finish}>{practiceCopy(locale, "View session summary")}</Button>
+          <Button onClick={() => finish("tried")}>
+            {exercise.learning
+              ? learningCopy[locale].createDone
+              : practiceCopy(locale, "View session summary")}
+          </Button>
+          <Button variant="ghost" onClick={() => finish("skipped")}>
+            {learningCopy[locale].createAgain}
+          </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          {practiceCopy(locale, "This is free play; it does not affect your exercise score.")}
+          {practiceCopy(
+            locale,
+            "This is free play; it does not affect your exercise score."
+          )}
         </p>
       </CardContent>
     </Card>

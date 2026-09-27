@@ -3,9 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useI18n } from "@/components/i18n/LocaleProvider"
 import { Button } from "@/components/ui/button"
-import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
-import { createAttempt, generateConstructionPrompt } from "@/lib/practice/exercises"
-import { getKeyLabel, spellIntervalNote, spellNoteInKey } from "@/lib/theory/spelling"
+import {
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
+import {
+  createAttempt,
+  generateConstructionPrompt,
+} from "@/lib/practice/exercises"
+import {
+  getKeyLabel,
+  spellIntervalNote,
+  spellNoteInKey,
+} from "@/lib/theory/spelling"
 import type { ConstructionExercise } from "@/types/practice"
 import type { DrillProps } from "./types"
 
@@ -16,7 +26,9 @@ export function ConstructionDrill({
   onFinish,
 }: DrillProps<ConstructionExercise>) {
   const { locale } = useI18n()
-  const [prompt, setPrompt] = useState(() => generateConstructionPrompt(exercise))
+  const [prompt, setPrompt] = useState(() =>
+    generateConstructionPrompt(exercise, Math.random, attempts.length)
+  )
   const keyLabel = locale === "th" ? getKeyLabel(exercise.root) : exercise.root
   const startedAt = useRef(0)
 
@@ -34,17 +46,23 @@ export function ConstructionDrill({
           responseMs: performance.now() - startedAt.current,
           target: {
             skill: "construction",
-            key: `${exercise.root}:${prompt.interval}`,
+            key:
+              prompt.category === "diatonic"
+                ? `diatonic:${exercise.key ?? exercise.root}:${prompt.degree}`
+                : `${prompt.category}:${exercise.root}:${prompt.interval}`,
             note: prompt.expected,
             interval: prompt.interval,
           },
+          skillId: exercise.learning?.skillIds[0],
         })
       )
 
       if (attempts.length + 1 >= exercise.questionCount) {
         onFinish()
       } else {
-        setPrompt(generateConstructionPrompt(exercise))
+        setPrompt(
+          generateConstructionPrompt(exercise, Math.random, attempts.length + 1)
+        )
         startedAt.current = performance.now()
       }
     },
@@ -60,14 +78,21 @@ export function ConstructionDrill({
         })}
       </p>
       <h2 className="text-3xl font-semibold">
-        {localizePracticeText(locale, prompt.prompt).replace(exercise.root, keyLabel)}
+        {prompt.category === "diatonic" && locale === "th"
+          ? `โน้ตรูทของคอร์ด ${["I", "ii", "iii", "IV", "V", "vi", "vii°"][(prompt.degree ?? 1) - 1]} ในคีย์ ${getKeyLabel(exercise.key ?? exercise.root)} เมเจอร์คืออะไร?`
+          : localizePracticeText(locale, prompt.prompt).replace(
+              exercise.root,
+              keyLabel
+            )}
       </h2>
       <div className="grid grid-cols-2 gap-3">
         {prompt.choices.map((choice) => (
           <Button key={choice} variant="outline" onClick={() => choose(choice)}>
-            {choice === prompt.expected
-              ? spellIntervalNote(exercise.root, prompt.interval, choice)
-              : spellNoteInKey(exercise.root, choice)}
+            {prompt.category === "diatonic"
+              ? spellNoteInKey(exercise.key ?? exercise.root, choice)
+              : choice === prompt.expected
+                ? spellIntervalNote(exercise.root, prompt.interval, choice)
+                : spellNoteInKey(exercise.root, choice)}
           </Button>
         ))}
       </div>

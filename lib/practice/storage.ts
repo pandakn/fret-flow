@@ -4,6 +4,7 @@ import {
   type PracticeSession,
 } from "@/types/practice"
 import { createDailyChallengeState } from "./challenges"
+import { CHROMATIC } from "@/lib/notes"
 
 export const PRACTICE_STORAGE_KEY = "fret-flow.practice.v1"
 
@@ -43,7 +44,32 @@ const hasValidPathMetadata = (exercise: Record<string, unknown>) => {
 const isExercise = (value: unknown) =>
   isRecord(value) &&
   typeof value.kind === "string" &&
-  hasValidPathMetadata(value)
+  hasValidPathMetadata(value) &&
+  isLearning(value.learning) &&
+  (value.skillIds === undefined ||
+    (Array.isArray(value.skillIds) &&
+      value.skillIds.every((id) => typeof id === "string")))
+
+const isLearning = (value: unknown) => {
+  if (value === undefined) return true
+  if (!isRecord(value) || !isRecord(value.context)) return false
+  return (
+    typeof value.templateId === "string" &&
+    typeof value.objectiveId === "string" &&
+    Array.isArray(value.skillIds) &&
+    value.skillIds.length > 0 &&
+    value.skillIds.every((id) => typeof id === "string") &&
+    ["quick-check", "guided-practice", "review"].includes(
+      String(value.origin)
+    ) &&
+    CHROMATIC.includes(value.context.key as (typeof CHROMATIC)[number]) &&
+    CHROMATIC.includes(value.context.root as (typeof CHROMATIC)[number]) &&
+    (value.context.degree === undefined ||
+      (Number.isInteger(value.context.degree) &&
+        Number(value.context.degree) >= 1 &&
+        Number(value.context.degree) <= 7))
+  )
+}
 
 const isRoutine = (value: unknown) =>
   isRecord(value) &&
@@ -57,7 +83,13 @@ const isSession = (value: unknown): value is PracticeSession =>
   typeof value.updatedAt === "string" &&
   typeof value.elapsedMs === "number" &&
   Array.isArray(value.attempts) &&
-  isExercise(value.exercise)
+  isExercise(value.exercise) &&
+  isLearning(value.learning) &&
+  (value.application === undefined ||
+    (isRecord(value.application) &&
+      (value.application.status === "tried" ||
+        value.application.status === "skipped") &&
+      typeof value.application.recordedAt === "string"))
 
 export const validatePracticeDocument = (
   value: unknown
@@ -84,6 +116,23 @@ export const validatePracticeDocument = (
       return null
     }
     return value as PracticeDocument
+  }
+
+  if (
+    value.version === 3 &&
+    Array.isArray(value.savedExercises) &&
+    value.savedExercises.every(isExercise) &&
+    Array.isArray(value.routines) &&
+    value.routines.every(isRoutine) &&
+    Array.isArray(value.sessions) &&
+    value.sessions.every(isSession) &&
+    isRecord(value.dailyChallengeState) &&
+    Array.isArray(value.acknowledgedMilestoneIds)
+  ) {
+    return {
+      ...(value as Omit<PracticeDocument, "version">),
+      version: PRACTICE_SCHEMA_VERSION,
+    }
   }
 
   if (

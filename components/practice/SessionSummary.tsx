@@ -5,6 +5,12 @@ import { Check, Target, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { summarizeSession } from "@/lib/practice/scoring"
+import Link from "next/link"
+import { learningCopy } from "@/lib/i18n/learning"
+import { localePath } from "@/lib/i18n/locales"
+import { learningPracticeHref } from "@/lib/learning/links"
+import { getWeakLessonRecommendation } from "@/lib/learning/evidence"
+import { getExerciseDisplayText } from "@/lib/learning/exercises"
 import { getSessionReflection } from "@/lib/practice/reflection"
 import {
   getChallengeValue,
@@ -63,6 +69,19 @@ export function SessionSummary({
   const { document, acknowledgeMilestone } = usePracticeStore()
   const summary = summarizeSession(session)
   const reflection = getSessionReflection(session, document.sessions)
+  const learning = session.learning ?? session.exercise.learning
+  const weakLesson = getWeakLessonRecommendation(session, document.sessions)
+  const quickCheckPassed =
+    learning?.origin === "quick-check" &&
+    session.status === "completed" &&
+    session.attempts.length >= 4 &&
+    session.attempts.every(
+      (attempt) => attempt.verification === "app-verified"
+    ) &&
+    summary.accuracy >= 0.75
+  const nextPracticeHref = learning
+    ? learningPracticeHref(locale, learning, "guided-practice")
+    : null
   const challengeValue = session.challenge
     ? getChallengeValue(summary, session.challenge.goal)
     : null
@@ -98,11 +117,23 @@ export function SessionSummary({
     if (milestone) acknowledgeMilestone(milestone.id)
   }, [acknowledgeMilestone, milestone])
   const metrics = [
-    { label: practiceCopy(locale, "Time"), value: formatDuration(summary.durationMs) },
-    { label: practiceCopy(locale, "Accuracy"), value: `${Math.round(summary.accuracy * 100)}%` },
-    { label: practiceCopy(locale, "Attempts"), value: String(summary.attemptCount) },
     {
-      label: practiceCopy(locale, summary.bestBpm === null ? "Avg response" : "Best clean"),
+      label: practiceCopy(locale, "Time"),
+      value: formatDuration(summary.durationMs),
+    },
+    {
+      label: practiceCopy(locale, "Accuracy"),
+      value: `${Math.round(summary.accuracy * 100)}%`,
+    },
+    {
+      label: practiceCopy(locale, "Attempts"),
+      value: String(summary.attemptCount),
+    },
+    {
+      label: practiceCopy(
+        locale,
+        summary.bestBpm === null ? "Avg response" : "Best clean"
+      ),
       value:
         summary.bestBpm === null
           ? summary.averageResponseMs === null
@@ -120,7 +151,9 @@ export function SessionSummary({
             ? practiceCopy(locale, "Session complete")
             : practiceCopy(locale, "Session ended")}
         </p>
-        <CardTitle className="text-3xl">{localizePracticeText(locale, session.exercise.name)}</CardTitle>
+        <CardTitle className="text-3xl">
+          {getExerciseDisplayText(session.exercise, locale).name}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <dl className="grid grid-cols-2 border-y sm:grid-cols-4">
@@ -146,10 +179,57 @@ export function SessionSummary({
             <h2 id="practice-reflection-heading" className="font-semibold">
               {practiceCopy(locale, "Take this into your next session")}
             </h2>
-            <p className="text-sm">{localizePracticeText(locale, reflection.observation)}</p>
+            <p className="text-sm">
+              {localizePracticeText(locale, reflection.observation)}
+            </p>
             <p className="text-sm text-muted-foreground">
               {localizePracticeText(locale, reflection.nextStep)}
             </p>
+          </section>
+        ) : null}
+        {learning?.origin === "quick-check" ? (
+          <section className="border-l-2 border-[var(--color-root)] bg-muted/25 px-5 py-4">
+            <h2 className="font-semibold">
+              {quickCheckPassed
+                ? learningCopy[locale].checkPassed
+                : learningCopy[locale].checkRetry}
+            </h2>
+            {quickCheckPassed && nextPracticeHref ? (
+              <Button asChild className="mt-3">
+                <Link href={nextPracticeHref}>
+                  {learningCopy[locale].continuePractice}
+                </Link>
+              </Button>
+            ) : null}
+            {!quickCheckPassed && learning.lessonId ? (
+              <Button asChild variant="outline" className="mt-3">
+                <Link href={localePath(locale, `/learn/${learning.lessonId}`)}>
+                  {learningCopy[locale].lessonSuggestion}
+                </Link>
+              </Button>
+            ) : null}
+          </section>
+        ) : null}
+        {session.application?.status === "tried" ? (
+          <p className="text-sm text-muted-foreground">
+            {learningCopy[locale].createRecorded}
+          </p>
+        ) : null}
+        {weakLesson && learning?.origin !== "quick-check" ? (
+          <section className="border-l-2 border-[var(--color-root)] bg-muted/25 px-5 py-4">
+            <h2 className="font-semibold">
+              {learningCopy[locale].lessonSuggestion}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {weakLesson.source === "verified"
+                ? learningCopy[locale].lessonSuggestionReason
+                : learningCopy[locale].selfReportedReason}
+            </p>
+            <Button asChild variant="outline" className="mt-3">
+              <Link href={localePath(locale, `/learn/${weakLesson.lessonId}`)}>
+                {learningCopy[locale].lessonSuggestion}
+              </Link>
+            </Button>
           </section>
         ) : null}
         {session.challenge ? (
@@ -165,7 +245,10 @@ export function SessionSummary({
               )}
               <div>
                 <h2 id="mission-result-heading" className="font-semibold">
-                  {practiceCopy(locale, goalMet ? "Mission cleared" : "Baseline recorded")}
+                  {practiceCopy(
+                    locale,
+                    goalMet ? "Mission cleared" : "Baseline recorded"
+                  )}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {challengeValue === null
@@ -201,14 +284,28 @@ export function SessionSummary({
                   : practiceCopy(locale, "Path evidence updated")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {practiceCopy(locale, "{mastered} mastered · {shaky} shaky · {review} not yet covered", {
-                mastered: pathEvidence.masteredTargetIds.length,
-                shaky: pathEvidence.shakyTargetIds.length,
-                review: pathEvidence.reviewTargetIds.length,
-              })}
+              {practiceCopy(
+                locale,
+                "{mastered} mastered · {shaky} shaky · {review} not yet covered",
+                {
+                  mastered: pathEvidence.masteredTargetIds.length,
+                  shaky: pathEvidence.shakyTargetIds.length,
+                  review: pathEvidence.reviewTargetIds.length,
+                }
+              )}
             </p>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
-              {practiceCopy(locale, "{value}% coverage", { value: Math.round(pathEvidence.coverage * 100) })} · {practiceCopy(locale, "{value}% accuracy", { value: Math.round(pathEvidence.accuracy * 100) })} · {practiceCopy(locale, "{count} measured sessions", { count: pathEvidence.sessionCount })}
+              {practiceCopy(locale, "{value}% coverage", {
+                value: Math.round(pathEvidence.coverage * 100),
+              })}{" "}
+              ·{" "}
+              {practiceCopy(locale, "{value}% accuracy", {
+                value: Math.round(pathEvidence.accuracy * 100),
+              })}{" "}
+              ·{" "}
+              {practiceCopy(locale, "{count} measured sessions", {
+                count: pathEvidence.sessionCount,
+              })}
             </p>
           </section>
         ) : null}
@@ -221,7 +318,9 @@ export function SessionSummary({
             <p className="mt-2 font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
               {practiceCopy(locale, "Milestone earned")}
             </p>
-            <h2 className="mt-1 text-xl font-semibold">{localizePracticeText(locale, milestone.title)}</h2>
+            <h2 className="mt-1 text-xl font-semibold">
+              {localizePracticeText(locale, milestone.title)}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {localizePracticeText(locale, milestone.description)}
             </p>

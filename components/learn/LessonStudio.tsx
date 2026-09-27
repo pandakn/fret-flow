@@ -25,6 +25,8 @@ import {
 } from "@/lib/chord-voicings"
 import { getChordById } from "@/lib/chords"
 import { lessons, type LessonId } from "@/lib/i18n/lessons"
+import { learningCopy } from "@/lib/i18n/learning"
+import { getLesson } from "@/lib/learning/catalog"
 import { localePath } from "@/lib/i18n/locales"
 import { CHROMATIC } from "@/lib/notes"
 import {
@@ -41,9 +43,9 @@ import { getKeyLabel, spellNoteInKey } from "@/lib/theory/spelling"
 import { getStringFrequencyAtFret, getTuningById } from "@/lib/tunings"
 import { cn } from "@/lib/utils"
 import type { IntervalName, NoteName, TonalPattern } from "@/types/music"
+import type { LessonScene } from "@/types/learning"
 
-const STAGES = ["learn", "visualize", "hear", "practice"] as const
-type Stage = (typeof STAGES)[number]
+type Stage = "learn" | "visualize" | "hear" | "quick-check" | "practice"
 
 const INTERVALS: { id: IntervalName; semitones: number }[] = [
   { id: "2", semitones: 2 },
@@ -82,11 +84,16 @@ function formatChord(chord: DiatonicChord, key: NoteName): string {
 export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
   const { locale, t } = useI18n()
   const copy = lessons[locale][lessonId]
+  const lesson = getLesson(lessonId)
+  const scene: LessonScene = lesson?.scene ?? { kind: "interval" }
+  const sceneKind = scene.kind
+  const stages: readonly Stage[] = lesson?.activities ?? []
   const [stage, setStage] = useState<Stage>("learn")
   const [key, setKey] = useState<NoteName>("C")
   const [intervalId, setIntervalId] = useState<IntervalName>("3")
-  const [triadId, setTriadId] = useState("major")
-  const [seventhId, setSeventhId] = useState("major_7")
+  const [selectedChordId, setSelectedChordId] = useState(() =>
+    scene.kind === "chord" ? scene.chordIds[0] : "major"
+  )
   const [degree, setDegree] = useState(1)
   const [diatonicKind, setDiatonicKind] = useState<DiatonicChordKind>("triad")
   const [shapeId, setShapeId] = useState("C")
@@ -102,25 +109,23 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
   const triads = useMemo(() => getDiatonicTriads(key), [key])
   const sevenths = useMemo(() => getDiatonicSevenths(key), [key])
   const diatonic =
-    lessonId === "diatonic" && diatonicKind === "seventh" ? sevenths : triads
+    scene.kind === "diatonic" && diatonicKind === "seventh" ? sevenths : triads
   const selectedDiatonic =
     diatonic[
-      lessonId === "progressions"
+      scene.kind === "progression"
         ? progression.degrees[progressionStep] - 1
         : degree - 1
     ]
   const selectedRoot =
-    lessonId === "diatonic" || lessonId === "progressions"
+    scene.kind === "diatonic" || scene.kind === "progression"
       ? selectedDiatonic.root
       : key
   const chordId =
-    lessonId === "triads"
-      ? triadId
-      : lessonId === "sevenths"
-        ? seventhId
-        : lessonId === "diatonic" || lessonId === "progressions"
-          ? selectedDiatonic.chordId
-          : "major"
+    scene.kind === "chord"
+      ? selectedChordId
+      : scene.kind === "diatonic" || scene.kind === "progression"
+        ? selectedDiatonic.chordId
+        : "major"
   const chord = getChordById(chordId)
   const intervalInfo =
     INTERVALS.find((item) => item.id === intervalId) ?? INTERVALS[2]
@@ -131,7 +136,7 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
     }),
     [intervalInfo]
   )
-  const pattern = lessonId === "intervals" ? intervalPattern : chord
+  const pattern = scene.kind === "interval" ? intervalPattern : chord
 
   const shapes = useMemo(() => getCagedMajorShapes(key), [key])
   const selectedShape =
@@ -148,7 +153,7 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
     [chord, selectedRoot]
   )
   const selectedVoicing =
-    lessonId === "caged" && selectedShape
+    scene.kind === "caged" && selectedShape
       ? cagedVoicings.find((item) => item.cagedShape === selectedShape.shape)
       : (voicings.find((item) => item.id === voicingId) ?? voicings[0])
   const arpeggio = useMemo(
@@ -159,57 +164,64 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
     [chord, selectedVoicing]
   )
 
-  const progressionSequence = useMemo<PlaybackStep[]>(() => {
-    if (lessonId !== "progressions" || !STANDARD_TUNING) return []
-    return progression.degrees.flatMap((item) => {
-      const selected = diatonic[item - 1]
-      const voicing = getChordVoicings(
-        selected.root,
-        selected.chordId,
-        STANDARD_TUNING
-      )[0]
-      const frequencies = voicing ? getFrequencies(voicing) : []
-      return frequencies.length > 0
-        ? [{ interval: "R" as const, frequencies }]
-        : []
-    })
-  }, [diatonic, lessonId, progression])
-  const hearSequence = useMemo<PlaybackStep[]>(() => {
-    if (lessonId === "progressions") return progressionSequence
-    if (lessonId === "intervals")
-      return [{ interval: "R" }, { interval: intervalId }]
-    if (hearMode === "arpeggio") return arpeggio?.steps ?? []
-    const frequencies = selectedVoicing ? getFrequencies(selectedVoicing) : []
-    return frequencies.length > 0 ? [{ interval: "R", frequencies }] : []
-  }, [
-    arpeggio,
-    hearMode,
-    intervalId,
-    lessonId,
-    progressionSequence,
-    selectedVoicing,
-  ])
+  const progressionSequence: PlaybackStep[] =
+    sceneKind === "progression" && STANDARD_TUNING
+      ? progression.degrees.flatMap((item) => {
+          const selected = diatonic[item - 1]
+          const voicing = getChordVoicings(
+            selected.root,
+            selected.chordId,
+            STANDARD_TUNING
+          )[0]
+          const frequencies = voicing ? getFrequencies(voicing) : []
+          return frequencies.length > 0
+            ? [{ interval: "R" as const, frequencies }]
+            : []
+        })
+      : []
+  const selectedFrequencies = selectedVoicing
+    ? getFrequencies(selectedVoicing)
+    : []
+  const hearSequence: PlaybackStep[] =
+    sceneKind === "progression"
+      ? progressionSequence
+      : sceneKind === "interval"
+        ? [{ interval: "R" }, { interval: intervalId }]
+        : hearMode === "arpeggio"
+          ? (arpeggio?.steps ?? [])
+          : selectedFrequencies.length > 0
+            ? [{ interval: "R", frequencies: selectedFrequencies }]
+            : []
 
   const chordLabel =
-    lessonId === "diatonic" || lessonId === "progressions"
+    scene.kind === "diatonic" || scene.kind === "progression"
       ? formatChord(selectedDiatonic, key)
       : `${getKeyLabel(key)}${chord?.symbol ?? ""}`
   const practiceQuery = new URLSearchParams({
     lesson: lessonId,
+    key,
     root: selectedRoot,
     chordId,
   })
-  if (lessonId === "caged" && selectedShape) {
+  if (scene.kind === "diatonic") practiceQuery.set("degree", String(degree))
+  if (scene.kind === "progression")
+    practiceQuery.set("degree", String(progression.degrees[progressionStep]))
+  if (scene.kind === "caged" && selectedShape) {
     practiceQuery.set("minFret", String(selectedShape.minFret))
     practiceQuery.set("maxFret", String(selectedShape.maxFret))
   }
-  if (lessonId === "progressions") {
+  if (scene.kind === "progression") {
     const nextDegree =
       progression.degrees[(progressionStep + 1) % progression.degrees.length]
     practiceQuery.set("secondChord", formatChord(diatonic[nextDegree - 1], key))
   }
   const practiceHref = `${localePath(locale, "/practice")}?${practiceQuery.toString()}`
-  const stageIndex = STAGES.indexOf(stage)
+  const quickCheckQuery = new URLSearchParams(practiceQuery)
+  quickCheckQuery.set("mode", "quick-check")
+  const quickCheckHref = `${localePath(locale, "/practice")}?${quickCheckQuery.toString()}`
+  const stageIndex = stages.indexOf(stage)
+  const stageLabel = (item: Stage) =>
+    item === "quick-check" ? learningCopy[locale].quickCheck : t(`${item}Step`)
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
@@ -269,7 +281,7 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
               role="group"
               aria-label={t("musicTheory")}
             >
-              {STAGES.map((item, index) => (
+              {stages.map((item, index) => (
                 <Button
                   key={item}
                   type="button"
@@ -286,7 +298,7 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                   <span className="mr-2 font-mono text-[10px]">
                     0{index + 1}
                   </span>
-                  {t(`${item}Step`)}
+                  {stageLabel(item)}
                 </Button>
               ))}
             </div>
@@ -295,7 +307,7 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
           <section className="min-w-0" aria-live="polite">
             <div className="mb-5 flex items-center justify-between gap-3">
               <p className="font-mono text-[10px] tracking-[0.17em] text-[var(--accent)] uppercase">
-                0{stageIndex + 1} / 04 · {t(`${stage}Step`)}
+                0{stageIndex + 1} / 0{stages.length} · {stageLabel(stage)}
               </p>
               <span className="rounded-full border border-[var(--border-2)] px-3 py-1 font-mono text-xs">
                 {chordLabel}
@@ -327,13 +339,11 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                 </p>
                 {stage === "visualize" ? (
                   <LessonControls
-                    lessonId={lessonId}
+                    scene={scene}
                     intervalId={intervalId}
                     setIntervalId={setIntervalId}
-                    triadId={triadId}
-                    setTriadId={setTriadId}
-                    seventhId={seventhId}
-                    setSeventhId={setSeventhId}
+                    selectedChordId={selectedChordId}
+                    setSelectedChordId={setSelectedChordId}
                     diatonic={diatonic}
                     diatonicKind={diatonicKind}
                     setDiatonicKind={setDiatonicKind}
@@ -368,9 +378,9 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                       showIntervals={showIntervals}
                       rootOnly={false}
                       selectedVoicing={
-                        lessonId === "intervals" ? undefined : selectedVoicing
+                        scene.kind === "interval" ? undefined : selectedVoicing
                       }
-                      shapeFocus={lessonId === "caged"}
+                      shapeFocus={scene.kind === "caged"}
                       arpeggio={
                         stage === "hear" && hearMode === "arpeggio"
                           ? arpeggio
@@ -381,7 +391,8 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                 </Card>
                 {stage === "hear" ? (
                   <div className="max-w-sm">
-                    {lessonId !== "intervals" && lessonId !== "progressions" ? (
+                    {scene.kind !== "interval" &&
+                    scene.kind !== "progression" ? (
                       <div
                         className="mb-3 flex gap-2"
                         role="group"
@@ -411,9 +422,9 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                       root={selectedRoot}
                       sequence={hearSequence}
                       playLabel={
-                        lessonId === "progressions"
+                        scene.kind === "progression"
                           ? t("playProgression")
-                          : lessonId === "intervals"
+                          : scene.kind === "interval"
                             ? t("playNotes")
                             : hearMode === "chord"
                               ? t("playChord")
@@ -423,6 +434,23 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                     />
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+
+            {stage === "quick-check" ? (
+              <div className="max-w-2xl py-4 sm:py-8">
+                <h2 className="text-xl font-medium sm:text-2xl">
+                  {learningCopy[locale].quickCheck}
+                </h2>
+                <p className="mt-4 text-sm text-[var(--muted-foreground)]">
+                  {learningCopy[locale].checkIntro}
+                </p>
+                <Button asChild className="mt-7">
+                  <Link href={quickCheckHref}>
+                    {learningCopy[locale].quickCheck}
+                    <ArrowRight className="ml-2 size-4" aria-hidden />
+                  </Link>
+                </Button>
               </div>
             ) : null}
 
@@ -448,15 +476,15 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
                 type="button"
                 variant="outline"
                 disabled={stageIndex === 0}
-                onClick={() => setStage(STAGES[stageIndex - 1])}
+                onClick={() => setStage(stages[stageIndex - 1])}
               >
                 <ArrowLeft className="mr-2 size-4" aria-hidden />
                 {t("previous")}
               </Button>
-              {stageIndex < STAGES.length - 1 ? (
+              {stageIndex < stages.length - 1 ? (
                 <Button
                   type="button"
-                  onClick={() => setStage(STAGES[stageIndex + 1])}
+                  onClick={() => setStage(stages[stageIndex + 1])}
                 >
                   {t("next")}
                   <ArrowRight className="ml-2 size-4" aria-hidden />
@@ -471,13 +499,11 @@ export function LessonStudio({ lessonId }: { lessonId: LessonId }) {
 }
 
 type LessonControlsProps = {
-  lessonId: LessonId
+  scene: LessonScene
   intervalId: IntervalName
   setIntervalId: (value: IntervalName) => void
-  triadId: string
-  setTriadId: (value: string) => void
-  seventhId: string
-  setSeventhId: (value: string) => void
+  selectedChordId: string
+  setSelectedChordId: (value: string) => void
   diatonic: DiatonicChord[]
   diatonicKind: DiatonicChordKind
   setDiatonicKind: (value: DiatonicChordKind) => void
@@ -500,7 +526,7 @@ type LessonControlsProps = {
 
 function LessonControls(props: LessonControlsProps) {
   const { t } = useI18n()
-  const { lessonId } = props
+  const { scene } = props
   const pill = (selected: boolean) =>
     cn(
       "h-auto rounded-md px-3 py-1.5 font-mono text-xs",
@@ -510,7 +536,7 @@ function LessonControls(props: LessonControlsProps) {
     )
   return (
     <div className="space-y-4">
-      {lessonId === "intervals" ? (
+      {scene.kind === "interval" ? (
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
@@ -530,45 +556,29 @@ function LessonControls(props: LessonControlsProps) {
           ))}
         </div>
       ) : null}
-      {lessonId === "triads" ? (
-        <div className="flex gap-1.5" role="group" aria-label={t("chord")}>
-          {(["major", "minor"] as const).map((id) => (
-            <Button
-              key={id}
-              type="button"
-              variant="ghost"
-              className={pill(props.triadId === id)}
-              aria-pressed={props.triadId === id}
-              onClick={() => props.setTriadId(id)}
-            >
-              {t(id)}
-            </Button>
-          ))}
-        </div>
-      ) : null}
-      {lessonId === "sevenths" ? (
+      {scene.kind === "chord" ? (
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
           aria-label={t("chord")}
         >
-          {(
-            ["major_7", "minor_7", "dominant_7", "half_diminished_7"] as const
-          ).map((id) => (
+          {scene.chordIds.map((id) => (
             <Button
               key={id}
               type="button"
               variant="ghost"
-              className={pill(props.seventhId === id)}
-              aria-pressed={props.seventhId === id}
-              onClick={() => props.setSeventhId(id)}
+              className={pill(props.selectedChordId === id)}
+              aria-pressed={props.selectedChordId === id}
+              onClick={() => props.setSelectedChordId(id)}
             >
-              {getChordById(id)?.symbol ?? id}
+              {id === "major" || id === "minor"
+                ? t(id)
+                : (getChordById(id)?.symbol ?? id)}
             </Button>
           ))}
         </div>
       ) : null}
-      {lessonId === "caged" ? (
+      {scene.kind === "caged" ? (
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
@@ -588,7 +598,7 @@ function LessonControls(props: LessonControlsProps) {
           ))}
         </div>
       ) : null}
-      {lessonId === "diatonic" ? (
+      {scene.kind === "diatonic" ? (
         <div className="space-y-3">
           <div className="flex gap-1.5" role="group" aria-label={t("chord")}>
             <Button
@@ -631,7 +641,7 @@ function LessonControls(props: LessonControlsProps) {
           </div>
         </div>
       ) : null}
-      {lessonId === "progressions" ? (
+      {scene.kind === "progression" ? (
         <div className="space-y-3">
           <div
             className="flex flex-wrap gap-1.5"
@@ -675,7 +685,9 @@ function LessonControls(props: LessonControlsProps) {
           </div>
         </div>
       ) : null}
-      {lessonId === "sevenths" && props.voicings.length > 1 ? (
+      {scene.kind === "chord" &&
+      scene.showVoicings &&
+      props.voicings.length > 1 ? (
         <div>
           <label
             htmlFor="lesson-voicing"

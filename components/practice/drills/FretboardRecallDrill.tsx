@@ -9,6 +9,7 @@ import {
   createAttempt,
   generateRecallPrompt,
   type RecallPrompt,
+  type RecallPromptTarget,
 } from "@/lib/practice/exercises"
 import { getFretboardPathTarget } from "@/lib/practice/paths"
 import { getWeakTargets } from "@/lib/practice/progression"
@@ -16,7 +17,10 @@ import type { FretboardRecallExercise } from "@/types/practice"
 import type { FretNote, TonalPattern } from "@/types/music"
 import type { DrillProps } from "./types"
 import { useI18n } from "@/components/i18n/LocaleProvider"
-import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
+import {
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
 import { spellNoteInKey } from "@/lib/theory/spelling"
 
 const CHROMATIC_PATTERN: TonalPattern = {
@@ -33,7 +37,19 @@ const createPrompt = (
   const target =
     exercise.path && targetId
       ? getFretboardPathTarget(exercise.path.stageId, targetId)
-      : undefined
+      : exercise.reviewTarget?.note
+        ? ({
+            id: exercise.reviewTarget.key,
+            direction: exercise.reviewTarget.key.startsWith("position:")
+              ? "namePosition"
+              : "findPosition",
+            note: exercise.reviewTarget.note,
+            string: exercise.reviewTarget.string,
+            fret: exercise.reviewTarget.fret,
+            interval: exercise.reviewTarget.interval,
+            root: exercise.root,
+          } satisfies RecallPromptTarget)
+        : undefined
   return generateRecallPrompt(exercise, Math.random, weakTargets, target)
 }
 
@@ -180,9 +196,12 @@ export function FretboardRecallDrill({
         <p aria-live="polite" className="min-h-6 font-mono text-sm">
           {feedback
             ? displayText(feedback.answer)
-            : practiceCopy(locale, prompt.direction === "namePosition"
-                ? "Choose the note name"
-                : "Choose a position on the fretboard")}
+            : practiceCopy(
+                locale,
+                prompt.direction === "namePosition"
+                  ? "Choose the note name"
+                  : "Choose a position on the fretboard"
+              )}
         </p>
       </div>
       <Fretboard

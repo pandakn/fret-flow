@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { usePracticeSession } from "./hooks/usePracticeSession"
 import { SessionSummary } from "./SessionSummary"
@@ -16,6 +17,9 @@ import { ConstructionDrill } from "./drills/ConstructionDrill"
 import type { ExerciseDefinition } from "@/types/practice"
 import type { DailyMission } from "@/types/practice"
 import { useI18n } from "@/components/i18n/LocaleProvider"
+import { learningCopy } from "@/lib/i18n/learning"
+import { getExerciseDisplayText } from "@/lib/learning/exercises"
+import { localePath } from "@/lib/i18n/locales"
 import {
   localizeChallengeGoal,
   localizePracticeText,
@@ -55,6 +59,8 @@ export function PracticeSession({
   const [showApplication, setShowApplication] = useState(false)
   const pathStage =
     exercise.kind === "fretboardRecall" ? exercise.path : undefined
+  const assignment = exercise.learning
+  const display = getExerciseDisplayText(exercise, locale)
 
   if (!practice.session) {
     return (
@@ -62,15 +68,26 @@ export function PracticeSession({
         <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
           {pathStage
             ? `${practiceCopy(locale, pathStage.checkpoint ? "Mastery checkpoint" : "Path review")} · ${localizePracticeText(locale, pathStage.stageId.replaceAll("-", " "))}`
-            : practiceCopy(locale, "Ready")}
+            : assignment
+              ? assignment.origin === "quick-check"
+                ? learningCopy[locale].quickCheck
+                : learningCopy[locale].guidedPractice
+              : practiceCopy(locale, "Ready")}
         </p>
-        <h1 className="mt-3 text-4xl font-semibold">{localizePracticeText(locale, exercise.name)}</h1>
+        <h1 className="mt-3 text-4xl font-semibold">{display.name}</h1>
         <p className="mt-4 max-w-lg text-muted-foreground">
-          {localizePracticeText(locale, exercise.description)}
+          {display.description}
         </p>
+        {assignment?.origin === "quick-check" ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {learningCopy[locale].checkIntro}
+          </p>
+        ) : null}
         {mission ? (
           <div className="mt-5 border-y px-5 py-3 text-sm">
-            <p className="font-medium">{localizeChallengeGoal(locale, mission.goal)}</p>
+            <p className="font-medium">
+              {localizeChallengeGoal(locale, mission.goal)}
+            </p>
             <p className="mt-1 text-muted-foreground">
               {localizePracticeText(locale, mission.modifierLabel)}
             </p>
@@ -83,6 +100,13 @@ export function PracticeSession({
           <Button size="lg" onClick={() => practice.start(routineId)}>
             {practiceCopy(locale, "Start session")}
           </Button>
+          {assignment?.lessonId ? (
+            <Button asChild variant="outline">
+              <Link href={localePath(locale, `/learn/${assignment.lessonId}`)}>
+                {learningCopy[locale].lessonSuggestion}
+              </Link>
+            </Button>
+          ) : null}
         </div>
       </div>
     )
@@ -105,7 +129,11 @@ export function PracticeSession({
     attempts: practice.session.attempts,
     onAttempt: practice.addAttempt,
     onFinish: () => {
-      if (getPlayInContextPrompt(exercise)) {
+      if (
+        (!exercise.learning ||
+          exercise.learning.origin === "guided-practice") &&
+        getPlayInContextPrompt(exercise)
+      ) {
         setShowApplication(true)
       } else {
         practice.complete()
@@ -120,7 +148,7 @@ export function PracticeSession({
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
             {practiceCopy(locale, "Active session")}
           </p>
-          <h1 className="text-xl font-semibold">{localizePracticeText(locale, exercise.name)}</h1>
+          <h1 className="text-xl font-semibold">{display.name}</h1>
         </div>
         <div className="flex items-center gap-2">
           <span className="min-w-16 font-mono text-sm tabular-nums">
@@ -135,7 +163,10 @@ export function PracticeSession({
                 : practice.pause
             }
           >
-            {practiceCopy(locale, practice.session.status === "paused" ? "Resume" : "Pause")}
+            {practiceCopy(
+              locale,
+              practice.session.status === "paused" ? "Resume" : "Pause"
+            )}
           </Button>
           <Button variant="ghost" size="sm" onClick={practice.abandon}>
             {practiceCopy(locale, "End")}
@@ -148,17 +179,25 @@ export function PracticeSession({
           <span className="font-medium">
             {localizeChallengeGoal(locale, mission.goal)}
           </span>
-          <span className="text-muted-foreground">{localizePracticeText(locale, mission.modifierLabel)}</span>
+          <span className="text-muted-foreground">
+            {localizePracticeText(locale, mission.modifierLabel)}
+          </span>
         </div>
       ) : null}
 
       {pathStage ? (
         <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-[var(--color-root)] bg-muted/40 px-4 py-3 text-sm">
           <span className="font-medium capitalize">
-            {localizePracticeText(locale, pathStage.stageId.replaceAll("-", " "))}
+            {localizePracticeText(
+              locale,
+              pathStage.stageId.replaceAll("-", " ")
+            )}
           </span>
           <span className="text-muted-foreground">
-            {practiceCopy(locale, pathStage.checkpoint ? "Mastery checkpoint" : "Adaptive review")}
+            {practiceCopy(
+              locale,
+              pathStage.checkpoint ? "Mastery checkpoint" : "Adaptive review"
+            )}
           </span>
         </div>
       ) : null}
@@ -168,13 +207,21 @@ export function PracticeSession({
           <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
             {practiceCopy(locale, "Paused")}
           </p>
-          <h2 className="mt-2 text-3xl font-semibold">{practiceCopy(locale, "Take a breath")}</h2>
+          <h2 className="mt-2 text-3xl font-semibold">
+            {practiceCopy(locale, "Take a breath")}
+          </h2>
           <Button className="mt-6" onClick={practice.resume}>
             {practiceCopy(locale, "Resume session")}
           </Button>
         </div>
       ) : showApplication ? (
-        <PlayInContext exercise={exercise} onFinish={practice.complete} />
+        <PlayInContext
+          exercise={exercise}
+          onFinish={(status) => {
+            practice.recordApplication(status)
+            practice.complete()
+          }}
+        />
       ) : exercise.kind === "fretboardRecall" ? (
         <FretboardRecallDrill exercise={exercise} {...sharedProps} />
       ) : exercise.kind === "tempoLadder" ? (

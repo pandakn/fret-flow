@@ -1,13 +1,7 @@
 import type { Locale } from "./locales"
+import { LESSONS } from "../learning/catalog"
 
-export const LESSON_IDS = [
-  "intervals",
-  "triads",
-  "caged",
-  "diatonic",
-  "progressions",
-  "sevenths",
-] as const
+export const LESSON_IDS = LESSONS.map((lesson) => lesson.id)
 
 export type LessonId = (typeof LESSON_IDS)[number]
 

@@ -19,6 +19,7 @@ export type PracticeStore = {
     challenge?: SessionChallenge
   ) => PracticeSession
   addAttempt: (sessionId: string, attempt: PracticeAttempt) => void
+  recordApplication: (sessionId: string, status: "tried" | "skipped") => void
   setSessionStatus: (
     sessionId: string,
     status: PracticeSession["status"],

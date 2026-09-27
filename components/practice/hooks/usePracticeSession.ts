@@ -65,6 +65,13 @@ export function usePracticeSession(
     [sessionId, store]
   )
 
+  const recordApplication = useCallback(
+    (status: "tried" | "skipped") => {
+      if (sessionId) store.recordApplication(sessionId, status)
+    },
+    [sessionId, store]
+  )
+
   const complete = useCallback(() => {
     if (!sessionId) return
     const finalElapsed = getElapsed()
@@ -89,6 +96,7 @@ export function usePracticeSession(
     pause,
     resume,
     addAttempt,
+    recordApplication,
     complete,
     abandon,
   }

@@ -423,6 +423,11 @@ export const createFretboardPathExercise = ({
   return {
     id: `fretboard-path-${stageId}-${checkpoint ? "check" : "review"}-${now.getTime()}`,
     kind: "fretboardRecall",
+    skillIds: [
+      stageId === "interval-map"
+        ? "fretboard.interval.locate"
+        : "fretboard.note.locate",
+    ],
     name: checkpoint
       ? `${stage.shortName} checkpoint`
       : `${stage.shortName} review`,

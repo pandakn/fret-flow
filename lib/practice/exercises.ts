@@ -10,6 +10,8 @@ import type {
 } from "@/types/practice"
 import type { IntervalName, NoteName } from "@/types/music"
 import { getChordById, getChordNotes } from "@/lib/chords"
+import { getDiatonicTriads } from "@/lib/theory/diatonic"
+import { getExerciseSkillIds } from "@/lib/learning/exercise-skills"
 
 export type RandomSource = () => number
 
@@ -41,9 +43,10 @@ export const createDefaultExercise = (
     durationMinutes: 5,
   }
 
+  let exercise: ExerciseDefinition
   switch (kind) {
     case "fretboardRecall":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Fretboard recall",
@@ -55,8 +58,9 @@ export const createDefaultExercise = (
         fretRange: { min: 0, max: 12 },
         questionCount: 10,
       }
+      break
     case "tempoLadder":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Tempo ladder",
@@ -67,8 +71,9 @@ export const createDefaultExercise = (
         repetitionsPerLevel: 3,
         subdivision: 2,
       }
+      break
     case "technique":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Alternate picking",
@@ -78,8 +83,9 @@ export const createDefaultExercise = (
         scaleId: "major",
         bpm: 80,
       }
+      break
     case "chordTransition":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "One-minute changes",
@@ -89,8 +95,9 @@ export const createDefaultExercise = (
         mode: "one-minute",
         voicing: "open",
       }
+      break
     case "earTraining":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Interval ear training",
@@ -99,8 +106,9 @@ export const createDefaultExercise = (
         root: "C",
         questionCount: 8,
       }
+      break
     case "rhythm":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Rhythm lock",
@@ -110,8 +118,9 @@ export const createDefaultExercise = (
         bars: 4,
         beatsPerBar: 4,
       }
+      break
     case "positionConnection":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Connect positions",
@@ -121,8 +130,9 @@ export const createDefaultExercise = (
         fromPosition: 1,
         toPosition: 2,
       }
+      break
     case "construction":
-      return {
+      exercise = {
         ...base,
         kind,
         name: "Build the interval",
@@ -131,7 +141,9 @@ export const createDefaultExercise = (
         root: "C",
         questionCount: 8,
       }
+      break
   }
+  return { ...exercise, skillIds: getExerciseSkillIds(exercise) }
 }
 
 const boundedIndex = (length: number, random: RandomSource): number =>
@@ -319,6 +331,7 @@ export const createAttempt = ({
   expected,
   responseMs,
   target,
+  skillId,
   verification = "app-verified",
   bpm,
   timingOffsetMs,
@@ -329,6 +342,7 @@ export const createAttempt = ({
   expected: string
   responseMs: number
   target: PracticeTarget
+  skillId?: string
   verification?: PracticeAttempt["verification"]
   bpm?: number
   timingOffsetMs?: number
@@ -343,6 +357,7 @@ export const createAttempt = ({
   createdAt: nowIso(),
   verification,
   target,
+  skillId,
   bpm,
   timingOffsetMs,
 })
@@ -354,6 +369,7 @@ export type ConstructionPrompt = {
   interval: IntervalName
   category: ConstructionExercise["category"]
   chordId?: string
+  degree?: number
 }
 
 const CONSTRUCTION_SEMITONES: Record<IntervalName, number> = {
@@ -375,25 +391,55 @@ const CONSTRUCTION_SEMITONES: Record<IntervalName, number> = {
 
 export const generateConstructionPrompt = (
   exercise: ConstructionExercise,
-  random: RandomSource = Math.random
+  random: RandomSource = Math.random,
+  questionIndex = 0
 ): ConstructionPrompt => {
+  if (exercise.category === "diatonic") {
+    const key = exercise.key ?? exercise.root
+    const chords = getDiatonicTriads(key)
+    const degree =
+      exercise.reviewTarget && exercise.degree
+        ? exercise.degree
+        : exercise.degree && questionIndex === 0
+          ? exercise.degree
+          : 1 + boundedIndex(chords.length, random)
+    const chord = chords[degree - 1]
+    return {
+      prompt: `Which note is the root of ${chord.romanNumeral} in ${key} major?`,
+      choices: shuffledNotes(chord.root, random).slice(0, 4),
+      expected: chord.root,
+      interval: "R",
+      category: "diatonic",
+      chordId: chord.chordId,
+      degree,
+    }
+  }
   const requestedChord = exercise.chordId
     ? getChordById(exercise.chordId)
     : undefined
   const defaultChordId = exercise.category === "seventh" ? "major_7" : "major"
   const chord = requestedChord ?? getChordById(defaultChordId)
-  const isChordQuestion = exercise.category === "triad" || exercise.category === "seventh"
+  const isChordQuestion =
+    exercise.category === "triad" || exercise.category === "seventh"
   const chordIntervals = chord?.intervals.slice(1) ?? []
-  const interval = isChordQuestion && chordIntervals.length > 0
-    ? chordIntervals[boundedIndex(chordIntervals.length, random)]
-    : INTERVALS[1 + boundedIndex(INTERVALS.length - 1, random)]
+  const requestedInterval = exercise.reviewTarget?.interval
+  const interval =
+    requestedInterval &&
+    (!isChordQuestion || chordIntervals.includes(requestedInterval))
+      ? requestedInterval
+      : isChordQuestion && chordIntervals.length > 0
+        ? chordIntervals[boundedIndex(chordIntervals.length, random)]
+        : INTERVALS[1 + boundedIndex(INTERVALS.length - 1, random)]
   const chordNotes = chord ? getChordNotes(exercise.root, chord.formula) : []
   const chordIndex = chord?.intervals.indexOf(interval) ?? -1
-  const expected = isChordQuestion && chordIndex > 0
-    ? chordNotes[chordIndex]
-    : CHROMATIC[
-        (CHROMATIC.indexOf(exercise.root) + CONSTRUCTION_SEMITONES[interval]) % 12
-      ]
+  const expected =
+    isChordQuestion && chordIndex > 0
+      ? chordNotes[chordIndex]
+      : CHROMATIC[
+          (CHROMATIC.indexOf(exercise.root) +
+            CONSTRUCTION_SEMITONES[interval]) %
+            12
+        ]
   const choices = [expected]
   while (choices.length < 4) {
     const choice = CHROMATIC[boundedIndex(CHROMATIC.length, random)]
@@ -402,9 +448,10 @@ export const generateConstructionPrompt = (
   choices.sort(() => random() - 0.5)
 
   return {
-    prompt: isChordQuestion && chord
-      ? `Which note is ${interval} in ${exercise.root}${chord.symbol} chord?`
-      : `Which note is ${interval} above ${exercise.root}?`,
+    prompt:
+      isChordQuestion && chord
+        ? `Which note is ${interval} in ${exercise.root}${chord.symbol} chord?`
+        : `Which note is ${interval} above ${exercise.root}?`,
     choices,
     expected,
     interval,

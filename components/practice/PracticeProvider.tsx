@@ -18,6 +18,7 @@ import type {
   SessionChallenge,
 } from "@/types/practice"
 import { normalizeDailyChallengeState } from "@/lib/practice/challenges"
+import { getExerciseSkillIds } from "@/lib/learning/exercise-skills"
 import {
   PracticeStoreContext,
   type PracticeStore,
@@ -51,7 +52,8 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       const now = new Date().toISOString()
       const session: PracticeSession = {
         id: createId(),
-        exercise,
+        exercise: { ...exercise, skillIds: getExerciseSkillIds(exercise) },
+        learning: exercise.learning,
         routineId,
         challenge,
         status: "running",
@@ -81,6 +83,21 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
                 attempts: [...session.attempts, attempt],
                 updatedAt: attempt.createdAt,
               }
+            : session
+        ),
+      }))
+    },
+    [setValue]
+  )
+
+  const recordApplication = useCallback(
+    (sessionId: string, status: "tried" | "skipped") => {
+      const recordedAt = new Date().toISOString()
+      setValue((current) => ({
+        ...current,
+        sessions: current.sessions.map((session) =>
+          session.id === sessionId
+            ? { ...session, application: { status, recordedAt } }
             : session
         ),
       }))
@@ -147,7 +164,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
         ...current,
         savedExercises: [
           ...current.savedExercises.filter((item) => item.id !== exercise.id),
-          exercise,
+          { ...exercise, skillIds: getExerciseSkillIds(exercise) },
         ],
       }))
     },
@@ -172,7 +189,16 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
         ...current,
         routines: [
           ...current.routines.filter((item) => item.id !== routine.id),
-          routine,
+          {
+            ...routine,
+            blocks: routine.blocks.map((block) => ({
+              ...block,
+              exercise: {
+                ...block.exercise,
+                skillIds: getExerciseSkillIds(block.exercise),
+              },
+            })),
+          },
         ],
       }))
     },
@@ -242,6 +268,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       startSession,
       addAttempt,
+      recordApplication,
       setSessionStatus,
       completeSession: (sessionId, elapsedMs) =>
         finishSession(sessionId, "completed", elapsedMs),
@@ -257,6 +284,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       addAttempt,
+      recordApplication,
       document,
       exportData,
       finishSession,

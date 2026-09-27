@@ -1,6 +1,7 @@
 import type { IntervalName, NoteName } from "@/types/music"
+import type { LearningAssignment } from "@/types/learning"
 
-export const PRACTICE_SCHEMA_VERSION = 3 as const
+export const PRACTICE_SCHEMA_VERSION = 4 as const
 
 export type ExerciseKind =
   | "fretboardRecall"
@@ -66,6 +67,9 @@ type ExerciseBase = {
   description: string
   durationMinutes: number
   createdAt: string
+  skillIds?: string[]
+  learning?: LearningAssignment
+  reviewTarget?: PracticeTarget
 }
 
 export type FretboardPromptDirection = "findPosition" | "namePosition"
@@ -152,8 +156,10 @@ export type PositionConnectionExercise = ExerciseBase & {
 
 export type ConstructionExercise = ExerciseBase & {
   kind: "construction"
-  category: "interval" | "triad" | "seventh" | "inversion"
+  category: "interval" | "triad" | "seventh" | "inversion" | "diatonic"
   root: NoteName
+  key?: NoteName
+  degree?: number
   chordId?: string
   questionCount: number
 }
@@ -201,6 +207,7 @@ export type PracticeAttempt = {
   createdAt: string
   verification: VerificationKind
   target: PracticeTarget
+  skillId?: string
   timingOffsetMs?: number
   bpm?: number
 }
@@ -208,6 +215,7 @@ export type PracticeAttempt = {
 export type PracticeSession = {
   id: string
   exercise: ExerciseDefinition
+  learning?: LearningAssignment
   routineId?: string
   challenge?: SessionChallenge
   status: SessionStatus
@@ -216,6 +224,7 @@ export type PracticeSession = {
   completedAt?: string
   elapsedMs: number
   attempts: PracticeAttempt[]
+  application?: { status: "tried" | "skipped"; recordedAt: string }
 }
 
 export type SessionSummary = {

@@ -214,7 +214,8 @@ export function Explorer() {
       saveExercise({
         ...base,
         name: `${root}${selectedArpeggioChord?.symbol ?? ""} arpeggio`,
-        description: "Practice the selected arpeggio shape with even articulation.",
+        description:
+          "Practice the selected arpeggio shape with even articulation.",
         technique: "arpeggio",
         root,
         scaleId: arpeggioChordId,
@@ -227,8 +228,10 @@ export function Explorer() {
     saveExercise({
       ...base,
       name: `${root}${selectedChordPattern?.symbol ?? ""} construction`,
-      description: "Recall and construct the selected chord tones across the neck.",
+      description:
+        "Recall and construct the selected chord tones across the neck.",
       category: mode === "triads" ? "triad" : "seventh",
+      skillIds: [mode === "triads" ? "triad.construct" : "seventh.construct"],
       root,
     })
   }

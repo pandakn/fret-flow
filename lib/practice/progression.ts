@@ -22,8 +22,10 @@ export const getWeakTargets = (
   >()
 
   for (const session of sessions) {
+    if (session.status !== "completed") continue
     for (const attempt of session.attempts) {
-      const current = scores.get(attempt.target.key) ?? {
+      const id = `${attempt.target.skill}:${attempt.target.key}`
+      const current = scores.get(id) ?? {
         target: attempt.target,
         misses: 0,
         attempts: 0,
@@ -32,7 +34,7 @@ export const getWeakTargets = (
       current.attempts += 1
       current.responseMs += attempt.responseMs
       if (!attempt.correct) current.misses += 1
-      scores.set(attempt.target.key, current)
+      scores.set(id, current)
     }
   }
 

@@ -15,6 +15,7 @@ import { createDefaultExercise } from "./exercises"
 import { getComparableSessions, getDifficultyBand } from "./progression"
 import { summarizeSession } from "./scoring"
 import { getLocalDayKey, getSkillRatings } from "./statistics"
+import { getExerciseSkillIds } from "@/lib/learning/exercise-skills"
 
 type RandomSource = () => number
 
@@ -419,6 +420,7 @@ const buildMission = (
     band,
     random
   )
+  exercise.skillIds = getExerciseSkillIds({ ...exercise, skillIds: undefined })
   const title = `${SLOT_LABELS[slot]} · ${exercise.name}`
   const reason =
     slot === "warmup"

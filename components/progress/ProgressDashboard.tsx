@@ -4,11 +4,11 @@ import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { summarizeSession } from "@/lib/practice/scoring"
-import {
-  getCurrentStreak,
-  getPracticeMinutes,
-  getSkillRatings,
-} from "@/lib/practice/statistics"
+import { getCurrentStreak, getPracticeMinutes } from "@/lib/practice/statistics"
+import { getSkillEvidence } from "@/lib/learning/evidence"
+import { isSkillId } from "@/lib/learning/catalog"
+import { getExerciseDisplayText } from "@/lib/learning/exercises"
+import { learningCopy } from "@/lib/i18n/learning"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
 import { PracticeCalendar } from "./PracticeCalendar"
 import { FretboardHeatmap } from "./FretboardHeatmap"
@@ -17,7 +17,6 @@ import { MasteryMilestones } from "./MasteryMilestones"
 import { FretboardPathProgress } from "./FretboardPathProgress"
 import { useI18n } from "@/components/i18n/LocaleProvider"
 import {
-  localizePracticeSkill,
   localizePracticeText,
   practiceCopy,
 } from "@/lib/i18n/practice-messages"
@@ -32,18 +31,9 @@ export function ProgressDashboard() {
   )
   const weekAgo = new Date()
   weekAgo.setDate(weekAgo.getDate() - 7)
-  const ratings = getSkillRatings(sessions)
-  const skillRows = [...new Set(ratings.map((rating) => rating.skill))]
-    .map((skill) => {
-      const values = ratings.filter((rating) => rating.skill === skill)
-      return {
-        skill,
-        strength: Math.round(
-          values.reduce((sum, value) => sum + value.strength, 0) / values.length
-        ),
-      }
-    })
-    .toSorted((a, b) => a.strength - b.strength)
+  const skillRows = getSkillEvidence(sessions).toSorted(
+    (a, b) => a.accuracy - b.accuracy
+  )
 
   const download = () => {
     const blob = new Blob([exportData()], { type: "application/json" })
@@ -73,7 +63,10 @@ export function ProgressDashboard() {
       label: practiceCopy(locale, "Last 7 days"),
       value: `${getPracticeMinutes(sessions, weekAgo)} ${practiceCopy(locale, "min")}`,
     },
-    { label: practiceCopy(locale, "Completed"), value: String(sessions.length) },
+    {
+      label: practiceCopy(locale, "Completed"),
+      value: String(sessions.length),
+    },
     {
       label: practiceCopy(locale, "Daily missions"),
       value: String(sessions.filter((session) => session.challenge).length),
@@ -126,7 +119,9 @@ export function ProgressDashboard() {
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle>{practiceCopy(locale, "Practice consistency")}</CardTitle>
+            <CardTitle>
+              {practiceCopy(locale, "Practice consistency")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <PracticeCalendar sessions={sessions} />
@@ -145,7 +140,10 @@ export function ProgressDashboard() {
         <CardHeader>
           <CardTitle>{practiceCopy(locale, "Mastery milestones")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {practiceCopy(locale, "Skill evidence, not participation points. Verified marks use answers or timing recorded by the app.")}
+            {practiceCopy(
+              locale,
+              "Skill evidence, not participation points. Verified marks use answers or timing recorded by the app."
+            )}
           </p>
         </CardHeader>
         <CardContent>
@@ -154,9 +152,14 @@ export function ProgressDashboard() {
       </Card>
       <Card className="shadow-none">
         <CardHeader>
-          <CardTitle>{practiceCopy(locale, "Fretboard mastery path")}</CardTitle>
+          <CardTitle>
+            {practiceCopy(locale, "Fretboard mastery path")}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {practiceCopy(locale, "Durable progress from verified recall, coverage, and response time.")}
+            {practiceCopy(
+              locale,
+              "Durable progress from verified recall, coverage, and response time."
+            )}
           </p>
         </CardHeader>
         <CardContent>
@@ -167,7 +170,10 @@ export function ProgressDashboard() {
         <CardHeader>
           <CardTitle>{practiceCopy(locale, "Fretboard recall map")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {practiceCopy(locale, "Red positions need attention; green positions are consistently recalled.")}
+            {practiceCopy(
+              locale,
+              "Red positions need attention; green positions are consistently recalled."
+            )}
           </p>
         </CardHeader>
         <CardContent>
@@ -177,27 +183,40 @@ export function ProgressDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle>{practiceCopy(locale, "Skill strength")}</CardTitle>
+            <CardTitle>{learningCopy[locale].skillEvidence}</CardTitle>
           </CardHeader>
           <CardContent>
             {skillRows.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                {practiceCopy(locale, "Skill ratings appear after your first answered drill.")}
+                {practiceCopy(
+                  locale,
+                  "Skill ratings appear after your first answered drill."
+                )}
               </p>
             ) : (
               <ul className="space-y-4">
                 {skillRows.map((row) => (
-                  <li key={row.skill}>
+                  <li key={row.skillId}>
                     <div className="mb-1 flex justify-between text-sm">
                       <span className="capitalize">
-                        {localizePracticeSkill(locale, row.skill)}
+                        {isSkillId(row.skillId)
+                          ? learningCopy[locale].skillNames[row.skillId]
+                          : row.skillId}
                       </span>
-                      <span className="font-mono">{row.strength}/100</span>
+                      <span className="font-mono">
+                        {Math.round(row.accuracy * 100)}%
+                      </span>
                     </div>
+                    <p className="mb-1 text-xs text-muted-foreground">
+                      {row.attempts} {practiceCopy(locale, "Attempts")} ·{" "}
+                      {row.verified
+                        ? learningCopy[locale].verifiedLabel
+                        : learningCopy[locale].selfReportedLabel}
+                    </p>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full bg-foreground"
-                        style={{ width: `${row.strength}%` }}
+                        style={{ width: `${Math.round(row.accuracy * 100)}%` }}
                       />
                     </div>
                   </li>
@@ -228,10 +247,18 @@ export function ProgressDashboard() {
                         className="flex items-center justify-between gap-4 py-3"
                       >
                         <div>
-                          <p className="font-medium">{localizePracticeText(locale, session.exercise.name)}</p>
+                          <p className="font-medium">
+                            {
+                              getExerciseDisplayText(session.exercise, locale)
+                                .name
+                            }
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(session.startedAt).toLocaleDateString(locale === "th" ? "th-TH" : "en-US")} ·{" "}
-                            {Math.round(session.elapsedMs / 60000)} {practiceCopy(locale, "min")}
+                            {new Date(session.startedAt).toLocaleDateString(
+                              locale === "th" ? "th-TH" : "en-US"
+                            )}{" "}
+                            · {Math.round(session.elapsedMs / 60000)}{" "}
+                            {practiceCopy(locale, "min")}
                           </p>
                         </div>
                         <span className="font-mono text-sm">

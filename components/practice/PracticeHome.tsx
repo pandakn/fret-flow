@@ -26,6 +26,12 @@ import {
 } from "@/lib/practice/challenges"
 import { createDefaultExercise } from "@/lib/practice/exercises"
 import { getLocalDayKey } from "@/lib/practice/statistics"
+import { getDueLearningTargets } from "@/lib/learning/review"
+import {
+  createDueReviewExercise,
+  getExerciseDisplayText,
+} from "@/lib/learning/exercises"
+import { learningCopy } from "@/lib/i18n/learning"
 import { cn } from "@/lib/utils"
 import type {
   DailyMission,
@@ -40,7 +46,10 @@ import { FretboardRecallSetup } from "./FretboardRecallSetup"
 import { DailyMissionBoard } from "./DailyMissionBoard"
 import { FretboardMasteryPath } from "./FretboardMasteryPath"
 import { useI18n } from "@/components/i18n/LocaleProvider"
-import { localizePracticeText, practiceCopy } from "@/lib/i18n/practice-messages"
+import {
+  localizePracticeText,
+  practiceCopy,
+} from "@/lib/i18n/practice-messages"
 
 const EXERCISES: {
   kind: ExerciseKind
@@ -122,6 +131,11 @@ export function PracticeHome() {
     [dayKey, document.dailyChallengeState, document.sessions]
   )
   const warmup = missions.find((dailyMission) => dailyMission.slot === "warmup")
+  const dueReviews = useMemo(
+    () =>
+      getDueLearningTargets(document.sessions, new Date(`${dayKey}T12:00:00`)),
+    [document.sessions, dayKey]
+  )
   const warmupComplete = warmup
     ? getMissionSessions(document.sessions, warmup.id).length > 0
     : false
@@ -204,7 +218,10 @@ export function PracticeHome() {
             {practiceCopy(locale, "Deliberate practice")}
           </p>
           <h1 className="mt-2 max-w-3xl text-4xl leading-tight font-semibold sm:text-5xl">
-            {practiceCopy(locale, "Turn fretboard knowledge into playing you can measure.")}
+            {practiceCopy(
+              locale,
+              "Turn fretboard knowledge into playing you can measure."
+            )}
           </h1>
         </div>
         <div className="font-mono text-sm text-muted-foreground">
@@ -221,7 +238,9 @@ export function PracticeHome() {
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-              {practiceCopy(locale, "Today’s practice · {day}", { day: dayKey })}
+              {practiceCopy(locale, "Today’s practice · {day}", {
+                day: dayKey,
+              })}
             </p>
             <h2
               id="todays-practice-heading"
@@ -231,11 +250,18 @@ export function PracticeHome() {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {warmup
-                ? practiceCopy(locale, "{name} · {modifier}. About {duration} minutes to get moving.", {
-                    name: localizePracticeText(locale, warmup.exercise.name),
-                    modifier: localizePracticeText(locale, warmup.modifierLabel),
-                    duration: warmup.durationMinutes,
-                  })
+                ? practiceCopy(
+                    locale,
+                    "{name} · {modifier}. About {duration} minutes to get moving.",
+                    {
+                      name: localizePracticeText(locale, warmup.exercise.name),
+                      modifier: localizePracticeText(
+                        locale,
+                        warmup.modifierLabel
+                      ),
+                      duration: warmup.durationMinutes,
+                    }
+                  )
                 : practiceCopy(locale, "A small, focused way to begin.")}
             </p>
           </div>
@@ -245,7 +271,10 @@ export function PracticeHome() {
               disabled={!hydrated || !warmup}
               onClick={() => warmup && startMission(warmup)}
             >
-              {practiceCopy(locale, warmupComplete ? "Replay quick warmup" : "Start quick warmup")}
+              {practiceCopy(
+                locale,
+                warmupComplete ? "Replay quick warmup" : "Start quick warmup"
+              )}
             </Button>
             <Button
               className="min-h-11"
@@ -260,7 +289,10 @@ export function PracticeHome() {
         </div>
         <p className="mt-5 border-t pt-4 font-mono text-xs text-muted-foreground">
           {warmupComplete
-            ? practiceCopy(locale, "Warmup logged today. You can replay it whenever you like.")
+            ? practiceCopy(
+                locale,
+                "Warmup logged today. You can replay it whenever you like."
+              )
             : practiceCopy(locale, "Even a short session counts as practice.")}
         </p>
       </section>
@@ -287,6 +319,39 @@ export function PracticeHome() {
       </Collapsible>
 
       <DailyMissionBoard onStart={startMission} />
+
+      {dueReviews.length > 0 ? (
+        <section
+          className="space-y-3"
+          aria-labelledby="learning-review-heading"
+        >
+          <h2 id="learning-review-heading" className="text-2xl font-semibold">
+            {learningCopy[locale].review}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {dueReviews.slice(0, 3).map((due) => {
+              const exercise = createDueReviewExercise(due, locale)
+              return exercise ? (
+                <Card key={`${due.skillId}:${due.key}`} className="p-5">
+                  <h3 className="font-semibold">
+                    {getExerciseDisplayText(exercise, locale).name}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {getExerciseDisplayText(exercise, locale).description}
+                  </p>
+                  <Button
+                    className="mt-4"
+                    variant="outline"
+                    onClick={() => startExercise(exercise)}
+                  >
+                    {learningCopy[locale].review}
+                  </Button>
+                </Card>
+              ) : null
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section aria-labelledby="more-practice-heading" className="space-y-5">
         <div>
@@ -341,14 +406,16 @@ export function PracticeHome() {
                 </div>
               </div>
               <div className="grid gap-px overflow-hidden border bg-border sm:grid-cols-2 lg:grid-cols-4">
-                  {EXERCISES.map(({ kind, icon: Icon, label, measure }) => (
+                {EXERCISES.map(({ kind, icon: Icon, label, measure }) => (
                   <Card
                     key={kind}
                     className="rounded-none border-0 shadow-none"
                   >
                     <CardHeader>
                       <Icon className="size-5" aria-hidden="true" />
-                      <CardTitle className="pt-5 text-lg">{practiceCopy(locale, label)}</CardTitle>
+                      <CardTitle className="pt-5 text-lg">
+                        {practiceCopy(locale, label)}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="min-h-10 text-sm text-muted-foreground">
