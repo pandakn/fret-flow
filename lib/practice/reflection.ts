@@ -12,12 +12,14 @@ const NEXT_STEP: Record<ExerciseKind, string> = {
   rhythm: "Next time, keep the pulse going when the click drops out.",
   positionConnection: "Next time, play the connection in both directions.",
   construction: "Next time, find one of today's answers on the guitar.",
+  scaleRoute: "Next time, revisit the route transitions you missed.",
 }
 
 export const getSessionReflection = (
   session: PracticeSession,
   sessions: readonly PracticeSession[]
 ): { observation: string; nextStep: string } | null => {
+  if (session.exercise.kind === "scaleRoute") return null
   if (session.status !== "completed" || session.attempts.length === 0)
     return null
 

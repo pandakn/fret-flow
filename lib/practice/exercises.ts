@@ -3,6 +3,7 @@ import { getTuningById } from "@/lib/tunings"
 import type {
   ConstructionExercise,
   ExerciseDefinition,
+  GeneratableExerciseKind,
   FretboardPromptDirection,
   FretboardRecallExercise,
   PracticeAttempt,
@@ -35,7 +36,7 @@ const makeId = (prefix: string) =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 export const createDefaultExercise = (
-  kind: ExerciseDefinition["kind"]
+  kind: GeneratableExerciseKind
 ): ExerciseDefinition => {
   const base = {
     id: makeId(kind),
@@ -143,7 +144,7 @@ export const createDefaultExercise = (
       }
       break
   }
-  return { ...exercise, skillIds: getExerciseSkillIds(exercise) }
+  return { ...exercise!, skillIds: getExerciseSkillIds(exercise!) }
 }
 
 const boundedIndex = (length: number, random: RandomSource): number =>

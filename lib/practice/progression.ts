@@ -22,7 +22,11 @@ export const getWeakTargets = (
   >()
 
   for (const session of sessions) {
-    if (session.status !== "completed") continue
+    if (
+      session.status !== "completed" ||
+      session.exercise.kind === "scaleRoute"
+    )
+      continue
     for (const attempt of session.attempts) {
       const id = `${attempt.target.skill}:${attempt.target.key}`
       const current = scores.get(id) ?? {
@@ -57,7 +61,9 @@ export const shouldAdvanceDifficulty = (
   sessions
     .filter(
       (session) =>
-        session.exercise.id === exerciseId && session.status === "completed"
+        session.exercise.id === exerciseId &&
+        session.status === "completed" &&
+        session.exercise.kind !== "scaleRoute"
     )
     .slice(-2)
     .every((session, _, matches) =>
@@ -90,6 +96,8 @@ export const getComparableSessions = (
     .filter(
       (session) =>
         session.status === "completed" &&
+        session.exercise.kind !== "scaleRoute" &&
+        exercise.kind !== "scaleRoute" &&
         session.exercise.kind === exercise.kind
     )
     .slice(-limit)

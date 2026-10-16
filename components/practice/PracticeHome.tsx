@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils"
 import type {
   DailyMission,
   ExerciseDefinition,
-  ExerciseKind,
+  GeneratableExerciseKind,
   RoutineDefinition,
 } from "@/types/practice"
 import { usePracticeStore } from "./hooks/usePracticeStore"
@@ -52,7 +52,7 @@ import {
 } from "@/lib/i18n/practice-messages"
 
 const EXERCISES: {
-  kind: ExerciseKind
+  kind: GeneratableExerciseKind
   icon: typeof Guitar
   label: string
   measure: string

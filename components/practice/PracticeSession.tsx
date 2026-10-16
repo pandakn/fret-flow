@@ -14,7 +14,9 @@ import { EarTrainingDrill } from "./drills/EarTrainingDrill"
 import { RhythmDrill } from "./drills/RhythmDrill"
 import { PositionConnectionDrill } from "./drills/PositionConnectionDrill"
 import { ConstructionDrill } from "./drills/ConstructionDrill"
-import type { ExerciseDefinition } from "@/types/practice"
+import { ScaleRouteDrill } from "./drills/ScaleRouteDrill"
+import { ScaleRouteSummary } from "./ScaleRouteSummary"
+import type { ExerciseDefinition, ScaleRouteExercise } from "@/types/practice"
 import type { DailyMission } from "@/types/practice"
 import { useI18n } from "@/components/i18n/LocaleProvider"
 import { learningCopy } from "@/lib/i18n/learning"
@@ -45,6 +47,8 @@ export function PracticeSession({
   mission?: DailyMission
 }) {
   const { locale } = useI18n()
+  const [replayExercise, setReplayExercise] =
+    useState<ScaleRouteExercise | null>(null)
   const challenge = mission
     ? {
         id: mission.id,
@@ -61,6 +65,15 @@ export function PracticeSession({
     exercise.kind === "fretboardRecall" ? exercise.path : undefined
   const assignment = exercise.learning
   const display = getExerciseDisplayText(exercise, locale)
+
+  if (replayExercise)
+    return (
+      <PracticeSession
+        key={replayExercise.id}
+        exercise={replayExercise}
+        onExit={() => setReplayExercise(null)}
+      />
+    )
 
   if (!practice.session) {
     return (
@@ -97,7 +110,11 @@ export function PracticeSession({
           <Button variant="ghost" onClick={onExit}>
             {practiceCopy(locale, "Back")}
           </Button>
-          <Button size="lg" onClick={() => practice.start(routineId)}>
+          <Button
+            size="lg"
+            disabled={!practice.canStart}
+            onClick={() => practice.start(routineId)}
+          >
             {practiceCopy(locale, "Start session")}
           </Button>
           {assignment?.lessonId ? (
@@ -116,6 +133,14 @@ export function PracticeSession({
     practice.session.status === "completed" ||
     practice.session.status === "abandoned"
   ) {
+    if (exercise.kind === "scaleRoute")
+      return (
+        <ScaleRouteSummary
+          session={practice.session}
+          onDone={onExit}
+          onReplay={setReplayExercise}
+        />
+      )
     return (
       <SessionSummary
         session={practice.session}
@@ -151,9 +176,11 @@ export function PracticeSession({
           <h1 className="text-xl font-semibold">{display.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="min-w-16 font-mono text-sm tabular-nums">
-            {formatTime(practice.elapsedMs)}
-          </span>
+          {exercise.kind !== "scaleRoute" ? (
+            <span className="min-w-16 font-mono text-sm tabular-nums">
+              {formatTime(practice.elapsedMs)}
+            </span>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -236,6 +263,11 @@ export function PracticeSession({
         <RhythmDrill exercise={exercise} {...sharedProps} />
       ) : exercise.kind === "positionConnection" ? (
         <PositionConnectionDrill exercise={exercise} {...sharedProps} />
+      ) : exercise.kind === "scaleRoute" ? (
+        <ScaleRouteDrill
+          session={practice.session}
+          onComplete={practice.complete}
+        />
       ) : (
         <ConstructionDrill exercise={exercise} {...sharedProps} />
       )}

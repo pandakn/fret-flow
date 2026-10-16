@@ -5,6 +5,7 @@ import {
   parseLearnPracticeParams,
 } from "@/lib/learn-practice"
 import { isLocale } from "@/lib/i18n/locales"
+import { resolveScaleRoutePracticeRequest } from "@/lib/scale-route-practice"
 
 export default async function PracticePage({
   params,
@@ -15,11 +16,21 @@ export default async function PracticePage({
 }) {
   const [{ lang }, query] = await Promise.all([params, searchParams])
   const practiceParams = parseLearnPracticeParams(query)
+  const routeRequested =
+    query.kind === "scaleRoute" ||
+    (Array.isArray(query.kind) && query.kind.includes("scaleRoute"))
+  const routeRequest = routeRequested
+    ? resolveScaleRoutePracticeRequest(query)
+    : null
   return (
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <LearnPracticeEntry
+          key={JSON.stringify(query)}
+          invalidRoute={Boolean(
+            routeRequested && routeRequest && !routeRequest.ok
+          )}
           reviewRequest={
             typeof query.reviewSkill === "string" &&
             typeof query.reviewKey === "string"
@@ -27,9 +38,13 @@ export default async function PracticePage({
               : undefined
           }
           initialExercise={
-            practiceParams && isLocale(lang)
-              ? createLearnExercise(practiceParams, lang)
-              : null
+            routeRequest?.ok
+              ? routeRequest.value
+              : routeRequested
+                ? null
+                : practiceParams && isLocale(lang)
+                  ? createLearnExercise(practiceParams, lang)
+                  : null
           }
         />
       </main>

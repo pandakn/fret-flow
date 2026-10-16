@@ -28,7 +28,9 @@ export const getPracticeMinutes = (
 export const getPracticeDayKeys = (
   sessions: readonly PracticeSession[]
 ): string[] =>
-  [...new Set(sessions.map((session) => getLocalDayKey(session.startedAt)))].sort()
+  [
+    ...new Set(sessions.map((session) => getLocalDayKey(session.startedAt))),
+  ].sort()
 
 export const getCurrentStreak = (
   sessions: readonly PracticeSession[],
@@ -53,9 +55,16 @@ export const getSkillRatings = (
 ): SkillRating[] => {
   const targets = new Map<
     string,
-    { skill: SkillRating["skill"]; correct: number; attempts: number; response: number; last: string }
+    {
+      skill: SkillRating["skill"]
+      correct: number
+      attempts: number
+      response: number
+      last: string
+    }
   >()
-  sessions.forEach((session) =>
+  sessions.forEach((session) => {
+    if (session.exercise.kind === "scaleRoute") return
     session.attempts.forEach((attempt) => {
       const key = `${attempt.target.skill}:${attempt.target.key}`
       const current = targets.get(key) ?? {
@@ -71,7 +80,7 @@ export const getSkillRatings = (
       if (attempt.createdAt > current.last) current.last = attempt.createdAt
       targets.set(key, current)
     })
-  )
+  })
 
   return [...targets.entries()].map(([key, value]) => {
     const accuracy = value.correct / value.attempts
@@ -83,7 +92,13 @@ export const getSkillRatings = (
       accuracy,
       averageResponseMs,
       strength: Math.round(
-        Math.max(0, Math.min(100, accuracy * 80 + Math.max(0, 20 - averageResponseMs / 500)))
+        Math.max(
+          0,
+          Math.min(
+            100,
+            accuracy * 80 + Math.max(0, 20 - averageResponseMs / 500)
+          )
+        )
       ),
       lastPracticedAt: value.last,
     }
@@ -95,7 +110,10 @@ export const getPersonalBests = (
 ): PersonalBest[] => {
   const bests = new Map<string, PersonalBest>()
   sessions
-    .filter((session) => session.status === "completed")
+    .filter(
+      (session) =>
+        session.status === "completed" && session.exercise.kind !== "scaleRoute"
+    )
     .forEach((session) => {
       const summary = summarizeSession(session)
       const candidates: PersonalBest[] = [
@@ -105,16 +123,19 @@ export const getPersonalBests = (
           metric: "accuracy",
           value: Math.round(summary.accuracy * 100),
           achievedAt: session.completedAt ?? session.updatedAt,
-          verification:
-            session.attempts.every(
-              (attempt) => attempt.verification === "app-verified"
-            )
-              ? "app-verified"
-              : "self-reported",
+          verification: session.attempts.every(
+            (attempt) => attempt.verification === "app-verified"
+          )
+            ? "app-verified"
+            : "self-reported",
         },
       ]
       if (summary.bestBpm !== null) {
-        candidates.push({ ...candidates[0], metric: "bpm", value: summary.bestBpm })
+        candidates.push({
+          ...candidates[0],
+          metric: "bpm",
+          value: summary.bestBpm,
+        })
       }
       candidates.forEach((candidate) => {
         const key = `${candidate.exerciseId}:${candidate.metric}`

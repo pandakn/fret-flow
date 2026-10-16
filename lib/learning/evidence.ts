@@ -39,7 +39,11 @@ export function getSkillEvidence(
     { attempts: number; correct: number; verified: boolean; last: string }
   >()
   for (const session of sessions) {
-    if (session.status !== "completed") continue
+    if (
+      session.status !== "completed" ||
+      session.exercise.kind === "scaleRoute"
+    )
+      continue
     const fallback =
       session.learning?.skillIds[0] ??
       session.exercise.learning?.skillIds[0] ??
@@ -75,7 +79,12 @@ export function getWeakLessonRecommendation(
   session: PracticeSession,
   sessions: readonly PracticeSession[]
 ) {
-  if (session.status !== "completed" || session.attempts.length < 4) return null
+  if (
+    session.status !== "completed" ||
+    session.exercise.kind === "scaleRoute" ||
+    session.attempts.length < 4
+  )
+    return null
   const skillId =
     session.learning?.skillIds[0] ??
     session.exercise.learning?.skillIds[0] ??

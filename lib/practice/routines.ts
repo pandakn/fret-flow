@@ -1,11 +1,12 @@
 import { createDefaultExercise } from "./exercises"
 import type {
   ExerciseDefinition,
+  GeneratableExerciseKind,
   PracticeSession,
   RoutineDefinition,
 } from "@/types/practice"
 
-const TEMPLATE_KINDS: ExerciseDefinition["kind"][] = [
+const TEMPLATE_KINDS: GeneratableExerciseKind[] = [
   "fretboardRecall",
   "technique",
   "tempoLadder",
@@ -52,7 +53,7 @@ export const buildRoutine = (
     const exercise =
       kind === focusKind
         ? options.focusExercise!
-        : (saved ?? createDefaultExercise(kind))
+        : (saved ?? createDefaultExercise(kind as GeneratableExerciseKind))
     return {
       id: `routine-block-${index}-${exercise.id}`,
       exercise,

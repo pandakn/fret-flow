@@ -1,24 +1,32 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
-import { useLocalStorage } from "@/hooks/useLocalStorage"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   createEmptyPracticeDocument,
   exportPracticeDocument,
   importPracticeDocument,
-  parsePracticeDocument,
   PRACTICE_STORAGE_KEY,
   serializePracticeDocument,
+  readPracticeStorage,
+  clonePracticeExercise,
 } from "@/lib/practice/storage"
 import type {
   ExerciseDefinition,
   PracticeAttempt,
   PracticeSession,
+  PracticeDocument,
   RoutineDefinition,
   SessionChallenge,
 } from "@/types/practice"
 import { normalizeDailyChallengeState } from "@/lib/practice/challenges"
 import { getExerciseSkillIds } from "@/lib/learning/exercise-skills"
+import {
+  createScaleRouteProgress,
+  reduceRouteAction,
+} from "@/lib/practice/scale-route"
+import type { ScaleRouteAction } from "@/types/note-routes"
+import { useI18n } from "@/components/i18n/LocaleProvider"
+import { routeText } from "@/lib/i18n/note-routes"
 import {
   PracticeStoreContext,
   type PracticeStore,
@@ -32,16 +40,60 @@ const createId = () =>
     : `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 export function PracticeProvider({ children }: { children: React.ReactNode }) {
-  const {
-    value: document,
-    setValue,
-    hydrated,
-  } = useLocalStorage({
-    key: PRACTICE_STORAGE_KEY,
-    fallback: EMPTY_DOCUMENT,
-    parse: parsePracticeDocument,
-    serialize: serializePracticeDocument,
-  })
+  const [document, setDocument] = useState(EMPTY_DOCUMENT)
+  const [hydrated, setHydrated] = useState(false)
+  const [storageError, setStorageError] = useState<string | null>(null)
+  const { locale } = useI18n()
+  const setValue = useCallback<
+    React.Dispatch<React.SetStateAction<PracticeDocument>>
+  >(
+    (next) => {
+      if (!hydrated || storageError) return
+      setDocument(next)
+    },
+    [hydrated, storageError]
+  )
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const loaded = readPracticeStorage(window.localStorage)
+        setDocument(loaded)
+        setStorageError(null)
+        setHydrated(true)
+      } catch (error) {
+        setStorageError(
+          error instanceof Error
+            ? error.message
+            : "Practice data could not be loaded."
+        )
+        setHydrated(true)
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated || storageError) return
+    let timer: number | undefined
+    try {
+      window.localStorage.setItem(
+        PRACTICE_STORAGE_KEY,
+        serializePracticeDocument(document)
+      )
+    } catch {
+      timer = window.setTimeout(
+        () =>
+          setStorageError(
+            "Practice data could not be saved. Existing data remains unchanged."
+          ),
+        0
+      )
+    }
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
+  }, [document, hydrated, storageError])
 
   const startSession = useCallback(
     (
@@ -50,9 +102,13 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       challenge?: SessionChallenge
     ) => {
       const now = new Date().toISOString()
+      const sessionExercise = clonePracticeExercise(exercise)
       const session: PracticeSession = {
         id: createId(),
-        exercise: { ...exercise, skillIds: getExerciseSkillIds(exercise) },
+        exercise: {
+          ...sessionExercise,
+          skillIds: getExerciseSkillIds(sessionExercise),
+        },
         learning: exercise.learning,
         routineId,
         challenge,
@@ -61,6 +117,10 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
         updatedAt: now,
         elapsedMs: 0,
         attempts: [],
+        route:
+          sessionExercise.kind === "scaleRoute"
+            ? createScaleRouteProgress(sessionExercise)
+            : undefined,
       }
       setValue((current) => ({
         ...current,
@@ -68,6 +128,20 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
         activeSessionId: session.id,
       }))
       return session
+    },
+    [setValue]
+  )
+
+  const dispatchRouteAction = useCallback(
+    (sessionId: string, action: ScaleRouteAction) => {
+      setValue((current) => ({
+        ...current,
+        sessions: current.sessions.map((session) =>
+          session.id === sessionId
+            ? reduceRouteAction(session, action)
+            : session
+        ),
+      }))
     },
     [setValue]
   )
@@ -164,7 +238,10 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
         ...current,
         savedExercises: [
           ...current.savedExercises.filter((item) => item.id !== exercise.id),
-          { ...exercise, skillIds: getExerciseSkillIds(exercise) },
+          {
+            ...clonePracticeExercise(exercise),
+            skillIds: getExerciseSkillIds(exercise),
+          },
         ],
       }))
     },
@@ -194,7 +271,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
             blocks: routine.blocks.map((block) => ({
               ...block,
               exercise: {
-                ...block.exercise,
+                ...clonePracticeExercise(block.exercise),
                 skillIds: getExerciseSkillIds(block.exercise),
               },
             })),
@@ -243,30 +320,39 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     [setValue]
   )
 
-  const importData = useCallback(
-    (raw: string) => {
-      try {
-        const imported = importPracticeDocument(raw)
-        if (!imported) return false
-        setValue(imported)
-        return true
-      } catch {
-        return false
-      }
-    },
-    [setValue]
-  )
+  const importData = useCallback((raw: string) => {
+    try {
+      const imported = importPracticeDocument(raw)
+      if (!imported) return false
+      window.localStorage.setItem(
+        PRACTICE_STORAGE_KEY,
+        serializePracticeDocument(imported)
+      )
+      setDocument(imported)
+      setStorageError(null)
+      return true
+    } catch {
+      return false
+    }
+  }, [])
 
   const exportData = useCallback(
-    () => exportPracticeDocument(document),
-    [document]
+    () =>
+      storageError && typeof window !== "undefined"
+        ? (window.localStorage.getItem(PRACTICE_STORAGE_KEY) ??
+          window.localStorage.getItem("fret-flow.practice.v1") ??
+          exportPracticeDocument(document))
+        : exportPracticeDocument(document),
+    [document, storageError]
   )
 
   const store = useMemo<PracticeStore>(
     () => ({
       document,
       hydrated,
+      storageError,
       startSession,
+      dispatchRouteAction,
       addAttempt,
       recordApplication,
       setSessionStatus,
@@ -284,11 +370,13 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       addAttempt,
+      dispatchRouteAction,
       recordApplication,
       document,
       exportData,
       finishSession,
       hydrated,
+      storageError,
       importData,
       removeExercise,
       rerollWildcard,
@@ -302,6 +390,14 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PracticeStoreContext.Provider value={store}>
+      {storageError ? (
+        <p
+          role="alert"
+          className="fixed inset-x-0 top-0 z-50 border-b border-destructive bg-background px-4 py-3 text-sm shadow-sm"
+        >
+          {routeText(locale, "storageIssue")}
+        </p>
+      ) : null}
       {children}
     </PracticeStoreContext.Provider>
   )

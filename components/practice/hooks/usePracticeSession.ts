@@ -92,6 +92,7 @@ export function usePracticeSession(
   return {
     session,
     elapsedMs,
+    canStart: store.hydrated && !store.storageError,
     start,
     pause,
     resume,

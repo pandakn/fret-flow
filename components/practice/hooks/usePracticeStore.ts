@@ -13,6 +13,11 @@ import type {
 export type PracticeStore = {
   document: PracticeDocument
   hydrated: boolean
+  storageError: string | null
+  dispatchRouteAction: (
+    sessionId: string,
+    action: import("@/types/note-routes").ScaleRouteAction
+  ) => void
   startSession: (
     exercise: ExerciseDefinition,
     routineId?: string,

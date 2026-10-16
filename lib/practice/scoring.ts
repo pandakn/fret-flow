@@ -1,3 +1,4 @@
+import { getAssessmentAttempts } from "@/lib/practice/scale-route"
 import type {
   PracticeAttempt,
   PracticeSession,
@@ -22,6 +23,24 @@ export const calculateAccuracy = (attempts: readonly PracticeAttempt[]) => {
 }
 
 export const summarizeSession = (session: PracticeSession): SessionSummary => {
+  if (session.exercise.kind === "scaleRoute") {
+    const assessed = getAssessmentAttempts(session)
+    const correctCount = assessed.filter((attempt) => attempt.correct).length
+    return {
+      sessionId: session.id,
+      exerciseKind: session.exercise.kind,
+      durationMs: session.elapsedMs,
+      attemptCount: assessed.length,
+      correctCount,
+      accuracy: assessed.length ? correctCount / assessed.length : 0,
+      averageResponseMs: null,
+      averageTimingOffsetMs: null,
+      timingVariabilityMs: null,
+      bestBpm: null,
+      comfortableBpm: null,
+      completion: session.status === "completed" ? "completed" : "abandoned",
+    }
+  }
   const correctAttempts = session.attempts.filter((attempt) => attempt.correct)
   const responseTimes = session.attempts.map((attempt) => attempt.responseMs)
   const offsets = session.attempts.flatMap((attempt) =>

@@ -35,5 +35,7 @@ export function getExerciseSkillIds(exercise: ExerciseDefinition): string[] {
       return ["technique.control"]
     case "positionConnection":
       return ["position.connect"]
+    case "scaleRoute":
+      return []
   }
 }

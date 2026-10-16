@@ -1,7 +1,13 @@
 import type { IntervalName, NoteName } from "@/types/music"
 import type { LearningAssignment } from "@/types/learning"
 
-export const PRACTICE_SCHEMA_VERSION = 4 as const
+import type {
+  ScaleRouteSnapshot,
+  ScaleRouteProgress,
+  RouteSubmission,
+} from "@/types/note-routes"
+
+export const PRACTICE_SCHEMA_VERSION = 5 as const
 
 export type ExerciseKind =
   | "fretboardRecall"
@@ -12,6 +18,9 @@ export type ExerciseKind =
   | "rhythm"
   | "positionConnection"
   | "construction"
+  | "scaleRoute"
+
+export type GeneratableExerciseKind = Exclude<ExerciseKind, "scaleRoute">
 
 export type VerificationKind = "self-reported" | "app-verified"
 export type SessionStatus =
@@ -164,6 +173,12 @@ export type ConstructionExercise = ExerciseBase & {
   questionCount: number
 }
 
+export type ScaleRouteExercise = ExerciseBase & {
+  kind: "scaleRoute"
+  snapshot: ScaleRouteSnapshot
+  assessmentQuestionIds?: string[]
+}
+
 export type ExerciseDefinition =
   | FretboardRecallExercise
   | TempoLadderExercise
@@ -173,6 +188,7 @@ export type ExerciseDefinition =
   | RhythmExercise
   | PositionConnectionExercise
   | ConstructionExercise
+  | ScaleRouteExercise
 
 export type RoutineBlock = {
   id: string
@@ -210,6 +226,7 @@ export type PracticeAttempt = {
   skillId?: string
   timingOffsetMs?: number
   bpm?: number
+  route?: RouteSubmission
 }
 
 export type PracticeSession = {
@@ -225,6 +242,7 @@ export type PracticeSession = {
   elapsedMs: number
   attempts: PracticeAttempt[]
   application?: { status: "tried" | "skipped"; recordedAt: string }
+  route?: ScaleRouteProgress
 }
 
 export type SessionSummary = {

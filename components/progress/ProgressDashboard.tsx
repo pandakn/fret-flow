@@ -18,6 +18,8 @@ import { FretboardPathProgress } from "./FretboardPathProgress"
 import { useI18n } from "@/components/i18n/LocaleProvider"
 import { ObjectiveProgress } from "@/components/learn/ObjectiveProgress"
 import { LESSON_IDS } from "@/lib/i18n/lessons"
+import { getScaleRouteReport } from "@/lib/practice/scale-route"
+import { routeText } from "@/lib/i18n/note-routes"
 import {
   localizePracticeText,
   practiceCopy,
@@ -256,6 +258,10 @@ export function ProgressDashboard() {
                   .slice(0, 6)
                   .map((session) => {
                     const summary = summarizeSession(session)
+                    const routeReport =
+                      session.exercise.kind === "scaleRoute"
+                        ? getScaleRouteReport(session)
+                        : null
                     return (
                       <li
                         key={session.id}
@@ -277,7 +283,11 @@ export function ProgressDashboard() {
                           </p>
                         </div>
                         <span className="font-mono text-sm">
-                          {Math.round(summary.accuracy * 100)}%
+                          {routeReport
+                            ? routeReport.accuracy === null
+                              ? routeText(locale, "unavailable")
+                              : `${Math.round(routeReport.accuracy * 100)}%`
+                            : `${Math.round(summary.accuracy * 100)}%`}
                         </span>
                       </li>
                     )

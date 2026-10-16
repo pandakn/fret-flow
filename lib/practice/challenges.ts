@@ -8,6 +8,7 @@ import type {
   DailyMission,
   ExerciseDefinition,
   ExerciseKind,
+  GeneratableExerciseKind,
   PracticeSession,
   SessionSummary,
 } from "@/types/practice"
@@ -19,20 +20,20 @@ import { getExerciseSkillIds } from "@/lib/learning/exercise-skills"
 
 type RandomSource = () => number
 
-const WARMUP_KINDS: ExerciseKind[] = [
+const WARMUP_KINDS: GeneratableExerciseKind[] = [
   "fretboardRecall",
   "construction",
   "earTraining",
   "chordTransition",
 ]
-const WILDCARD_KINDS: ExerciseKind[] = [
+const WILDCARD_KINDS: GeneratableExerciseKind[] = [
   "rhythm",
   "tempoLadder",
   "technique",
   "positionConnection",
   "chordTransition",
 ]
-const ALL_KINDS: ExerciseKind[] = [
+const ALL_KINDS: GeneratableExerciseKind[] = [
   "fretboardRecall",
   "tempoLadder",
   "technique",
@@ -76,7 +77,9 @@ const mostRecentKind = (sessions: readonly PracticeSession[]) =>
   sessions.filter((session) => session.status === "completed").at(-1)?.exercise
     .kind
 
-const getWeakestKind = (sessions: readonly PracticeSession[]): ExerciseKind => {
+const getWeakestKind = (
+  sessions: readonly PracticeSession[]
+): GeneratableExerciseKind => {
   const ratings = getSkillRatings(sessions)
   if (ratings.length === 0) return "fretboardRecall"
 
@@ -104,7 +107,7 @@ const getKindForSlot = (
   sessions: readonly PracticeSession[],
   used: ReadonlySet<ExerciseKind>,
   random: RandomSource
-): ExerciseKind => {
+): GeneratableExerciseKind => {
   const weakest = getWeakestKind(sessions)
   const recent = mostRecentKind(sessions)
   const preferred =
@@ -133,7 +136,7 @@ const getDifficulty = (
 }
 
 const makeExercise = (
-  kind: ExerciseKind,
+  kind: GeneratableExerciseKind,
   slot: ChallengeSlot,
   dayKey: string,
   band: number,
@@ -404,7 +407,7 @@ const buildGoal = (
 
 const buildMission = (
   slot: ChallengeSlot,
-  kind: ExerciseKind,
+  kind: GeneratableExerciseKind,
   dayKey: string,
   sessions: readonly PracticeSession[],
   random: RandomSource,

@@ -45,11 +45,14 @@ import { useEffect, useMemo, useState } from "react"
 import { createDefaultExercise } from "@/lib/practice/exercises"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
 import { useI18n } from "@/components/i18n/LocaleProvider"
+import { ScaleRouteStudy } from "@/components/explorer/ScaleRouteStudy"
+import { Button } from "@/components/ui/button"
+import { routeText } from "@/lib/i18n/note-routes"
 
 const TRIAD_CHORD_TYPES = getTriadChordTypes()
 
 export function Explorer() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { saveExercise } = usePracticeStore()
   const [root, setRoot] = useState<NoteName>("C")
   const [mode, setMode] = useState<ExplorerMode>("scales")
@@ -72,6 +75,7 @@ export function Explorer() {
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
   const [position, setPosition] = useState<PositionId>("full")
   const [focusMode, setFocusMode] = useState(false)
+  const [guidedRoutesOpen, setGuidedRoutesOpen] = useState(false)
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
   const [modifier, setModifier] = useState("Ctrl")
@@ -236,6 +240,20 @@ export function Explorer() {
     })
   }
 
+  if (
+    guidedRoutesOpen &&
+    mode === "scales" &&
+    (scaleId === "pentatonic_major" || scaleId === "pentatonic_minor")
+  ) {
+    return (
+      <ScaleRouteStudy
+        root={root}
+        scaleId={scaleId}
+        onClose={() => setGuidedRoutesOpen(false)}
+      />
+    )
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar
@@ -289,6 +307,16 @@ export function Explorer() {
             />
           )}
           <TuningSelector value={tuningId} onChange={setTuningId} />
+          {mode === "scales" &&
+          (scaleId === "pentatonic_major" || scaleId === "pentatonic_minor") ? (
+            <Button
+              variant="outline"
+              className="m-2"
+              onClick={() => setGuidedRoutesOpen(true)}
+            >
+              {routeText(locale, "title")}
+            </Button>
+          ) : null}
         </CollapsiblePanel>
 
         <main

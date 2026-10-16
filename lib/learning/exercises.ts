@@ -9,6 +9,7 @@ import type { ExerciseDefinition } from "@/types/practice"
 import type { LearningAssignment } from "@/types/learning"
 import { getTemplate, isExerciseTemplateId } from "./catalog"
 import type { DueTarget } from "./review"
+import { getScaleRouteDisplayText } from "@/lib/i18n/note-routes"
 
 export function createLearningExercise(
   assignment: LearningAssignment,
@@ -126,6 +127,8 @@ export function getExerciseDisplayText(
   exercise: ExerciseDefinition,
   locale: Locale
 ): { name: string; description: string } {
+  if (exercise.kind === "scaleRoute")
+    return getScaleRouteDisplayText(exercise.snapshot, locale)
   const assignment = exercise.learning
   if (!assignment)
     return {

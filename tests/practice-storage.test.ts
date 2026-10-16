@@ -19,7 +19,7 @@ describe("practice storage", () => {
 
   test("migrates the legacy empty document", () => {
     const migrated = validatePracticeDocument({ version: 0, sessions: [] })
-    assert.equal(migrated?.version, 4)
+    assert.equal(migrated?.version, 5)
     assert.deepEqual(migrated?.savedExercises, [])
   })
 
@@ -30,7 +30,7 @@ describe("practice storage", () => {
       routines: [],
       sessions: [],
     })
-    assert.equal(migrated?.version, 4)
+    assert.equal(migrated?.version, 5)
     assert.equal(migrated?.dailyChallengeState.wildcardRerolls, 0)
     assert.deepEqual(migrated?.acknowledgedMilestoneIds, [])
   })
@@ -48,7 +48,7 @@ describe("practice storage", () => {
       },
       acknowledgedMilestoneIds: ["daily-3"],
     })
-    assert.equal(migrated?.version, 4)
+    assert.equal(migrated?.version, 5)
     assert.equal(migrated?.dailyChallengeState.wildcardSeed, 4)
     assert.deepEqual(migrated?.acknowledgedMilestoneIds, ["daily-3"])
   })
