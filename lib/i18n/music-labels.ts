@@ -78,6 +78,7 @@ export const voicingPositionLabel = (
 }
 
 export const voicingLabel = (locale: Locale, voicing: ChordVoicing): string => {
+  if (voicing.id.startsWith("triad-")) return voicing.label
   if (locale === "en") return voicing.label
   const shape = voicing.cagedShape ?? voicing.label.match(/[CAGED]/)?.[0]
   return shape

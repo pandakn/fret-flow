@@ -19,7 +19,7 @@ import {
   ChordVoicingSelector,
   type ChordDisplayMode,
 } from "@/components/layout/ChordVoicingSelector"
-import { getChordVoicings } from "@/lib/chord-voicings"
+import { getChordVoicings, getTriadVoicings } from "@/lib/chord-voicings"
 import { CHORDS, getChordById, getTriadChordTypes } from "@/lib/chords"
 import { resolveArpeggio, type ArpeggioDirection } from "@/lib/arpeggios"
 import {
@@ -125,7 +125,7 @@ export function Explorer() {
   }, [baseSelectedVoicing, mutedStringOverrides])
   const triadVoicings = useMemo(
     () =>
-      selectedTuning ? getChordVoicings(root, triadId, selectedTuning) : [],
+      selectedTuning ? getTriadVoicings(root, triadId, selectedTuning) : [],
     [root, selectedTuning, triadId]
   )
   const selectedTriadVoicing = triadVoicings.find(
@@ -502,7 +502,8 @@ export function Explorer() {
               rootOnly={rootOnly}
               selectedVoicing={isChordExplorer ? activeVoicing : undefined}
               shapeFocus={
-                isChordExplorer && activeChordDisplayMode === "shapeFocus"
+                mode === "triads" ||
+                (isChordExplorer && activeChordDisplayMode === "shapeFocus")
               }
               arpeggio={mode === "arpeggios" ? resolvedArpeggio : undefined}
             />
@@ -550,6 +551,7 @@ export function Explorer() {
             tuningStrings={selectedTuning?.strings ?? []}
             voicing={selectedVoicingForControls}
             onToggleMutedString={toggleMutedString}
+            fixedShape={mode === "triads"}
             label={mode === "triads" ? t("triads") : undefined}
           />
         )}

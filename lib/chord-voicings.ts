@@ -1,9 +1,6 @@
 import type { NoteName } from "@/types/music"
 import { getChordById, getChordNotes, type ChordType } from "./chords"
-import {
-  getCagedMajorShapes,
-  type CagedShapeId,
-} from "./theory/caged"
+import { getCagedMajorShapes, type CagedShapeId } from "./theory/caged"
 import { getNoteAtFret, CHROMATIC } from "./notes"
 import type { Tuning } from "./tunings"
 
@@ -386,6 +383,69 @@ export const getChordVoicings = (
     )
     return voicing ? [voicing] : []
   })
+}
+
+/** Finds three-note shapes on adjacent strings, one for each bass chord tone. */
+export const getTriadVoicings = (
+  root: NoteName,
+  chordId: string,
+  tuning: Tuning,
+  fretRange: ChordVoicingFretRange = DEFAULT_CHORD_VOICING_FRET_RANGE
+): ChordVoicing[] => {
+  const chord = getChordById(chordId)
+  if (!chord || chord.intervals.length !== 3 || !isSixStringTuning(tuning))
+    return []
+  const tones = getChordNotes(root, chord.formula)
+  const shapes: ChordVoicing[] = []
+  for (let start = 0; start <= 3; start++) {
+    for (const bass of tones) {
+      let best: number[] | undefined
+      for (let a = fretRange.min; a <= fretRange.max; a++) {
+        if (getNoteAtFret(tuning.strings[start], a) !== bass) continue
+        for (
+          let b = Math.max(fretRange.min, a - 4);
+          b <= Math.min(fretRange.max, a + 4);
+          b++
+        ) {
+          for (
+            let c = Math.max(fretRange.min, a - 4);
+            c <= Math.min(fretRange.max, a + 4);
+            c++
+          ) {
+            const frets = [a, b, c]
+            if (Math.max(...frets) - Math.min(...frets) > 4) continue
+            const notes = frets.map((fret, index) =>
+              getNoteAtFret(tuning.strings[start + index], fret)
+            )
+            if (
+              new Set(notes).size !== 3 ||
+              notes.some((note) => !tones.includes(note))
+            )
+              continue
+            if (!best || Math.max(...frets) < Math.max(...best)) best = frets
+          }
+        }
+      }
+      if (!best) continue
+      const frets: FretSlots = [null, null, null, null, null, null]
+      const activePositions = best.map((fret, index) => {
+        const string = start + index
+        frets[string] = fret
+        return { string, fret }
+      })
+      shapes.push({
+        id: `triad-${chordId}-${root}-${tuning.id}-${start}-${bass}`,
+        chordId,
+        root,
+        tuningId: tuning.id,
+        frets,
+        activePositions,
+        label: `${6 - start}–${4 - start} · ${bass}`,
+        position: best.includes(0) ? "open" : "up-neck",
+      })
+    }
+  }
+  return shapes
 }
 
 /** Returns the five movable major CAGED shapes as normal fretboard voicings. */

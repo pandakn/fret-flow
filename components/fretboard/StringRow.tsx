@@ -141,7 +141,7 @@ export function StringRow({
       <div className="relative flex h-full w-14 shrink-0 items-center justify-center">
         {mutedString ? (
           <span
-            className="relative z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--card)] text-3xl font-bold text-[var(--foreground)]"
+            className="relative z-20 flex h-10 w-10 items-center justify-center text-3xl font-bold text-[var(--foreground)]"
             role="img"
             aria-label={`${t("doNotStrum")}, ${t("string")} ${6 - (sourceStringIndex ?? 0)}`}
           >

@@ -18,6 +18,7 @@ interface ChordVoicingSelectorProps {
   tuningStrings: NoteName[]
   voicing?: ChordVoicing
   onToggleMutedString: (string: number) => void
+  fixedShape?: boolean
   label?: string
 }
 
@@ -30,6 +31,7 @@ export function ChordVoicingSelector({
   tuningStrings,
   voicing,
   onToggleMutedString,
+  fixedShape = false,
   label,
 }: ChordVoicingSelectorProps) {
   const { t } = useI18n()
@@ -48,41 +50,43 @@ export function ChordVoicingSelector({
         >
           {t("voicings")}
         </div>
-        <div
-          className="inline-flex rounded-md"
-          style={{
-            border: "1px solid var(--border-2)",
-            gap: "2px",
-            padding: "2px",
-          }}
-          role="group"
-          aria-label={`${label ?? t("chord")} ${t("displayMode")}`}
-        >
-          {(
-            [
-              ["toneMap", t("toneMap")],
-              ["shapeFocus", t("shapeFocus")],
-            ] as const
-          ).map(([mode, label]) => (
-            <Button
-              key={mode}
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={() => onDisplayModeChange(mode)}
-              className={cn(
-                "h-auto rounded-sm px-2.5 py-1 text-[10px] font-bold",
-                displayMode === mode
-                  ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
-              )}
-              style={{ fontFamily: "var(--font-mono)" }}
-              aria-pressed={displayMode === mode}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
+        {!fixedShape && (
+          <div
+            className="inline-flex rounded-md"
+            style={{
+              border: "1px solid var(--border-2)",
+              gap: "2px",
+              padding: "2px",
+            }}
+            role="group"
+            aria-label={`${label ?? t("chord")} ${t("displayMode")}`}
+          >
+            {(
+              [
+                ["toneMap", t("toneMap")],
+                ["shapeFocus", t("shapeFocus")],
+              ] as const
+            ).map(([mode, label]) => (
+              <Button
+                key={mode}
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => onDisplayModeChange(mode)}
+                className={cn(
+                  "h-auto rounded-sm px-2.5 py-1 text-[10px] font-bold",
+                  displayMode === mode
+                    ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                    : "text-[var(--muted-foreground)] hover:text-[var(--text)]"
+                )}
+                style={{ fontFamily: "var(--font-mono)" }}
+                aria-pressed={displayMode === mode}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       <VoicingGroups voicings={voicings} value={value} onChange={onChange} />
@@ -92,9 +96,11 @@ export function ChordVoicingSelector({
             <span className="text-xs font-semibold text-[var(--foreground)]">
               {t("strumStrings")}
             </span>
-            <span className="text-[10px] text-[var(--muted-foreground)]">
-              {t("strumStringsHint")}
-            </span>
+            {!fixedShape && (
+              <span className="text-[10px] text-[var(--muted-foreground)]">
+                {t("strumStringsHint")}
+              </span>
+            )}
           </div>
           <div
             className="flex flex-wrap gap-2"
@@ -111,6 +117,7 @@ export function ChordVoicingSelector({
                   variant="ghost"
                   size="xs"
                   onClick={() => onToggleMutedString(string)}
+                  disabled={fixedShape}
                   aria-pressed={!muted}
                   aria-label={`${t("string")} ${stringNumber} ${note}: ${muted ? t("doNotStrum") : t("strum")}`}
                   className={cn(
