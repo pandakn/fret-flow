@@ -22,7 +22,10 @@ import {
   type Progression,
   type ProgressionGenreId,
 } from "@/lib/progressions/catalog"
-import { getStepChordNotes } from "@/lib/progressions/playback"
+import {
+  getStepChordNotes,
+  type PianoRhythm,
+} from "@/lib/progressions/playback"
 import type { MessageKey } from "@/lib/i18n/messages"
 import type { NoteName } from "@/types/music"
 import { cn } from "@/lib/utils"
@@ -56,10 +59,16 @@ const pill = (active: boolean) =>
 /** Genre tabs are shouted; chord symbols and roman numerals keep their case. */
 const genrePill = (active: boolean) => cn(pill(active), "uppercase")
 
+const parsePianoRhythm = (value: string): PianoRhythm | null => {
+  if (value === "sustained" || value === "quarter_notes") return value
+  return null
+}
+
 export function ProgressionLab() {
   const { t } = useI18n()
   const [genre, setGenre] = useState<ProgressionGenreId>("pop")
   const [key, setKey] = useState<NoteName>("C")
+  const [pianoRhythm, setPianoRhythm] = useState<PianoRhythm>("sustained")
   const [loop, setLoop] = useState(true)
   const [selectedId, setSelectedId] = useState("pop_15_64")
   const [source, setSource] = useState<"library" | "quiz" | null>(null)
@@ -103,12 +112,21 @@ export function ProgressionLab() {
       setSource(null)
       return
     }
-    startPlayback({ progression: selected, key, bpm, loop }, "library")
+    startPlayback(
+      { progression: selected, key, bpm, loop, pianoRhythm },
+      "library"
+    )
   }
 
   const playQuizProgression = (progression: Progression) => {
     startPlayback(
-      { progression, key, bpm: progression.bpm, loop: false },
+      {
+        progression,
+        key,
+        bpm: progression.bpm,
+        loop: false,
+        pianoRhythm,
+      },
       "quiz"
     )
   }
@@ -127,12 +145,32 @@ export function ProgressionLab() {
     startPlayback({ ...activePlayback, key: nextKey }, source ?? "library")
   }
 
+  const changePianoRhythm = (nextPianoRhythm: PianoRhythm) => {
+    setPianoRhythm(nextPianoRhythm)
+    if (!playing) return
+
+    const activePlayback = activePlaybackRef.current
+    if (!activePlayback) {
+      stop()
+      setSource(null)
+      return
+    }
+
+    startPlayback(
+      { ...activePlayback, pianoRhythm: nextPianoRhythm },
+      source ?? "library"
+    )
+  }
+
   const selectProgression = (progression: Progression) => {
     const restartPlayback = playing
     setSelectedId(progression.id)
 
     if (restartPlayback) {
-      startPlayback({ progression, key, bpm, loop }, "library")
+      startPlayback(
+        { progression, key, bpm, loop, pianoRhythm },
+        "library"
+      )
       return
     }
 
@@ -150,6 +188,7 @@ export function ProgressionLab() {
         key,
         bpm,
         loop: false,
+        pianoRhythm,
       },
       "library"
     )
@@ -234,6 +273,37 @@ export function ProgressionLab() {
                 onValueChange={(value) => setBpm(value[0] ?? selected.bpm)}
                 className="w-48"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="progression-piano-rhythm"
+                className="mb-2 block font-mono text-[10px] tracking-[0.14em] text-[var(--muted-foreground)] uppercase"
+              >
+                {t("pianoRhythm")}
+              </label>
+              <Select
+                value={pianoRhythm}
+                onValueChange={(value) => {
+                  const nextRhythm = parsePianoRhythm(value)
+                  if (nextRhythm) changePianoRhythm(nextRhythm)
+                }}
+              >
+                <SelectTrigger
+                  id="progression-piano-rhythm"
+                  className="w-44 rounded-md border-[var(--border-2)] bg-[var(--surface)]"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sustained">
+                    {t("pianoSustained")}
+                  </SelectItem>
+                  <SelectItem value="quarter_notes">
+                    {t("quarterNotes")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <label className="flex items-center gap-2 pb-1 text-sm">

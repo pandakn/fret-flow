@@ -66,6 +66,8 @@ export type PlaybackPlan = {
   totalBeats: number
 }
 
+export type PianoRhythm = "sustained" | "quarter_notes"
+
 /** Windows hold a full octave, always starting on C. */
 const CHORD_ROOT_LOW_MIDI = 48 // C3
 const BASS_ROOT_LOW_MIDI = 36 // C2
@@ -85,14 +87,14 @@ const shuffleStab = ({
 }
 
 /**
- * Builds the scheduled playback layout for a progression in a key: one chord
- * event per progression step (voiced upward from a low root), one bass root
- * note per bar, and — for swung progressions — an anticipation chord stab on
- * the last off-beat so the shuffle is audible with straight quarter chords.
+ * Builds the scheduled playback layout for a progression in a key: piano
+ * chords are held for the step or repeated on each quarter note. Bass plays
+ * one root note per bar.
  */
 export const buildPlaybackPlan = (
   progression: Progression,
-  key: NoteName
+  key: NoteName,
+  pianoRhythm: PianoRhythm = "sustained"
 ): PlaybackPlan => {
   const chordEvents: ChordEvent[] = []
   const stabEvents: ChordEvent[] = []
@@ -112,14 +114,25 @@ export const buildPlaybackPlan = (
     })
     const durationBeats = step.bars * 4
 
-    chordEvents.push({
-      stepIndex,
-      beat,
-      durationBeats,
-      frequencies,
-    })
+    if (pianoRhythm === "quarter_notes") {
+      for (let quarter = 0; quarter < durationBeats; quarter += 1) {
+        chordEvents.push({
+          stepIndex,
+          beat: beat + quarter,
+          durationBeats: 1,
+          frequencies,
+        })
+      }
+    } else {
+      chordEvents.push({
+        stepIndex,
+        beat,
+        durationBeats,
+        frequencies,
+      })
+    }
 
-    if (progression.swing) {
+    if (progression.swing && pianoRhythm === "sustained") {
       const stab = shuffleStab({
         stepIndex,
         beat,

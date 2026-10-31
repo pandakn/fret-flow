@@ -7,7 +7,10 @@ import {
   getProgressionLengthBeats,
   type Progression,
 } from "@/lib/progressions/catalog"
-import { buildPlaybackPlan } from "@/lib/progressions/playback"
+import {
+  buildPlaybackPlan,
+  type PianoRhythm,
+} from "@/lib/progressions/playback"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 export type PlaybackRequest = {
@@ -15,6 +18,7 @@ export type PlaybackRequest = {
   key: NoteName
   bpm: number
   loop: boolean
+  pianoRhythm: PianoRhythm
 }
 
 /**
@@ -55,7 +59,7 @@ export function useProgressionPlayback() {
 
   const play = useCallback(
     (request: PlaybackRequest) => {
-      const { progression, key, bpm, loop } = request
+      const { progression, key, bpm, loop, pianoRhythm } = request
 
       // A new request always wins over whatever is sounding.
       stop()
@@ -72,7 +76,7 @@ export function useProgressionPlayback() {
           const instruments = await getEpInstruments(tone)
           if (!isCurrent()) return
 
-          const plan = buildPlaybackPlan(progression, key)
+          const plan = buildPlaybackPlan(progression, key, pianoRhythm)
           const totalBeats = getProgressionLengthBeats(progression)
           const parts: Part[] = []
 

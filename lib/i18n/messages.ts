@@ -70,6 +70,9 @@ const en = {
   arpeggioUnavailable: "Arpeggio unavailable",
   playback: "Playback",
   loop: "Loop",
+  pianoRhythm: "Piano rhythm",
+  pianoSustained: "Sustained chord",
+  quarterNotes: "Quarter notes",
   selectedVoicing: "Selected voicing",
   scale: "Scale",
   mode: "Mode",
@@ -304,6 +307,9 @@ const th: Record<keyof typeof en, string> = {
 
   playback: "Playback",
   loop: "Loop",
+  pianoRhythm: "จังหวะเปียโน",
+  pianoSustained: "คอร์ดยาว",
+  quarterNotes: "ควอเตอร์โน้ต",
 
   selectedVoicing: "Voicing ที่เลือก",
 
