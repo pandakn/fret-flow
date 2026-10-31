@@ -129,6 +129,74 @@ const en = {
   collapseRight: "Collapse right panel",
   expandLeft: "Expand left panel",
   expandRight: "Expand right panel",
+
+  progressions: "Progressions",
+  rnb: "R&B",
+  neoSoul: "Neo Soul",
+  funk: "Funk",
+  bpm: "BPM",
+  swing: "Swing",
+  progressionLabTitle: "Progression Lab",
+  progressionLabIntro:
+    "Real-world chord progressions by genre, played with electric piano and bass — train your ear to name what you hear.",
+  quizTitle: "Ear training",
+  quizPrompt: "Listen to the hidden progression, then pick where you heard it.",
+  quizCorrect: "Correct",
+  quizIncorrect: "Not this one",
+  quizNext: "Next round",
+  quizStart: "Start round",
+  quizIdle:
+    "Start a round and a progression from this genre will play. Name it after the last chord.",
+  quizScore: "Score",
+  quizRevealPlay: "Play it again",
+  progPop1564: "I–V–vi–IV",
+  progPop1564Description:
+    "The four-chord loop behind endless hits — the first change to recognize by ear.",
+  progPop6415: "vi–IV–I–V",
+  progPop6415Description:
+    "Starts low and keeps opening up — the sensitive version of the four-chord loop.",
+  progPop50s: "I–vi–IV–V",
+  progPop50sDescription:
+    "The doo-wop classic; this is the sound of the 1950s ballad.",
+  progPopOdaRoyal: "I–V–vi–iii–IV",
+  progPopOdaRoyalDescription:
+    "The \"royal road\" progression — a pop-melody skeleton with a lift into the IV.",
+  progRnbDooWop: "Imaj7–vi7–ii7–V7",
+  progRnbDooWopDescription:
+    "Doo-wop dressed in seventh chords — the first move to hear in slow jams.",
+  progRnbDescend: "IVmaj7–iii7–ii7–Imaj9",
+  progRnbDescendDescription:
+    "A descending gospel turnaround that keeps pulling the phrase home.",
+  progRnbVamp: "Imaj9–bVII9",
+  progRnbVampDescription:
+    "A two-chord groove vamp — freed-up air over one long I chord.",
+  progNeoSoul251: "ii9–V9–Imaj9",
+  progNeoSoul251Description:
+    "The neo soul reharm of ii–V–I with stacked 9ths on every chord.",
+  progNeoSoul14: "Imaj9–IVm9",
+  progNeoSoul14Description:
+    "A borrowed IVm9 against Imaj9 — the signature neo-soul lift.",
+  progNeoSoulTurnaround: "Imaj9–vi9–ii9–V9",
+  progNeoSoulTurnaroundDescription:
+    "An extended turnaround where every chord carries a 9th.",
+  progBlues12bar: "12-bar blues",
+  progBlues12barDescription:
+    "Four bars on I7, quick to IV7, then V7–IV7–I7–V7 — the mother of blues forms.",
+  progBlues12barQuick: "12-bar quick change",
+  progBlues12barQuickDescription:
+    "Bar 2 ducks straight to IV7 — the shuffle predecessor you hear in older records.",
+  progBluesMinor: "Minor blues",
+  progBluesMinorDescription:
+    "i7 under a bVI7–bVII7 rise — the slow-burn B.B. King shape.",
+  progFunk14Vamp: "I7–IV7",
+  progFunk14VampDescription:
+    "The two-chord vamp; hear the change move like a drum hit.",
+  progFunk9ths: "I9–IV9",
+  progFunk9thsDescription:
+    "Same harmonic skeleton with one extra colour tone on top.",
+  progFunkOneChord: "One-chord I7–bVII7",
+  progFunkOneChordDescription:
+    "Stays parked on I7 and nods to bVII7 — single-chord funk.",
 } as const
 
 const th: Record<keyof typeof en, string> = {
@@ -301,6 +369,65 @@ const th: Record<keyof typeof en, string> = {
   collapseRight: "ยุบ Panel ด้านขวา",
   expandLeft: "ขยาย Panel ด้านซ้าย",
   expandRight: "ขยาย Panel ด้านขวา",
+
+  progressions: "โปรเกรสชัน",
+  rnb: "R&B",
+  neoSoul: "Neo Soul",
+  funk: "Funk",
+  bpm: "BPM",
+  swing: "สวิง",
+  progressionLabTitle: "ห้องฝึกโปรเกรสชัน",
+  progressionLabIntro:
+    "โปรเกรสชันที่ใช้จริงตามแนวเพลง เล่นด้วยเสียง Electric Piano + Bass — ฝึกฟังจนพอได้ยินคอร์ดก็รู้ว่าเป็นโปรเกรสชันแบบไหน",
+  quizTitle: "ฝึกฟัง",
+  quizPrompt: "ฟังโปรเกรสชันที่ซ่อนไว้ แล้วเลือกว่าเป็นแบบไหน",
+  quizCorrect: "ถูกต้อง",
+  quizIncorrect: "ยังไม่ใช่",
+  quizNext: "รอบต่อไป",
+  quizStart: "เริ่มรอบ",
+  quizIdle:
+    "กด “เริ่มรอบ” แล้วโปรเกรสชันในแนวนี้จะเล่นให้ฟัง พอจบให้พยายามเดาว่าเป็นแบบไหน",
+  quizScore: "คะแนน",
+  quizRevealPlay: "เล่นอีกครั้ง",
+  progPop1564: "I–V–vi–IV",
+  progPop1564Description:
+    "ลูปสี่คอร์ดที่อยู่หลังเพลงดังเกือบทุกเพลง — คอร์ดแรกที่ควรฝึกฟังให้จำได้",
+  progPop6415: "vi–IV–I–V",
+  progPop6415Description:
+    "เริ่มต่ำแล้วค่อยเปิดออก — เวอร์ชันอ่อนหวานของลูปสี่คอร์ด",
+  progPop50s: "I–vi–IV–V",
+  progPop50sDescription: "คลาสสิก Doo-wop ของยุค 50s นั่นเอง",
+  progPopOdaRoyal: "I–V–vi–iii–IV",
+  progPopOdaRoyalDescription: "โปรเกรสชัน \"ถนนหลวง\" ของเพลงป็อปยอดนิยม",
+  progRnbDooWop: "Imaj7–vi7–ii7–V7",
+  progRnbDooWopDescription:
+    "Doo-wop แต่งด้วย seventh chords — จุดเริ่มต้นของ slow jams",
+  progRnbDescend: "IVmaj7–iii7–ii7–Imaj9",
+  progRnbDescendDescription:
+    "โปรเกรสชันไล่ลงแบบกอสเปลที่พาเมโลดีกลับบ้านทุกครั้ง",
+  progRnbVamp: "Imaj9–bVII9",
+  progRnbVampDescription: "แวมสองคอร์ดที่ลอยกลางอากาศบนคอร์ด I ยาว ๆ",
+  progNeoSoul251: "ii9–V9–Imaj9",
+  progNeoSoul251Description: "ii–V–I สไตล์ Neo Soul โดยไล่ 9th ทุกคอร์ด",
+  progNeoSoul14: "Imaj9–IVm9",
+  progNeoSoul14Description: "IVm9 ยืมมาแอบอยู่บน Imaj9 — ลายเซ็นของ Neo Soul",
+  progNeoSoulTurnaround: "Imaj9–vi9–ii9–V9",
+  progNeoSoulTurnaroundDescription: "โปรเกรสชันยาวที่ทุกคอร์ดพารา 9th",
+  progBlues12bar: "12-bar blues",
+  progBlues12barDescription:
+    "สี่บาร์บน I7 เข้า IV7 แล้วปิดด้วย V7–IV7–I7–V7 — แม่แบบของบลูส์",
+  progBlues12barQuick: "12-bar quick change",
+  progBlues12barQuickDescription:
+    "บาร์สองตีตัวลงไป IV7 เลย — แบบที่ได้ยินในแผ่นเสียงเก่า",
+  progBluesMinor: "Minor blues",
+  progBluesMinorDescription:
+    "i7 ที่ไต่ขึ้น bVI7–bVII7 — ฟีลเบิร์นช้าแบบ B.B. King",
+  progFunk14Vamp: "I7–IV7",
+  progFunk14VampDescription: "แวมสองคอร์ด ฟังการเปลี่ยนคอร์ดเหมือนเสียงกลอง",
+  progFunk9ths: "I9–IV9",
+  progFunk9thsDescription: "โครงเดียวกัน เพิ่มโน้ตสีหนึ่งตัวขึ้นด้านบน",
+  progFunkOneChord: "One-chord I7–bVII7",
+  progFunkOneChordDescription: "จอดซะที่ I7 แล้วแอบก้มไป bVII7 — ฟังก์คอร์ดเดียว",
 }
 
 export type MessageKey = keyof typeof en

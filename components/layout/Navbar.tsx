@@ -35,6 +35,7 @@ interface NavbarProps {
 const PRODUCT_LINKS = [
   { href: "", label: "explore" },
   { href: "/learn", label: "learn" },
+  { href: "/progressions", label: "progressions" },
   { href: "/practice", label: "practice" },
   { href: "/progress", label: "progress" },
 ] as const
