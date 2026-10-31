@@ -89,7 +89,40 @@ export function ChordVoicingSelector({
         )}
       </div>
 
-      <VoicingGroups voicings={voicings} value={value} onChange={onChange} />
+      {fixedShape ? (
+        <div
+          className="mt-2 flex flex-wrap gap-1"
+          role="group"
+          aria-label={t("voicings")}
+        >
+          {voicings.map((shape) => (
+            <Button
+              key={shape.id}
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => onChange(shape.id)}
+              aria-pressed={value === shape.id}
+              className={cn(
+                "h-auto rounded-md border px-2 py-1 font-mono text-[10px] font-semibold",
+                value === shape.id
+                  ? "border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--text)]"
+                  : "border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--surface2)]"
+              )}
+            >
+              {shape.label} ·{" "}
+              {shape.activePositions.map(({ fret }) => fret).join("–")}
+            </Button>
+          ))}
+          {voicings.length === 0 ? (
+            <span className="text-xs text-[var(--muted-foreground)]">
+              {t("noneAvailable")}
+            </span>
+          ) : null}
+        </div>
+      ) : (
+        <VoicingGroups voicings={voicings} value={value} onChange={onChange} />
+      )}
       {voicing ? (
         <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface2)] p-3">
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">

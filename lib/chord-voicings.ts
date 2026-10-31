@@ -70,6 +70,36 @@ export type ChordVoicingFretRange = {
   max: number
 }
 
+/** Keeps the same string set where possible, then chooses the nearest shape. */
+export const findNearestVoicing = (
+  voicings: ChordVoicing[],
+  previous?: ChordVoicing
+): ChordVoicing | undefined => {
+  if (!previous) return voicings[0]
+  const score = (candidate: ChordVoicing) => {
+    let stringDifference = 0
+    let fretDistance = 0
+    for (let i = 0; i < candidate.frets.length; i++) {
+      const oldFret = previous.frets[i]
+      const newFret = candidate.frets[i]
+      if ((oldFret === null) !== (newFret === null)) stringDifference++
+      if (oldFret !== null && newFret !== null) {
+        fretDistance += Math.abs(oldFret - newFret)
+      }
+    }
+    return [stringDifference, fretDistance] as const
+  }
+  return voicings.reduce<ChordVoicing | undefined>((best, candidate) => {
+    if (!best) return candidate
+    const [strings, distance] = score(candidate)
+    const [bestStrings, bestDistance] = score(best)
+    return strings < bestStrings ||
+      (strings === bestStrings && distance < bestDistance)
+      ? candidate
+      : best
+  }, undefined)
+}
+
 /** Matches the inclusive fret range rendered by FretboardPanel. */
 export const DEFAULT_CHORD_VOICING_FRET_RANGE: ChordVoicingFretRange = {
   min: 0,
@@ -445,7 +475,15 @@ export const getTriadVoicings = (
       })
     }
   }
-  return shapes
+  return shapes.sort((a, b) => {
+    const stringOrder =
+      b.activePositions[0].string - a.activePositions[0].string
+    if (stringOrder !== 0) return stringOrder
+    return (
+      Math.max(...a.activePositions.map(({ fret }) => fret)) -
+      Math.max(...b.activePositions.map(({ fret }) => fret))
+    )
+  })
 }
 
 /** Returns the five movable major CAGED shapes as normal fretboard voicings. */

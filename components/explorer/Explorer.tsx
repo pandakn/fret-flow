@@ -19,7 +19,11 @@ import {
   ChordVoicingSelector,
   type ChordDisplayMode,
 } from "@/components/layout/ChordVoicingSelector"
-import { getChordVoicings, getTriadVoicings } from "@/lib/chord-voicings"
+import {
+  findNearestVoicing,
+  getChordVoicings,
+  getTriadVoicings,
+} from "@/lib/chord-voicings"
 import { CHORDS, getChordById, getTriadChordTypes } from "@/lib/chords"
 import { resolveArpeggio, type ArpeggioDirection } from "@/lib/arpeggios"
 import {
@@ -32,7 +36,7 @@ import {
 import { getTuningById, TUNINGS } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { createDefaultExercise } from "@/lib/practice/exercises"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
 import { useI18n } from "@/components/i18n/LocaleProvider"
@@ -44,6 +48,12 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { localePath } from "@/lib/i18n/locales"
 import { routeText } from "@/lib/i18n/note-routes"
+import {
+  getDiatonicChords,
+  type DiatonicChordKind,
+} from "@/lib/theory/diatonic"
+import { spellNoteInKey } from "@/lib/theory/spelling"
+import { Button } from "@/components/ui/button"
 
 const TRIAD_CHORD_TYPES = getTriadChordTypes()
 
@@ -61,7 +71,13 @@ export function Explorer() {
   const [chordDisplayMode, setChordDisplayMode] =
     useState<ChordDisplayMode>("toneMap")
   const [triadId, setTriadId] = useState("major")
+  const [diatonicKey, setDiatonicKey] = useState<NoteName>("C")
+  const [diatonicKind, setDiatonicKind] = useState<DiatonicChordKind>("triad")
   const [selectedTriadVoicingId, setSelectedTriadVoicingId] = useState<string>()
+  const pendingDiatonicVoicing = useRef<{
+    mode: "chords" | "triads"
+    id?: string
+  } | null>(null)
   const [triadDisplayMode, setTriadDisplayMode] =
     useState<ChordDisplayMode>("toneMap")
   const [arpeggioChordId, setArpeggioChordId] = useState("major")
@@ -188,6 +204,8 @@ export function Explorer() {
     ]
   )
   const isChordExplorer = mode === "chords" || mode === "triads"
+  const activeDiatonicKind = mode === "triads" ? "triad" : diatonicKind
+  const diatonicChords = getDiatonicChords(diatonicKey, activeDiatonicKind)
   const selectedChordPattern = mode === "triads" ? selectedTriad : selectedChord
   const selectedPattern = isScaleExplorer
     ? selectedScale
@@ -230,14 +248,22 @@ export function Explorer() {
   useEffect(() => {
     // Root, chord, and tuning define the playable set, so always select its
     // first valid entry rather than retaining a possibly stale template ID.
+    const pending = pendingDiatonicVoicing.current
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSelectedVoicingId(chordVoicings[0]?.id)
+    setSelectedVoicingId(
+      pending?.mode === "chords" ? pending.id : chordVoicings[0]?.id
+    )
+    if (pending?.mode === "chords") pendingDiatonicVoicing.current = null
   }, [chordId, chordVoicings, root, tuningId])
 
   useEffect(() => {
     // Triad voicings are independent from the chord explorer selection.
+    const pending = pendingDiatonicVoicing.current
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSelectedTriadVoicingId(triadVoicings[0]?.id)
+    setSelectedTriadVoicingId(
+      pending?.mode === "triads" ? pending.id : triadVoicings[0]?.id
+    )
+    if (pending?.mode === "triads") pendingDiatonicVoicing.current = null
   }, [root, triadId, triadVoicings, tuningId])
 
   useEffect(() => {
@@ -488,6 +514,121 @@ export function Explorer() {
             </div>
           </div>
         </section>
+
+        {isChordExplorer ? (
+          <section
+            aria-label={locale === "th" ? "คอร์ดไดอะโทนิก" : "Diatonic chords"}
+            className="space-y-3 rounded-xl border border-[var(--border-2)] bg-[var(--card)] p-4"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="mr-auto">
+                <h2 className="text-sm font-semibold">
+                  {locale === "th" ? "ไดอะโทนิก" : "Diatonic"}
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {locale === "th"
+                    ? "เลือกขั้นเพื่อแสดงบนเฟรตบอร์ด"
+                    : "Select a degree to explore it on the fretboard"}
+                </p>
+              </div>
+              <label className="flex items-center gap-2 text-xs font-semibold">
+                {locale === "th" ? "คีย์เมเจอร์" : "Major key"}
+                <select
+                  value={diatonicKey}
+                  onChange={(event) =>
+                    setDiatonicKey(event.target.value as NoteName)
+                  }
+                  className="rounded-lg border border-[var(--border-2)] bg-[var(--card)] px-3 py-2 text-xs"
+                >
+                  {CHROMATIC.map((key) => (
+                    <option key={key} value={key}>
+                      {getKeyLabel(key)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {mode === "chords" ? (
+                <div
+                  className="flex gap-1"
+                  aria-label={
+                    locale === "th"
+                      ? "ประเภทคอร์ดไดอะโทนิก"
+                      : "Diatonic chord type"
+                  }
+                >
+                  {(["triad", "seventh"] as const).map((kind) => (
+                    <Button
+                      key={kind}
+                      type="button"
+                      size="sm"
+                      variant={diatonicKind === kind ? "default" : "outline"}
+                      aria-pressed={diatonicKind === kind}
+                      onClick={() => setDiatonicKind(kind)}
+                    >
+                      {kind === "triad" ? t("triads") : "7th"}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+              {diatonicChords.map((chord) => (
+                <Button
+                  key={chord.degree}
+                  type="button"
+                  variant="outline"
+                  aria-pressed={
+                    root === chord.root &&
+                    (mode === "triads" ? triadId : chordId) === chord.chordId
+                  }
+                  onClick={() => {
+                    const isTriad = mode === "triads"
+                    const nextVoicings = selectedTuning
+                      ? (isTriad ? getTriadVoicings : getChordVoicings)(
+                          chord.root,
+                          chord.chordId,
+                          selectedTuning
+                        )
+                      : []
+                    const nextId = findNearestVoicing(
+                      nextVoicings,
+                      isTriad ? selectedTriadVoicing : baseSelectedVoicing
+                    )?.id
+                    const currentId = isTriad ? triadId : chordId
+                    if (root !== chord.root || currentId !== chord.chordId) {
+                      pendingDiatonicVoicing.current = {
+                        mode: isTriad ? "triads" : "chords",
+                        id: nextId,
+                      }
+                    } else if (isTriad) {
+                      setSelectedTriadVoicingId(nextId)
+                    } else {
+                      setSelectedVoicingId(nextId)
+                    }
+                    setRoot(chord.root)
+                    if (mode === "triads") setTriadId(chord.chordId)
+                    else setChordId(chord.chordId)
+                  }}
+                  className={cn(
+                    "h-auto flex-col items-start gap-1 px-3 py-2",
+                    root === chord.root &&
+                      (mode === "triads" ? triadId : chordId) ===
+                        chord.chordId &&
+                      "border-[var(--accent)] bg-[var(--secondary)]"
+                  )}
+                >
+                  <span className="font-mono text-xs text-[var(--muted-foreground)]">
+                    {chord.romanNumeral}
+                  </span>
+                  <span className="text-sm font-semibold">
+                    {spellNoteInKey(diatonicKey, chord.root)}
+                    {getChordById(chord.chordId)?.symbol ?? ""}
+                  </span>
+                </Button>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="overflow-hidden rounded-2xl border border-[var(--border-2)] bg-[var(--card)] shadow-sm">
           <div className="flex h-[min(49vh,500px)] min-h-[340px] items-center px-3 sm:px-5">

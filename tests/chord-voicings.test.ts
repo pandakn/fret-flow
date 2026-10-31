@@ -3,7 +3,9 @@ import { describe, test } from "node:test"
 import { CHORDS } from "../lib/chords"
 import {
   DEFAULT_CHORD_VOICING_FRET_RANGE,
+  findNearestVoicing,
   getChordVoicings,
+  getTriadVoicings,
   isResolvedChordVoicingValid,
   resolveChordVoicing,
   type ChordVoicingTemplate,
@@ -18,6 +20,60 @@ if (!standardTuning) {
 }
 
 describe("chord voicings", () => {
+  test("preserves the string set and nearest fret position between diatonic triads", () => {
+    const previous = getTriadVoicings("C", "major", standardTuning).find(
+      (shape) =>
+        shape.activePositions[0].string === 3 &&
+        Math.max(...shape.activePositions.map(({ fret }) => fret)) > 5
+    )
+    assert.ok(previous)
+    const choices = getTriadVoicings("D", "minor", standardTuning)
+    const selected = findNearestVoicing(choices, previous)
+    assert.ok(selected)
+    assert.deepEqual(
+      selected.activePositions.map(({ string }) => string),
+      [3, 4, 5]
+    )
+    const distance = (frets: typeof selected.frets) =>
+      frets.reduce<number>(
+        (sum, fret, index) =>
+          sum +
+          (fret !== null && previous.frets[index] !== null
+            ? Math.abs(fret - previous.frets[index]!)
+            : 0),
+        0
+      )
+    for (const choice of choices.filter(
+      (shape) => shape.activePositions[0].string === 3
+    )) {
+      assert.ok(distance(selected.frets) <= distance(choice.frets))
+    }
+    assert.equal(findNearestVoicing([], previous), undefined)
+  })
+  test("orders triads from strings 1–3 and low frets across all roots", () => {
+    for (const root of CHROMATIC) {
+      for (const chord of CHORDS.filter(
+        (item) => item.intervals.length === 3
+      )) {
+        const voicings = getTriadVoicings(root, chord.id, standardTuning)
+        assert.deepEqual(
+          voicings[0].activePositions.map(({ string }) => string),
+          [3, 4, 5]
+        )
+        for (let i = 1; i < voicings.length; i++) {
+          const previous = voicings[i - 1].activePositions
+          const current = voicings[i].activePositions
+          assert.ok(previous[0].string >= current[0].string)
+          if (previous[0].string === current[0].string) {
+            assert.ok(
+              Math.max(...previous.map(({ fret }) => fret)) <=
+                Math.max(...current.map(({ fret }) => fret))
+            )
+          }
+        }
+      }
+    }
+  })
   test("resolves the highest fully visible up-neck shape", () => {
     const voicings = getChordVoicings("C", "major", standardTuning)
 
