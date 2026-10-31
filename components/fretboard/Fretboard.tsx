@@ -210,6 +210,7 @@ export function Fretboard({
               focusRange={focusRange}
               colorPreset={colorPreset}
               selectedVoicingFrets={selectedVoicingFrets}
+              mutedString={selectedVoicing !== undefined && notes[0] !== undefined && selectedVoicing.frets[notes[0].string] === null}
               selectedVoicingLabel={selectedVoicing ? voicingLabel(locale, selectedVoicing) : undefined}
               shapeFocus={isShapeFocus}
               arpeggioPathSteps={arpeggioPathSteps}

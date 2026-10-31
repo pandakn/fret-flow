@@ -18,6 +18,7 @@ interface StringRowProps {
   focusRange?: { min: number; max: number }
   colorPreset: ColorPreset
   selectedVoicingFrets?: ReadonlyMap<number, ReadonlySet<number>>
+  mutedString?: boolean
   selectedVoicingLabel?: string
   shapeFocus: boolean
   arpeggioPathSteps?: ReadonlyMap<string, readonly number[]>
@@ -103,6 +104,7 @@ export function StringRow({
   focusRange,
   colorPreset,
   selectedVoicingFrets,
+  mutedString = false,
   selectedVoicingLabel,
   shapeFocus,
   arpeggioPathSteps,
@@ -137,7 +139,15 @@ export function StringRow({
   return (
     <div className={cn("relative flex items-center", rowHeight)}>
       <div className="relative flex h-full w-14 shrink-0 items-center justify-center">
-        {openNote ? (
+        {mutedString ? (
+          <span
+            className="relative z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--card)] text-3xl font-bold text-[var(--foreground)]"
+            role="img"
+            aria-label={`${t("doNotStrum")}, ${t("string")} ${6 - (sourceStringIndex ?? 0)}`}
+          >
+            ×
+          </span>
+        ) : openNote ? (
           <NoteCell
             note={openNote.note}
             displayNote={getDisplayNote(openNote, displayRoot)}

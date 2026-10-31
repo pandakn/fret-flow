@@ -109,6 +109,12 @@ const en = {
   fingering: "Fingering",
   barreFret: "Barre fret",
   strings: "strings",
+  strumStrings: "Strings to strum",
+  strumStringsHint: "Tap a string to mute or unmute it",
+  doNotStrum: "Do not strum",
+  strum: "Strum",
+  lowString: "low",
+  highString: "high",
   note: "note",
   fret: "fret",
   string: "string",
@@ -191,7 +197,7 @@ const en = {
     "The doo-wop classic; this is the sound of the 1950s ballad.",
   progPopOdaRoyal: "I–V–vi–iii–IV",
   progPopOdaRoyalDescription:
-    "The \"royal road\" progression — a pop-melody skeleton with a lift into the IV.",
+    'The "royal road" progression — a pop-melody skeleton with a lift into the IV.',
   progRnbDooWop: "Imaj7–vi7–ii7–V7",
   progRnbDooWopDescription:
     "Doo-wop dressed in seventh chords — the first move to hear in slow jams.",
@@ -389,6 +395,12 @@ const th: Record<keyof typeof en, string> = {
   barreFret: "Barre Fret",
 
   strings: "Strings",
+  strumStrings: "สายที่ให้ดีด",
+  strumStringsHint: "แตะสายเพื่อ mute หรือ unmute",
+  doNotStrum: "ห้ามดีด",
+  strum: "ดีด",
+  lowString: "ต่ำ",
+  highString: "สูง",
   note: "Note",
   fret: "Fret",
   string: "String",
@@ -474,7 +486,7 @@ const th: Record<keyof typeof en, string> = {
   progPop50s: "I–vi–IV–V",
   progPop50sDescription: "คลาสสิก Doo-wop ของยุค 50s นั่นเอง",
   progPopOdaRoyal: "I–V–vi–iii–IV",
-  progPopOdaRoyalDescription: "โปรเกรสชัน \"ถนนหลวง\" ของเพลงป็อปยอดนิยม",
+  progPopOdaRoyalDescription: 'โปรเกรสชัน "ถนนหลวง" ของเพลงป็อปยอดนิยม',
   progRnbDooWop: "Imaj7–vi7–ii7–V7",
   progRnbDooWopDescription:
     "Doo-wop แต่งด้วย seventh chords — จุดเริ่มต้นของ slow jams",
@@ -517,7 +529,8 @@ const th: Record<keyof typeof en, string> = {
   progFunk9ths: "I9–IV9",
   progFunk9thsDescription: "โครงเดียวกัน เพิ่มโน้ตสีหนึ่งตัวขึ้นด้านบน",
   progFunkOneChord: "One-chord I7–bVII7",
-  progFunkOneChordDescription: "จอดซะที่ I7 แล้วแอบก้มไป bVII7 — ฟังก์คอร์ดเดียว",
+  progFunkOneChordDescription:
+    "จอดซะที่ I7 แล้วแอบก้มไป bVII7 — ฟังก์คอร์ดเดียว",
 }
 
 export type MessageKey = keyof typeof en

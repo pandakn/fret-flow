@@ -55,6 +55,9 @@ export function Explorer() {
   const [scaleId, setScaleId] = useState("major")
   const [chordId, setChordId] = useState("major")
   const [selectedVoicingId, setSelectedVoicingId] = useState<string>()
+  const [mutedStringOverrides, setMutedStringOverrides] = useState<
+    Record<string, Record<number, boolean>>
+  >({})
   const [chordDisplayMode, setChordDisplayMode] =
     useState<ChordDisplayMode>("toneMap")
   const [triadId, setTriadId] = useState("major")
@@ -88,9 +91,38 @@ export function Explorer() {
       selectedTuning ? getChordVoicings(root, chordId, selectedTuning) : [],
     [chordId, root, selectedTuning]
   )
-  const selectedVoicing = chordVoicings.find(
+  const baseSelectedVoicing = chordVoicings.find(
     (voicing) => voicing.id === selectedVoicingId
   )
+  const selectedVoicing = useMemo(() => {
+    if (!baseSelectedVoicing) return undefined
+    const overrides = mutedStringOverrides[baseSelectedVoicing.id]
+    if (!overrides || Object.keys(overrides).length === 0)
+      return baseSelectedVoicing
+    const frets = [
+      ...baseSelectedVoicing.frets,
+    ] as typeof baseSelectedVoicing.frets
+    for (const [stringKey, muted] of Object.entries(overrides)) {
+      const string = Number(stringKey)
+      if (muted) frets[string] = null
+      else if (frets[string] === null) frets[string] = 0
+    }
+    const activePositions = baseSelectedVoicing.activePositions.filter(
+      ({ string }) => frets[string] !== null
+    )
+    for (const [stringKey, muted] of Object.entries(overrides)) {
+      const string = Number(stringKey)
+      if (
+        !muted &&
+        !baseSelectedVoicing.activePositions.some(
+          (position) => position.string === string
+        )
+      ) {
+        activePositions.push({ string, fret: 0 })
+      }
+    }
+    return { ...baseSelectedVoicing, frets, activePositions }
+  }, [baseSelectedVoicing, mutedStringOverrides])
   const triadVoicings = useMemo(
     () =>
       selectedTuning ? getChordVoicings(root, triadId, selectedTuning) : [],
@@ -99,6 +131,35 @@ export function Explorer() {
   const selectedTriadVoicing = triadVoicings.find(
     (voicing) => voicing.id === selectedTriadVoicingId
   )
+  const displayedTriadVoicing = useMemo(() => {
+    if (!selectedTriadVoicing) return undefined
+    const overrides = mutedStringOverrides[selectedTriadVoicing.id]
+    if (!overrides || Object.keys(overrides).length === 0)
+      return selectedTriadVoicing
+    const frets = [
+      ...selectedTriadVoicing.frets,
+    ] as typeof selectedTriadVoicing.frets
+    for (const [stringKey, muted] of Object.entries(overrides)) {
+      const string = Number(stringKey)
+      if (muted) frets[string] = null
+      else if (frets[string] === null) frets[string] = 0
+    }
+    const activePositions = selectedTriadVoicing.activePositions.filter(
+      ({ string }) => frets[string] !== null
+    )
+    for (const [stringKey, muted] of Object.entries(overrides)) {
+      const string = Number(stringKey)
+      if (
+        !muted &&
+        !selectedTriadVoicing.activePositions.some(
+          (position) => position.string === string
+        )
+      ) {
+        activePositions.push({ string, fret: 0 })
+      }
+    }
+    return { ...selectedTriadVoicing, frets, activePositions }
+  }, [mutedStringOverrides, selectedTriadVoicing])
   const arpeggioVoicings = useMemo(
     () =>
       selectedTuning
@@ -134,9 +195,22 @@ export function Explorer() {
       ? selectedArpeggioChord
       : selectedChordPattern
   const activeVoicing =
-    mode === "triads" ? selectedTriadVoicing : selectedVoicing
+    mode === "triads" ? displayedTriadVoicing : selectedVoicing
   const activeChordDisplayMode =
     mode === "triads" ? triadDisplayMode : chordDisplayMode
+  const selectedVoicingForControls =
+    mode === "triads" ? displayedTriadVoicing : selectedVoicing
+  const toggleMutedString = (string: number) => {
+    if (!selectedVoicingForControls) return
+    const id = selectedVoicingForControls.id
+    setMutedStringOverrides((current) => {
+      const isMuted = selectedVoicingForControls.frets[string] === null
+      return {
+        ...current,
+        [id]: { ...current[id], [string]: !isMuted },
+      }
+    })
+  }
   const heading = isScaleExplorer
     ? `${getKeyLabel(root)} ${selectedScale ? scaleLabel(locale, selectedScale.id, selectedScale.name) : ""}`
     : mode === "arpeggios"
@@ -473,6 +547,9 @@ export function Explorer() {
             onDisplayModeChange={
               mode === "triads" ? setTriadDisplayMode : setChordDisplayMode
             }
+            tuningStrings={selectedTuning?.strings ?? []}
+            voicing={selectedVoicingForControls}
+            onToggleMutedString={toggleMutedString}
             label={mode === "triads" ? t("triads") : undefined}
           />
         )}
