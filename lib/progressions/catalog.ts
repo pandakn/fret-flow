@@ -12,6 +12,20 @@ export const PROGRESSION_GENRES = [
 
 export type ProgressionGenreId = (typeof PROGRESSION_GENRES)[number]
 
+export const CHORD_TONE_IDS = [
+  "maj",
+  "maj6",
+  "m",
+  "7",
+  "m7",
+  "maj7",
+  "dom9",
+  "m9",
+  "maj9",
+] as const
+
+export type ChordToneId = (typeof CHORD_TONE_IDS)[number]
+
 /**
  * Extended chord tone lists for the progression lab. These are deliberately
  * separate from `lib/chords.ts`: the fretboard modules require closed-octave
@@ -25,20 +39,32 @@ const CHORD_TONE_SPECS = {
   "7": { quality: "7", tones: [0, 4, 7, 10], labels: ["R", "3", "5", "b7"] },
   m7: { quality: "m7", tones: [0, 3, 7, 10], labels: ["R", "b3", "5", "b7"] },
   maj7: { quality: "maj7", tones: [0, 4, 7, 11], labels: ["R", "3", "5", "7"] },
-  dom9: { quality: "9", tones: [0, 4, 7, 10, 14], labels: ["R", "3", "5", "b7", "9"] },
-  m9: { quality: "m9", tones: [0, 3, 7, 10, 14], labels: ["R", "b3", "5", "b7", "9"] },
-  maj9: { quality: "maj9", tones: [0, 4, 7, 11, 14], labels: ["R", "3", "5", "7", "9"] },
+  dom9: {
+    quality: "9",
+    tones: [0, 4, 7, 10, 14],
+    labels: ["R", "3", "5", "b7", "9"],
+  },
+  m9: {
+    quality: "m9",
+    tones: [0, 3, 7, 10, 14],
+    labels: ["R", "b3", "5", "b7", "9"],
+  },
+  maj9: {
+    quality: "maj9",
+    tones: [0, 4, 7, 11, 14],
+    labels: ["R", "3", "5", "7", "9"],
+  },
 } as const
 
-export type ChordToneId = keyof typeof CHORD_TONE_SPECS
 export type ChordToneSpec = (typeof CHORD_TONE_SPECS)[ChordToneId]
+
+export const isChordToneId = (value: unknown): value is ChordToneId =>
+  CHORD_TONE_IDS.some((id) => id === value)
 
 export const getChordToneSpec = (
   id: ChordToneId | string
 ): ChordToneSpec | undefined =>
-  id in CHORD_TONE_SPECS
-    ? CHORD_TONE_SPECS[id as ChordToneId]
-    : undefined
+  isChordToneId(id) ? CHORD_TONE_SPECS[id] : undefined
 
 export type ProgressionStep = {
   /** Semitones of the chord root above the key root (0 = I, 5 = IV, -2 = bVII). */
@@ -49,6 +75,32 @@ export type ProgressionStep = {
   romanNumeral: string
   /** Bars the chord is held in 4/4. */
   bars: number
+}
+
+export const CUSTOM_PROGRESSION_DEGREES = [
+  { offset: 0, label: "I" },
+  { offset: 1, label: "bII" },
+  { offset: 2, label: "II" },
+  { offset: 3, label: "bIII" },
+  { offset: 4, label: "III" },
+  { offset: 5, label: "IV" },
+  { offset: 6, label: "bV" },
+  { offset: 7, label: "V" },
+  { offset: 8, label: "bVI" },
+  { offset: 9, label: "VI" },
+  { offset: 10, label: "bVII" },
+  { offset: 11, label: "VII" },
+] as const
+
+export const CUSTOM_PROGRESSION_BAR_OPTIONS = [1, 2, 3, 4] as const
+
+export type CustomProgressionOffset =
+  (typeof CUSTOM_PROGRESSION_DEGREES)[number]["offset"]
+export type CustomProgressionBars =
+  (typeof CUSTOM_PROGRESSION_BAR_OPTIONS)[number]
+export type CustomProgressionStep = Omit<ProgressionStep, "offset" | "bars"> & {
+  offset: CustomProgressionOffset
+  bars: CustomProgressionBars
 }
 
 export type ProgressionId =
@@ -74,14 +126,26 @@ export type ProgressionId =
   | "funk_9ths"
   | "funk_one_chord"
 
-export type Progression = {
-  /** Stable, i18n-free id. Localized copy uses `prog<Id>` / `prog<Id>Description` keys. */
-  id: ProgressionId
+type ProgressionFields = {
   genre: ProgressionGenreId
-  bpm: number
   swing?: boolean
   steps: readonly ProgressionStep[]
 }
+
+export type Progression = ProgressionFields & {
+  /** Stable, i18n-free id. Localized copy uses `prog<Id>` / `prog<Id>Description` keys. */
+  id: ProgressionId
+  bpm: number
+}
+
+export type CustomProgression = Omit<ProgressionFields, "genre" | "steps"> & {
+  kind: "custom"
+  id: string
+  name: string
+  steps: readonly CustomProgressionStep[]
+}
+
+export type PlayableProgression = Progression | CustomProgression
 
 const step = (
   offset: number,
@@ -165,10 +229,7 @@ export const PROGRESSIONS: readonly Progression[] = [
     id: "rnb_vamp",
     genre: "rnb",
     bpm: 92,
-    steps: [
-      step(0, "maj9", "Imaj9", 2),
-      step(-2, "dom9", "bVII9", 2),
-    ],
+    steps: [step(0, "maj9", "Imaj9", 2), step(-2, "dom9", "bVII9", 2)],
   },
 
   // ── Jazz ─────────────────────────────────────────────────────────────
@@ -239,10 +300,7 @@ export const PROGRESSIONS: readonly Progression[] = [
     id: "neosoul_1_4",
     genre: "neo_soul",
     bpm: 70,
-    steps: [
-      step(0, "maj9", "Imaj9", 2),
-      step(5, "m9", "IVm9", 2),
-    ],
+    steps: [step(0, "maj9", "Imaj9", 2), step(5, "m9", "IVm9", 2)],
   },
   {
     id: "neosoul_turnaround",
@@ -322,28 +380,19 @@ export const PROGRESSIONS: readonly Progression[] = [
     id: "funk_1_4_vamp",
     genre: "funk",
     bpm: 100,
-    steps: [
-      step(0, "7", "I7"),
-      step(5, "7", "IV7"),
-    ],
+    steps: [step(0, "7", "I7"), step(5, "7", "IV7")],
   },
   {
     id: "funk_9ths",
     genre: "funk",
     bpm: 104,
-    steps: [
-      step(0, "dom9", "I9"),
-      step(5, "dom9", "IV9"),
-    ],
+    steps: [step(0, "dom9", "I9"), step(5, "dom9", "IV9")],
   },
   {
     id: "funk_one_chord",
     genre: "funk",
     bpm: 104,
-    steps: [
-      step(0, "7", "I7", 3),
-      step(-2, "7", "bVII7"),
-    ],
+    steps: [step(0, "7", "I7", 3), step(-2, "7", "bVII7")],
   },
 ]
 
@@ -355,17 +404,12 @@ export const getProgressionsByGenre = (
 ): readonly Progression[] =>
   PROGRESSIONS.filter((progression) => progression.genre === genre)
 
-export const getProgressionById = (
-  id: string
-): Progression | undefined => PROGRESSIONS.find((item) => item.id === id)
+export const getProgressionById = (id: string): Progression | undefined =>
+  PROGRESSIONS.find((item) => item.id === id)
 
 export const getProgressionLengthBeats = (
-  progression: Progression
-): number =>
-  progression.steps.reduce(
-    (beats, item) => beats + item.bars * 4,
-    0
-  )
+  progression: Pick<PlayableProgression, "steps">
+): number => progression.steps.reduce((beats, item) => beats + item.bars * 4, 0)
 
 /** Resolves the chord root of a step against the selected key. */
 export const getStepRootNote = (
@@ -409,10 +453,18 @@ export const getQuizRound = (
 
   const distractors: string[] = []
   while (distractors.length < 3 && sameGenre.length > 0) {
-    distractors.push(...sameGenre.splice(Math.floor(rng() * sameGenre.length), 1).map((item) => item.id))
+    distractors.push(
+      ...sameGenre
+        .splice(Math.floor(rng() * sameGenre.length), 1)
+        .map((item) => item.id)
+    )
   }
   while (distractors.length < 3 && crossGenre.length > 0) {
-    distractors.push(...crossGenre.splice(Math.floor(rng() * crossGenre.length), 1).map((item) => item.id))
+    distractors.push(
+      ...crossGenre
+        .splice(Math.floor(rng() * crossGenre.length), 1)
+        .map((item) => item.id)
+    )
   }
 
   const optionIds = shuffle([target.id, ...distractors], rng)

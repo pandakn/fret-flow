@@ -5,7 +5,7 @@ import type { NoteName } from "@/types/music"
 import { startEpAudio, getEpInstruments } from "@/components/audio/ePianoSound"
 import {
   getProgressionLengthBeats,
-  type Progression,
+  type PlayableProgression,
 } from "@/lib/progressions/catalog"
 import {
   buildPlaybackPlan,
@@ -14,7 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react"
 
 export type PlaybackRequest = {
-  progression: Progression
+  progression: PlayableProgression
   key: NoteName
   bpm: number
   loop: boolean

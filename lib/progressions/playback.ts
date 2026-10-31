@@ -3,7 +3,7 @@ import { CHROMATIC } from "../notes"
 import {
   getChordToneSpec,
   getStepRootNote,
-  type Progression,
+  type PlayableProgression,
   type ProgressionStep,
 } from "./catalog"
 
@@ -92,7 +92,7 @@ const shuffleStab = ({
  * one root note per bar.
  */
 export const buildPlaybackPlan = (
-  progression: Progression,
+  progression: PlayableProgression,
   key: NoteName,
   pianoRhythm: PianoRhythm = "sustained"
 ): PlaybackPlan => {
@@ -161,5 +161,5 @@ export const buildPlaybackPlan = (
   }
 }
 
-export const getStepCount = (progression: Progression): number =>
+export const getStepCount = (progression: PlayableProgression): number =>
   progression.steps.length
