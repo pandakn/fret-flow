@@ -6,6 +6,29 @@ import {
 } from "@/lib/learn-practice"
 import { isLocale } from "@/lib/i18n/locales"
 import { resolveScaleRoutePracticeRequest } from "@/lib/scale-route-practice"
+import { pageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const { lang } = await params
+  const locale = isLocale(lang) ? lang : "en"
+  return locale === "th"
+    ? pageMetadata(
+        locale,
+        "/practice",
+        "แบบฝึกกีตาร์ | FretFlow",
+        "ฝึกสเกล คอร์ด และการจำโน้ตบนคอกีตาร์ด้วยแบบฝึกแบบโต้ตอบ"
+      )
+    : pageMetadata(
+        locale,
+        "/practice",
+        "Guitar Practice Exercises | FretFlow",
+        "Practice guitar scales, chords, and fretboard note recall with interactive exercises."
+      )
+}
 
 export default async function PracticePage({
   params,

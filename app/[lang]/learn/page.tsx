@@ -7,6 +7,22 @@ import { ObjectiveProgress } from "@/components/learn/ObjectiveProgress"
 import { isLocale, localePath } from "@/lib/i18n/locales"
 import { messages } from "@/lib/i18n/messages"
 import { LESSON_IDS, lessons } from "@/lib/i18n/lessons"
+import { pageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const { lang } = await params
+  const locale = isLocale(lang) ? lang : "en"
+  return pageMetadata(
+    locale,
+    "/learn",
+    `${messages[locale].learnTitle} | FretFlow`,
+    messages[locale].learnIntro
+  )
+}
 
 export default async function LearnPage({
   params,

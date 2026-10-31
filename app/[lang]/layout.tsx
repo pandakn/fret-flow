@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { PracticeProvider } from "@/components/practice/PracticeProvider"
 import { LocaleProvider } from "@/components/i18n/LocaleProvider"
 import { isLocale, LOCALES } from "@/lib/i18n/locales"
+import { SITE_URL } from "@/lib/seo"
 
 const syne = Syne({
   subsets: ["latin"],
@@ -34,14 +35,48 @@ export async function generateMetadata({
   const { lang } = await params
   return lang === "th"
     ? {
-        title: "FretFlow — เรียนรู้ทฤษฎีดนตรีและฝึกกีตาร์",
+        metadataBase: new URL(SITE_URL),
+        title: "FretFlow — ฝึกกีตาร์และเรียนทฤษฎีดนตรี",
         description:
-          "สำรวจคอกีตาร์ เรียนรู้ทฤษฎีดนตรี และฝึกซ้อมอย่างมีเป้าหมาย",
+          "แผนผังคอกีตาร์แบบโต้ตอบสำหรับสเกล คอร์ด และอาร์เพจจิโอ พร้อมบทเรียนและแบบฝึกช่วยพัฒนาทักษะกีตาร์อย่างเป็นระบบ",
+        applicationName: "FretFlow",
+        openGraph: {
+          title: "FretFlow — ฝึกกีตาร์และเรียนทฤษฎีดนตรี",
+          description:
+            "สำรวจสเกล คอร์ด และอาร์เพจจิโอบนแผนผังคอกีตาร์ พร้อมบทเรียนและแบบฝึกกีตาร์",
+          siteName: "FretFlow",
+          type: "website",
+          locale: "th_TH",
+        },
+        twitter: {
+          card: "summary",
+          title: "FretFlow — ฝึกกีตาร์และเรียนทฤษฎีดนตรี",
+          description:
+            "แผนผังคอกีตาร์แบบโต้ตอบ บทเรียนทฤษฎีดนตรี และแบบฝึกกีตาร์",
+        },
+        robots: { index: true, follow: true },
       }
     : {
-        title: "FretFlow — Guitar practice and music theory",
+        metadataBase: new URL(SITE_URL),
+        title: "FretFlow — Guitar Fretboard, Scales & Practice",
         description:
-          "Explore guitar theory, build practice routines, and track progress.",
+          "Explore an interactive guitar fretboard for scales, chords, and arpeggios. Learn music theory with guided lessons, focused practice, and progress tracking.",
+        applicationName: "FretFlow",
+        openGraph: {
+          title: "FretFlow — Guitar Fretboard, Scales & Practice",
+          description:
+            "Explore guitar scales, chords, and arpeggios on an interactive fretboard, then build skills with guided lessons and practice.",
+          siteName: "FretFlow",
+          type: "website",
+          locale: "en_US",
+        },
+        twitter: {
+          card: "summary",
+          title: "FretFlow — Guitar Fretboard, Scales & Practice",
+          description:
+            "Interactive guitar fretboard, music theory lessons, and focused practice tools.",
+        },
+        robots: { index: true, follow: true },
       }
 }
 
