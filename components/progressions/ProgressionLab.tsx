@@ -39,6 +39,7 @@ import {
 const GENRE_LABEL_KEYS: Record<ProgressionGenreId, MessageKey> = {
   pop: "pop",
   rnb: "rnb",
+  jazz: "jazz",
   neo_soul: "neoSoul",
   blues: "blues",
   funk: "funk",

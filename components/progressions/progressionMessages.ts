@@ -12,6 +12,22 @@ const PROGRESSION_MESSAGES = {
   rnb_doo_wop: { label: "progRnbDooWop", description: "progRnbDooWopDescription" },
   rnb_descend: { label: "progRnbDescend", description: "progRnbDescendDescription" },
   rnb_vamp: { label: "progRnbVamp", description: "progRnbVampDescription" },
+  jazz_2_5_1: {
+    label: "progJazz251",
+    description: "progJazz251Description",
+  },
+  jazz_turnaround: {
+    label: "progJazzTurnaround",
+    description: "progJazzTurnaroundDescription",
+  },
+  jazz_extended_turnaround: {
+    label: "progJazzExtendedTurnaround",
+    description: "progJazzExtendedTurnaroundDescription",
+  },
+  jazz_blues: {
+    label: "progJazzBlues",
+    description: "progJazzBluesDescription",
+  },
   neosoul_2_5_1: {
     label: "progNeoSoul251",
     description: "progNeoSoul251Description",

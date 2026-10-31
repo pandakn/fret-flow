@@ -170,6 +170,18 @@ const en = {
   progRnbVamp: "Imaj9–bVII9",
   progRnbVampDescription:
     "A two-chord groove vamp — freed-up air over one long I chord.",
+  progJazz251: "ii7–V7–Imaj7",
+  progJazz251Description:
+    "The core major-key jazz cadence, resolving from ii through V to I.",
+  progJazzTurnaround: "Imaj7–VI7–ii7–V7",
+  progJazzTurnaroundDescription:
+    "A classic turnaround that cycles back to the tonic.",
+  progJazzExtendedTurnaround: "iii7–VI7–ii7–V7",
+  progJazzExtendedTurnaroundDescription:
+    "A longer circle-of-fifths turnaround that leads back to I.",
+  progJazzBlues: "12-bar jazz blues",
+  progJazzBluesDescription:
+    "A twelve-bar form with a VI7–ii7–V7 turnaround near the end.",
   progNeoSoul251: "ii9–V9–Imaj9",
   progNeoSoul251Description:
     "The neo soul reharm of ii–V–I with stacked 9ths on every chord.",
@@ -410,6 +422,17 @@ const th: Record<keyof typeof en, string> = {
     "โปรเกรสชันไล่ลงแบบกอสเปลที่พาเมโลดีกลับบ้านทุกครั้ง",
   progRnbVamp: "Imaj9–bVII9",
   progRnbVampDescription: "แวมสองคอร์ดที่ลอยกลางอากาศบนคอร์ด I ยาว ๆ",
+  progJazz251: "ii7–V7–Imaj7",
+  progJazz251Description:
+    "คาเดนซ์หลักของแจ๊สในเมเจอร์ คลี่จาก ii ผ่าน V แล้วกลับสู่ I",
+  progJazzTurnaround: "Imaj7–VI7–ii7–V7",
+  progJazzTurnaroundDescription: "เทิร์นอะราวด์คลาสสิกที่วนกลับสู่คอร์ดหลัก",
+  progJazzExtendedTurnaround: "iii7–VI7–ii7–V7",
+  progJazzExtendedTurnaroundDescription:
+    "เทิร์นอะราวด์วงจรคู่ห้าที่ขยายให้ยาวขึ้นและพากลับไปที่ I",
+  progJazzBlues: "12-bar jazz blues",
+  progJazzBluesDescription:
+    "บลูส์ 12 ห้องที่มีเทิร์นอะราวด์ VI7–ii7–V7 ช่วงท้าย",
   progNeoSoul251: "ii9–V9–Imaj9",
   progNeoSoul251Description: "ii–V–I สไตล์ Neo Soul โดยไล่ 9th ทุกคอร์ด",
   progNeoSoul14: "Imaj9–IVm9",

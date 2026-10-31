@@ -4,6 +4,7 @@ import { CHROMATIC } from "../notes"
 export const PROGRESSION_GENRES = [
   "pop",
   "rnb",
+  "jazz",
   "neo_soul",
   "blues",
   "funk",
@@ -58,6 +59,10 @@ export type ProgressionId =
   | "rnb_doo_wop"
   | "rnb_descend"
   | "rnb_vamp"
+  | "jazz_2_5_1"
+  | "jazz_turnaround"
+  | "jazz_extended_turnaround"
+  | "jazz_blues"
   | "neosoul_2_5_1"
   | "neosoul_1_4"
   | "neosoul_turnaround"
@@ -163,6 +168,59 @@ export const PROGRESSIONS: readonly Progression[] = [
     steps: [
       step(0, "maj9", "Imaj9", 2),
       step(-2, "dom9", "bVII9", 2),
+    ],
+  },
+
+  // ── Jazz ─────────────────────────────────────────────────────────────
+  {
+    id: "jazz_2_5_1",
+    genre: "jazz",
+    bpm: 112,
+    steps: [
+      step(2, "m7", "ii7"),
+      step(7, "7", "V7"),
+      step(0, "maj7", "Imaj7", 2),
+    ],
+  },
+  {
+    id: "jazz_turnaround",
+    genre: "jazz",
+    bpm: 108,
+    steps: [
+      step(0, "maj7", "Imaj7"),
+      step(9, "7", "VI7"),
+      step(2, "m7", "ii7"),
+      step(7, "7", "V7"),
+    ],
+  },
+  {
+    id: "jazz_extended_turnaround",
+    genre: "jazz",
+    bpm: 112,
+    steps: [
+      step(4, "m7", "iii7"),
+      step(9, "7", "VI7"),
+      step(2, "m7", "ii7"),
+      step(7, "7", "V7"),
+    ],
+  },
+  {
+    id: "jazz_blues",
+    genre: "jazz",
+    bpm: 112,
+    steps: [
+      step(0, "7", "I7"),
+      step(5, "7", "IV7"),
+      step(0, "7", "I7"),
+      step(0, "7", "I7"),
+      step(5, "7", "IV7"),
+      step(5, "7", "IV7"),
+      step(0, "7", "I7"),
+      step(9, "7", "VI7"),
+      step(2, "m7", "ii7"),
+      step(7, "7", "V7"),
+      step(0, "7", "I7"),
+      step(7, "7", "V7"),
     ],
   },
 
