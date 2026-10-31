@@ -1,13 +1,4 @@
-import type { Sampler } from "tone"
-import {
-  createEmilyGuitarSampleMap,
-  DEFAULT_GUITAR_VELOCITY,
-  EMILY_GUITAR_ROUND_ROBIN_COUNT,
-  EMILY_GUITAR_SAMPLE_BASE_URL,
-  EMILY_GUITAR_VELOCITY_LAYERS,
-  getEmilyGuitarVelocityLayer,
-  type EmilyGuitarVelocityLayer,
-} from "./emilyGuitar"
+import { STEEL_GUITAR_BASE_URL, STEEL_GUITAR_SAMPLES } from "./steelGuitar"
 
 type ToneModule = typeof import("tone")
 
@@ -16,12 +7,6 @@ let guitarSamplerPromise: Promise<GuitarSampler> | null = null
 let rawGuitarSampler: GuitarSampler | null = null
 let routeOwner: symbol | null = null
 let previewGeneration = 0
-
-type GuitarVoice = {
-  layer: EmilyGuitarVelocityLayer
-  roundRobin: number
-  sampler: Sampler
-}
 
 export type GuitarSampler = {
   triggerAttackRelease: (
@@ -32,46 +17,6 @@ export type GuitarSampler = {
   ) => void
   releaseAll: (time?: number) => void
   dispose: () => void
-}
-
-/**
- * Keeps the existing sampler-facing API while selecting Emilyguitar's
- * velocity layer and round-robin recording for each note.
- */
-class EmilyGuitarSampler implements GuitarSampler {
-  private nextRoundRobin = 0
-
-  constructor(private readonly voices: readonly GuitarVoice[]) {}
-
-  triggerAttackRelease(
-    frequency: number,
-    duration: number,
-    time?: number,
-    velocity = DEFAULT_GUITAR_VELOCITY
-  ): void {
-    const layer = getEmilyGuitarVelocityLayer(velocity)
-    const roundRobin =
-      (this.nextRoundRobin++ % EMILY_GUITAR_ROUND_ROBIN_COUNT) + 1
-    const voice = this.voices.find(
-      (candidate) =>
-        candidate.layer === layer && candidate.roundRobin === roundRobin
-    )
-
-    voice?.sampler.triggerAttackRelease(
-      frequency,
-      duration,
-      time,
-      Math.max(0, Math.min(1, velocity))
-    )
-  }
-
-  releaseAll(time?: number): void {
-    this.voices.forEach(({ sampler }) => sampler.releaseAll(time))
-  }
-
-  dispose(): void {
-    this.voices.forEach(({ sampler }) => sampler.dispose())
-  }
 }
 
 const loadTone = (): Promise<ToneModule> => {
@@ -93,34 +38,15 @@ export const startGuitarAudio = async (): Promise<ToneModule> => {
   return tone
 }
 
-/** Loads the shared Emilyguitar instrument on first use. */
+/** Loads the shared steel-string instrument on first use. */
 const loadGuitarSampler = async (tone: ToneModule): Promise<GuitarSampler> => {
   if (!guitarSamplerPromise) {
-    const voices: GuitarVoice[] = []
-
-    try {
-      EMILY_GUITAR_VELOCITY_LAYERS.forEach(({ id: layer }) => {
-        for (
-          let roundRobin = 1;
-          roundRobin <= EMILY_GUITAR_ROUND_ROBIN_COUNT;
-          roundRobin += 1
-        ) {
-          const sampler = new tone.Sampler({
-            urls: createEmilyGuitarSampleMap(layer, roundRobin),
-            baseUrl: EMILY_GUITAR_SAMPLE_BASE_URL,
-            release: 0.25,
-            volume: -9,
-          }).toDestination()
-
-          voices.push({ layer, roundRobin, sampler })
-        }
-      })
-    } catch (error) {
-      voices.forEach(({ sampler }) => sampler.dispose())
-      throw error
-    }
-
-    const sampler = new EmilyGuitarSampler(voices)
+    const sampler = new tone.Sampler({
+      urls: STEEL_GUITAR_SAMPLES,
+      baseUrl: STEEL_GUITAR_BASE_URL,
+      release: 0.25,
+      volume: -9,
+    }).toDestination()
     guitarSamplerPromise = tone
       .loaded()
       .then(() => {
@@ -133,7 +59,6 @@ const loadGuitarSampler = async (tone: ToneModule): Promise<GuitarSampler> => {
         throw error
       })
   }
-
   return guitarSamplerPromise
 }
 

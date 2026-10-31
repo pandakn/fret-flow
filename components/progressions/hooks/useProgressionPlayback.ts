@@ -2,6 +2,7 @@
 
 import type { Part } from "tone"
 import type { NoteName } from "@/types/music"
+import { getGuitarSampler } from "@/components/audio/guitarSound"
 import { startEpAudio, getEpInstruments } from "@/components/audio/ePianoSound"
 import {
   getProgressionLengthBeats,
@@ -9,11 +10,15 @@ import {
 } from "@/lib/progressions/catalog"
 import {
   buildPlaybackPlan,
+  getDownstrokeNotes,
   type PianoRhythm,
 } from "@/lib/progressions/playback"
 import { useCallback, useEffect, useRef, useState } from "react"
 
+export type ChordInstrument = "piano" | "guitar"
+
 export type PlaybackRequest = {
+  instrument: ChordInstrument
   progression: PlayableProgression
   key: NoteName
   bpm: number
@@ -46,6 +51,11 @@ export function useProgressionPlayback() {
   const [currentStep, setCurrentStep] = useState(-1)
   const sessionRef = useRef<{ id: number; stop: () => void } | null>(null)
   const activeIdRef = useRef(0)
+  const strumIntervalRef = useRef(40)
+
+  const setStrumInterval = useCallback((milliseconds: number) => {
+    strumIntervalRef.current = milliseconds
+  }, [])
 
   const stop = useCallback(() => {
     // Bumping the id also cancels a session that is still starting up.
@@ -59,7 +69,7 @@ export function useProgressionPlayback() {
 
   const play = useCallback(
     (request: PlaybackRequest) => {
-      const { progression, key, bpm, loop, pianoRhythm } = request
+      const { progression, key, bpm, loop, pianoRhythm, instrument } = request
 
       // A new request always wins over whatever is sounding.
       stop()
@@ -67,6 +77,7 @@ export function useProgressionPlayback() {
       const sessionId = activeIdRef.current + 1
       activeIdRef.current = sessionId
       const isCurrent = () => activeIdRef.current === sessionId
+      setPlaying(true)
 
       void (async () => {
         try {
@@ -75,6 +86,36 @@ export function useProgressionPlayback() {
 
           const instruments = await getEpInstruments(tone)
           if (!isCurrent()) return
+          const guitar =
+            instrument === "guitar" ? await getGuitarSampler(tone) : null
+          if (!isCurrent()) return
+          const playChord = (
+            frequencies: number[],
+            duration: number,
+            time: number,
+            velocity?: number
+          ) => {
+            if (guitar)
+              getDownstrokeNotes(
+                frequencies,
+                duration,
+                strumIntervalRef.current / 1000
+              ).forEach((note) =>
+                guitar.triggerAttackRelease(
+                  note.frequency,
+                  note.duration,
+                  time + note.delay,
+                  velocity
+                )
+              )
+            else
+              instruments.ep.triggerAttackRelease(
+                frequencies,
+                duration,
+                time,
+                velocity
+              )
+          }
 
           const plan = buildPlaybackPlan(progression, key, pianoRhythm)
           const totalBeats = getProgressionLengthBeats(progression)
@@ -103,7 +144,7 @@ export function useProgressionPlayback() {
             durationBeats: number
           }>(
             (time, value) => {
-              instruments.ep.triggerAttackRelease(
+              playChord(
                 value.frequencies,
                 value.durationBeats * secondsPerBeat(),
                 time
@@ -148,12 +189,7 @@ export function useProgressionPlayback() {
               frequencies: number[]
             }>(
               (time, value) => {
-                instruments.ep.triggerAttackRelease(
-                  value.frequencies,
-                  0.5 * secondsPerBeat(),
-                  time,
-                  0.7
-                )
+                playChord(value.frequencies, 0.5 * secondsPerBeat(), time, 0.7)
               },
               plan.stabEvents.map((event) => ({
                 time: beatPosition(event.beat),
@@ -182,6 +218,7 @@ export function useProgressionPlayback() {
                 // AudioContext may already be closing.
               }
               instruments.releaseAll()
+              guitar?.releaseAll()
             },
           }
 
@@ -222,5 +259,6 @@ export function useProgressionPlayback() {
     currentStep,
     play,
     stop,
+    setStrumInterval,
   }
 }

@@ -11,6 +11,7 @@ import { getExerciseDisplayText } from "@/lib/learning/exercises"
 import { learningCopy } from "@/lib/i18n/learning"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
 import { PracticeCalendar } from "./PracticeCalendar"
+import { ShapeMastery } from "./ShapeMastery"
 import { FretboardHeatmap } from "./FretboardHeatmap"
 import { PersonalBests } from "./PersonalBests"
 import { MasteryMilestones } from "./MasteryMilestones"
@@ -120,6 +121,7 @@ export function ProgressDashboard() {
           </div>
         ))}
       </dl>
+      <ShapeMastery />
       <section
         aria-labelledby="objective-progress-heading"
         className="space-y-4"

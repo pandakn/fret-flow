@@ -68,6 +68,23 @@ export type PlaybackPlan = {
 
 export type PianoRhythm = "sustained" | "quarter_notes"
 
+/** Schedule a downstroke from low to high pitch within the chord's duration. */
+export const getDownstrokeNotes = (
+  frequencies: readonly number[],
+  duration: number,
+  spacingSeconds = 0.04
+): Array<{ frequency: number; delay: number; duration: number }> => {
+  const sorted = frequencies.toSorted((a, b) => a - b)
+  const spacing = Math.min(
+    Math.max(0, spacingSeconds),
+    duration / Math.max(1, sorted.length)
+  )
+  return sorted.map((frequency, index) => {
+    const delay = spacing * index
+    return { frequency, delay, duration: duration - delay }
+  })
+}
+
 /** Windows hold a full octave, always starting on C. */
 const CHORD_ROOT_LOW_MIDI = 48 // C3
 const BASS_ROOT_LOW_MIDI = 36 // C2

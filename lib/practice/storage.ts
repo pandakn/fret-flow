@@ -1,3 +1,4 @@
+import { isShapeMastery } from "./shape-mastery"
 import {
   PRACTICE_SCHEMA_VERSION,
   type PracticeDocument,
@@ -280,6 +281,8 @@ export const validatePracticeDocument = (
 
   if (value.version === PRACTICE_SCHEMA_VERSION) {
     if (
+      (value.shapeMastery !== undefined &&
+        !isShapeMastery(value.shapeMastery)) ||
       !Array.isArray(value.savedExercises) ||
       !value.savedExercises.every(isExercise) ||
       !Array.isArray(value.routines) ||

@@ -12,7 +12,7 @@ Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 a
 - **Multiple Tunings** - Support for various guitar tunings
 - **Responsive Design** - Works seamlessly across desktop and mobile devices
 - **Dark Mode** - Built-in theme switching for comfortable viewing in any lighting
-- **Guitar Playback** - Hear fret clicks, scales, and arpeggios with a recorded electric-guitar sampler
+- **Guitar Playback** - Hear fret clicks, scales, and arpeggios with recorded steel-string guitar samples
 
 ## Tech Stack
 
@@ -25,16 +25,16 @@ Interactive guitar scale, chord, and arpeggio visualizer built with Next.js 16 a
 | Utilities  | clsx, tailwind-merge, class-variance-authority |
 | Icons      | lucide-react                                   |
 | Theme      | next-themes                                    |
-| Audio      | Tone.js + Emilyguitar electric-guitar samples |
+| Audio      | Tone.js + Meta Steel Guitar samples            |
 
 ## Getting Started
 
 ### Audio sample attribution
 
-The electric-guitar playback uses the open-source
-[`karoryfer.emilyguitar`](https://github.com/sfzinstruments/karoryfer.emilyguitar)
-recordings by Karoryfer Samples. The sample set is released under the
-[CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).
+Guitar playback uses [Meta Steel Guitar](https://github.com/facebookincubator/Meta-open-sound/tree/main/systems/instruments/meta-steel-guitar)
+recordings from Meta's Creative Audio team. The samples are available under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The app loads
+the OGG files from the project's GitHub repository when guitar audio starts.
 
 ### Prerequisites
 

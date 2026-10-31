@@ -282,6 +282,19 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     [setValue]
   )
 
+  const setShapeMastery = useCallback<PracticeStore["setShapeMastery"]>(
+    (key, status) => {
+      setValue((current) => {
+        const shapeMastery = { ...current.shapeMastery }
+        if (status)
+          shapeMastery[key] = { status, updatedAt: new Date().toISOString() }
+        else delete shapeMastery[key]
+        return { ...current, shapeMastery }
+      })
+    },
+    [setValue]
+  )
+
   const rerollWildcard = useCallback(
     (dayKey: string) => {
       setValue((current) => {
@@ -364,6 +377,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       removeExercise,
       saveRoutine,
       rerollWildcard,
+      setShapeMastery,
       acknowledgeMilestone,
       importData,
       exportData,
@@ -382,6 +396,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       rerollWildcard,
       saveExercise,
       saveRoutine,
+      setShapeMastery,
       acknowledgeMilestone,
       setSessionStatus,
       startSession,

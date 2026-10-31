@@ -35,6 +35,10 @@ export type PracticeStore = {
   saveExercise: (exercise: ExerciseDefinition) => void
   removeExercise: (exerciseId: string) => void
   saveRoutine: (routine: RoutineDefinition) => void
+  setShapeMastery: (
+    key: string,
+    status: import("@/lib/practice/shape-mastery").MasteryStatus | undefined
+  ) => void
   rerollWildcard: (dayKey: string) => void
   acknowledgeMilestone: (milestoneId: string) => void
   importData: (raw: string) => boolean

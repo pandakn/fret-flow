@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils"
 import {
   useProgressionPlayback,
   type PlaybackRequest,
+  type ChordInstrument,
 } from "./hooks/useProgressionPlayback"
 import { QuizPanel } from "./QuizPanel"
 import {
@@ -99,6 +100,8 @@ export function ProgressionLab() {
   })
   const [key, setKey] = useState<NoteName>("C")
   const [pianoRhythm, setPianoRhythm] = useState<PianoRhythm>("sustained")
+  const [instrument, setInstrument] = useState<ChordInstrument>("piano")
+  const [strumInterval, setStrumInterval] = useState(40)
   const [loop, setLoop] = useState(true)
   const [selectedId, setSelectedId] = useState("pop_15_64")
   const [source, setSource] = useState<"library" | "quiz" | null>(null)
@@ -106,7 +109,13 @@ export function ProgressionLab() {
     kind: "closed",
   })
   const activePlaybackRef = useRef<PlaybackRequest | null>(null)
-  const { play, stop, playing, currentStep } = useProgressionPlayback()
+  const {
+    play,
+    stop,
+    playing,
+    currentStep,
+    setStrumInterval: updatePlaybackStrumInterval,
+  } = useProgressionPlayback()
   const {
     value: customProgressions,
     setValue: setCustomProgressions,
@@ -189,7 +198,7 @@ export function ProgressionLab() {
       return
     }
     startPlayback(
-      { progression: selected, key, bpm, loop, pianoRhythm },
+      { progression: selected, key, bpm, loop, pianoRhythm, instrument },
       "library"
     )
   }
@@ -202,6 +211,7 @@ export function ProgressionLab() {
         bpm: progression.bpm,
         loop: false,
         pianoRhythm,
+        instrument,
       },
       "quiz"
     )
@@ -219,6 +229,16 @@ export function ProgressionLab() {
     }
 
     startPlayback({ ...activePlayback, key: nextKey }, source ?? "library")
+  }
+
+  const changeInstrument = (next: ChordInstrument) => {
+    setInstrument(next)
+    if (playing && activePlaybackRef.current) {
+      startPlayback(
+        { ...activePlaybackRef.current, instrument: next },
+        source ?? "library"
+      )
+    }
   }
 
   const changePianoRhythm = (nextPianoRhythm: PianoRhythm) => {
@@ -244,7 +264,10 @@ export function ProgressionLab() {
     setCustomPanel({ kind: "closed" })
 
     if (restartPlayback) {
-      startPlayback({ progression, key, bpm, loop, pianoRhythm }, "library")
+      startPlayback(
+        { progression, key, bpm, loop, pianoRhythm, instrument },
+        "library"
+      )
       return
     }
 
@@ -300,7 +323,7 @@ export function ProgressionLab() {
 
     const playPreview = (progression: PlayableProgression) =>
       startPlayback(
-        { progression, key, bpm, loop: false, pianoRhythm },
+        { progression, key, bpm, loop: false, pianoRhythm, instrument },
         "library"
       )
 
@@ -498,10 +521,37 @@ export function ProgressionLab() {
 
               <div>
                 <label
+                  htmlFor="progression-instrument"
+                  className="mb-2 block font-mono text-[10px] tracking-[0.14em] text-[var(--muted-foreground)] uppercase"
+                >
+                  {t("chordInstrument")}
+                </label>
+                <Select
+                  value={instrument}
+                  onValueChange={(value) => {
+                    if (value === "piano" || value === "guitar")
+                      changeInstrument(value)
+                  }}
+                >
+                  <SelectTrigger
+                    id="progression-instrument"
+                    className="w-44 rounded-md border-[var(--border-2)] bg-[var(--surface)]"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="piano">{t("electricPiano")}</SelectItem>
+                    <SelectItem value="guitar">{t("steelGuitar")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label
                   htmlFor="progression-piano-rhythm"
                   className="mb-2 block font-mono text-[10px] tracking-[0.14em] text-[var(--muted-foreground)] uppercase"
                 >
-                  {t("pianoRhythm")}
+                  {t("chordRhythm")}
                 </label>
                 <Select
                   value={pianoRhythm}
@@ -526,6 +576,38 @@ export function ProgressionLab() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {instrument === "guitar" ? (
+                <div>
+                  <label
+                    htmlFor="progression-strum-speed"
+                    className="mb-2 block font-mono text-[10px] tracking-[0.14em] text-[var(--muted-foreground)] uppercase"
+                  >
+                    {t("strumSpeed")} · {strumInterval} ms
+                  </label>
+                  <Slider
+                    id="progression-strum-speed"
+                    min={10}
+                    max={100}
+                    step={5}
+                    value={[strumInterval]}
+                    thumbLabel={t("strumSpeed")}
+                    onValueChange={([value]) => {
+                      if (value === undefined) return
+                      setStrumInterval(value)
+                      updatePlaybackStrumInterval(value)
+                    }}
+                    aria-describedby="progression-strum-help"
+                    className="w-44"
+                  />
+                  <p
+                    id="progression-strum-help"
+                    className="mt-2 text-xs text-muted-foreground"
+                  >
+                    {t("strumSpeedHelp")}
+                  </p>
+                </div>
+              ) : null}
 
               <label className="flex items-center gap-2 pb-1 text-sm">
                 <Switch checked={loop} onCheckedChange={setLoop} />

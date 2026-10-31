@@ -293,6 +293,7 @@ export type MilestoneProgress = {
 
 export type PracticeDocument = {
   version: typeof PRACTICE_SCHEMA_VERSION
+  shapeMastery?: import("@/lib/practice/shape-mastery").ShapeMastery
   savedExercises: ExerciseDefinition[]
   routines: RoutineDefinition[]
   sessions: PracticeSession[]
