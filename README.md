@@ -35,6 +35,8 @@ Guitar playback uses [Meta Steel Guitar](https://github.com/facebookincubator/Me
 recordings from Meta's Creative Audio team. The samples are available under
 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The app loads
 the OGG files from the project's GitHub repository when guitar audio starts.
+The optional [Meta Piano](https://github.com/facebookincubator/Meta-open-sound/tree/main/systems/instruments/meta-piano)
+in Progression Lab uses recordings from the same project under CC0 1.0.
 
 ### Prerequisites
 

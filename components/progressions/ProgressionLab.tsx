@@ -529,7 +529,11 @@ export function ProgressionLab() {
                 <Select
                   value={instrument}
                   onValueChange={(value) => {
-                    if (value === "piano" || value === "guitar")
+                    if (
+                      value === "piano" ||
+                      value === "metaPiano" ||
+                      value === "guitar"
+                    )
                       changeInstrument(value)
                   }}
                 >
@@ -541,6 +545,7 @@ export function ProgressionLab() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="piano">{t("electricPiano")}</SelectItem>
+                    <SelectItem value="metaPiano">{t("metaPiano")}</SelectItem>
                     <SelectItem value="guitar">{t("steelGuitar")}</SelectItem>
                   </SelectContent>
                 </Select>

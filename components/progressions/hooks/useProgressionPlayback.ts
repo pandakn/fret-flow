@@ -3,6 +3,7 @@
 import type { Part } from "tone"
 import type { NoteName } from "@/types/music"
 import { getGuitarSampler } from "@/components/audio/guitarSound"
+import { getMetaPiano } from "@/components/audio/metaPiano"
 import { startEpAudio, getEpInstruments } from "@/components/audio/ePianoSound"
 import {
   getProgressionLengthBeats,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/progressions/playback"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-export type ChordInstrument = "piano" | "guitar"
+export type ChordInstrument = "piano" | "metaPiano" | "guitar"
 
 export type PlaybackRequest = {
   instrument: ChordInstrument
@@ -89,6 +90,9 @@ export function useProgressionPlayback() {
           const guitar =
             instrument === "guitar" ? await getGuitarSampler(tone) : null
           if (!isCurrent()) return
+          const metaPiano =
+            instrument === "metaPiano" ? await getMetaPiano(tone) : null
+          if (!isCurrent()) return
           const playChord = (
             frequencies: number[],
             duration: number,
@@ -107,6 +111,13 @@ export function useProgressionPlayback() {
                   time + note.delay,
                   velocity
                 )
+              )
+            else if (metaPiano)
+              metaPiano.triggerAttackRelease(
+                frequencies,
+                duration,
+                time,
+                velocity
               )
             else
               instruments.ep.triggerAttackRelease(
@@ -219,6 +230,7 @@ export function useProgressionPlayback() {
               }
               instruments.releaseAll()
               guitar?.releaseAll()
+              metaPiano?.releaseAll()
             },
           }
 
