@@ -24,6 +24,10 @@ const PROGRESSION_MESSAGES = {
     label: "progNeoSoulTurnaround",
     description: "progNeoSoulTurnaroundDescription",
   },
+  neosoul_movie: {
+    label: "progNeoSoulMovie",
+    description: "progNeoSoulMovieDescription",
+  },
   blues_12bar: {
     label: "progBlues12bar",
     description: "progBlues12barDescription",

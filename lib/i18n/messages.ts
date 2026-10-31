@@ -179,6 +179,9 @@ const en = {
   progNeoSoulTurnaround: "Imaj9–vi9–ii9–V9",
   progNeoSoulTurnaroundDescription:
     "An extended turnaround where every chord carries a 9th.",
+  progNeoSoulMovie: "Imaj7–vii m7–bVII6–vi7",
+  progNeoSoulMovieDescription:
+    "A chromatic descent from Imaj7 through vii m7 and bVII6 to vi7.",
   progBlues12bar: "12-bar blues",
   progBlues12barDescription:
     "Four bars on I7, quick to IV7, then V7–IV7–I7–V7 — the mother of blues forms.",
@@ -413,6 +416,9 @@ const th: Record<keyof typeof en, string> = {
   progNeoSoul14Description: "IVm9 ยืมมาแอบอยู่บน Imaj9 — ลายเซ็นของ Neo Soul",
   progNeoSoulTurnaround: "Imaj9–vi9–ii9–V9",
   progNeoSoulTurnaroundDescription: "โปรเกรสชันยาวที่ทุกคอร์ดพารา 9th",
+  progNeoSoulMovie: "Imaj7–vii m7–bVII6–vi7",
+  progNeoSoulMovieDescription:
+    "คอร์ดไล่รูทลงทีละครึ่งเสียงจาก Imaj7 ผ่าน vii m7 และ bVII6 ไปจบที่ vi7",
   progBlues12bar: "12-bar blues",
   progBlues12barDescription:
     "สี่บาร์บน I7 เข้า IV7 แล้วปิดด้วย V7–IV7–I7–V7 — แม่แบบของบลูส์",

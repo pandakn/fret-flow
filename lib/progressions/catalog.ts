@@ -19,6 +19,7 @@ export type ProgressionGenreId = (typeof PROGRESSION_GENRES)[number]
  */
 const CHORD_TONE_SPECS = {
   maj: { quality: "", tones: [0, 4, 7], labels: ["R", "3", "5"] },
+  maj6: { quality: "6", tones: [0, 4, 7, 9], labels: ["R", "3", "5", "6"] },
   m: { quality: "m", tones: [0, 3, 7], labels: ["R", "b3", "5"] },
   "7": { quality: "7", tones: [0, 4, 7, 10], labels: ["R", "3", "5", "b7"] },
   m7: { quality: "m7", tones: [0, 3, 7, 10], labels: ["R", "b3", "5", "b7"] },
@@ -60,6 +61,7 @@ export type ProgressionId =
   | "neosoul_2_5_1"
   | "neosoul_1_4"
   | "neosoul_turnaround"
+  | "neosoul_movie"
   | "blues_12bar"
   | "blues_12bar_quick"
   | "blues_minor"
@@ -193,6 +195,17 @@ export const PROGRESSIONS: readonly Progression[] = [
       step(9, "m9", "vi9"),
       step(2, "m9", "ii9"),
       step(7, "dom9", "V9"),
+    ],
+  },
+  {
+    id: "neosoul_movie",
+    genre: "neo_soul",
+    bpm: 62,
+    steps: [
+      step(0, "maj7", "Imaj7"),
+      step(-1, "m7", "vii m7"),
+      step(-2, "maj6", "bVII6"),
+      step(-3, "m7", "vi7"),
     ],
   },
 
