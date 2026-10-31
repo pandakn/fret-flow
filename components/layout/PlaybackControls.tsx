@@ -12,6 +12,7 @@ interface PlaybackControlsProps {
   sequence: readonly PlaybackStep[]
   playLabel: string
   unavailableLabel: string
+  compact?: boolean
 }
 
 export function PlaybackControls({
@@ -19,6 +20,7 @@ export function PlaybackControls({
   sequence,
   playLabel,
   unavailableLabel,
+  compact = false,
 }: PlaybackControlsProps) {
   const { t } = useI18n()
   const [bpm, setBpm] = useState(80)
@@ -33,29 +35,35 @@ export function PlaybackControls({
 
   return (
     <section
-      className="mt-auto"
-      style={{ padding: "14px 16px", borderTop: "1px solid var(--border)" }}
+      className={cn(compact && "flex flex-wrap items-center gap-3")}
+      style={{
+        padding: compact ? 0 : "14px 16px",
+        borderTop: compact ? 0 : "1px solid var(--border)",
+      }}
     >
-      <div
-        className="mb-2.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
-        style={{
-          color: "var(--text)",
-          opacity: 0.55,
-          fontFamily: "var(--font-mono)",
-        }}
-      >
-        {t("playback")}
-      </div>
+      {!compact ? (
+        <div
+          className="mb-2.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
+          style={{
+            color: "var(--text)",
+            opacity: 0.55,
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          {t("playback")}
+        </div>
+      ) : null}
       <Button
         onClick={toggle}
         disabled={!isAvailable}
         size="sm"
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-md text-[13px] font-bold transition-opacity hover:opacity-85",
+          "flex items-center justify-center gap-2 rounded-md text-[13px] font-bold transition-opacity hover:opacity-85",
+          compact ? "w-auto px-5" : "w-full",
           !isAvailable && "cursor-not-allowed opacity-50 hover:opacity-50"
         )}
         style={{
-          padding: "9px",
+          padding: "9px 14px",
           backgroundColor: "var(--accent)",
           color: "var(--accent-foreground)",
           fontFamily: "var(--font-sans)",
@@ -90,7 +98,9 @@ export function PlaybackControls({
         )}
         {playing ? t("stop") : isAvailable ? playLabel : unavailableLabel}
       </Button>
-      <div className="mt-2 flex items-center gap-1.5">
+      <div
+        className={cn("flex items-center gap-1.5", compact ? "m-0" : "mt-2")}
+      >
         <span
           className="text-[9px] tracking-[0.12em] uppercase"
           style={{

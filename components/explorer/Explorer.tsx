@@ -1,9 +1,5 @@
 "use client"
 
-import { KeySelector } from "@/components/controls/KeySelector"
-import { ChordTypeSelector } from "@/components/controls/ChordTypeSelector"
-import { ScaleTypeSelector } from "@/components/controls/ScaleTypeSelector"
-import { TuningSelector } from "@/components/controls/TuningSelector"
 import {
   DisplayOptions,
   type DisplayMode,
@@ -16,29 +12,24 @@ import {
   POSITION_RANGES,
   type PositionId,
 } from "@/components/layout/PositionTabs"
-import { ScaleInfo } from "@/components/layout/ScaleInfo"
-import { ModeInfo } from "@/components/layout/ModeInfo"
-import { IntervalList } from "@/components/layout/IntervalList"
-import { StatsGrid } from "@/components/layout/StatsGrid"
 import { RelatedScales } from "@/components/layout/RelatedScales"
 import { Playback } from "@/components/layout/Playback"
-import { ArpeggioPlayback } from "@/components/layout/ArpeggioPlayback"
-import { CollapsiblePanel } from "@/components/layout/CollapsiblePanel"
-import { ChordInfo } from "@/components/layout/ChordInfo"
-import { ArpeggioInfo } from "@/components/layout/ArpeggioInfo"
 import { ArpeggioControls } from "@/components/layout/ArpeggioControls"
-import { ArpeggioSequence } from "@/components/layout/ArpeggioSequence"
-import { ChordToneList } from "@/components/layout/ChordToneList"
 import {
   ChordVoicingSelector,
   type ChordDisplayMode,
 } from "@/components/layout/ChordVoicingSelector"
-import { ChordVoicingSummary } from "@/components/layout/ChordVoicingSummary"
 import { getChordVoicings } from "@/lib/chord-voicings"
-import { getChordById, getTriadChordTypes } from "@/lib/chords"
+import { CHORDS, getChordById, getTriadChordTypes } from "@/lib/chords"
 import { resolveArpeggio, type ArpeggioDirection } from "@/lib/arpeggios"
-import { getModeById, getScaleById, MODES } from "@/lib/scales"
-import { getTuningById } from "@/lib/tunings"
+import {
+  getModeById,
+  getScaleById,
+  MODES,
+  SCALES,
+  getScaleNotes,
+} from "@/lib/scales"
+import { getTuningById, TUNINGS } from "@/lib/tunings"
 import type { ColorPreset } from "@/types/fretboard"
 import type { NoteName } from "@/types/music"
 import { useEffect, useMemo, useState } from "react"
@@ -46,7 +37,12 @@ import { createDefaultExercise } from "@/lib/practice/exercises"
 import { usePracticeStore } from "@/components/practice/hooks/usePracticeStore"
 import { useI18n } from "@/components/i18n/LocaleProvider"
 import { ScaleRouteStudy } from "@/components/explorer/ScaleRouteStudy"
-import { Button } from "@/components/ui/button"
+import { CHROMATIC } from "@/lib/notes"
+import { getKeyLabel, spellIntervalNote } from "@/lib/theory/spelling"
+import { chordLabel, scaleLabel } from "@/lib/i18n/music-labels"
+import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { localePath } from "@/lib/i18n/locales"
 import { routeText } from "@/lib/i18n/note-routes"
 
 const TRIAD_CHORD_TYPES = getTriadChordTypes()
@@ -71,36 +67,11 @@ export function Explorer() {
   const [arpeggioDirection, setArpeggioDirection] =
     useState<ArpeggioDirection>("ascending")
   const [tuningId, setTuningId] = useState("standard")
-  const [colorPreset, setColorPreset] = useState<ColorPreset>("minimal")
+  const colorPreset: ColorPreset = "minimal"
   const [displayMode, setDisplayMode] = useState<DisplayMode>("notes")
   const [position, setPosition] = useState<PositionId>("full")
   const [focusMode, setFocusMode] = useState(false)
   const [guidedRoutesOpen, setGuidedRoutesOpen] = useState(false)
-  const [leftOpen, setLeftOpen] = useState(true)
-  const [rightOpen, setRightOpen] = useState(true)
-  const [modifier, setModifier] = useState("Ctrl")
-
-  useEffect(() => {
-    // ⌘ on macOS/iOS, Ctrl elsewhere — matches Zed's display convention.
-    // Platform is only known client-side, so this avoids a hydration mismatch.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setModifier(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl")
-
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
-      const k = e.key.toLowerCase()
-      if (k === "b") {
-        e.preventDefault()
-        setLeftOpen((o) => !o)
-      } else if (k === "r") {
-        e.preventDefault()
-        setRightOpen((o) => !o)
-      }
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [])
-
   const showNoteNames = displayMode === "notes"
   const showIntervals = displayMode === "degrees"
   const rootOnly = displayMode === "rootOnly"
@@ -166,6 +137,21 @@ export function Explorer() {
     mode === "triads" ? selectedTriadVoicing : selectedVoicing
   const activeChordDisplayMode =
     mode === "triads" ? triadDisplayMode : chordDisplayMode
+  const heading = isScaleExplorer
+    ? `${getKeyLabel(root)} ${selectedScale ? scaleLabel(locale, selectedScale.id, selectedScale.name) : ""}`
+    : mode === "arpeggios"
+      ? `${getKeyLabel(root)}${selectedArpeggioChord?.symbol ?? ""} ${t("arpeggios")}`
+      : `${getKeyLabel(root)}${selectedChordPattern?.symbol ?? ""} ${selectedChordPattern ? chordLabel(locale, selectedChordPattern.id, selectedChordPattern.name) : ""}`
+  const noteSummary =
+    isScaleExplorer && selectedScale
+      ? getScaleNotes(root, selectedScale.formula)
+          .map((note, index) =>
+            spellIntervalNote(root, selectedScale.intervals[index], note)
+          )
+          .join(" · ")
+      : (selectedChordPattern?.intervals.join(" · ") ??
+        selectedArpeggioChord?.intervals.join(" · ") ??
+        "")
 
   useEffect(() => {
     // Root, chord, and tuning define the playable set, so always select its
@@ -256,131 +242,197 @@ export function Explorer() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar
-        mode={mode}
-        onModeChange={handleExplorerModeChange}
-        onSaveExercise={handleSaveExercise}
-      />
+      <Navbar />
 
-      <div
-        className="flex flex-1 overflow-hidden"
-        style={{ height: "calc(100vh - 49px)" }}
-      >
-        <CollapsiblePanel
-          side="left"
-          open={leftOpen}
-          onOpenChange={setLeftOpen}
-          width={200}
-          shortcutKey="b"
-          modifier={modifier}
-          style={{
-            backgroundColor: "var(--surface)",
-            borderRight: "1px solid var(--border)",
-          }}
-        >
-          <KeySelector value={root} onChange={setRoot} />
-          {isScaleExplorer ? (
-            <ScaleTypeSelector
-              value={scaleId}
-              onChange={setScaleId}
-              scales={mode === "modes" ? MODES : undefined}
-              label={mode === "modes" ? t("mode") : undefined}
-            />
-          ) : (
-            <ChordTypeSelector
-              value={
-                mode === "arpeggios"
-                  ? arpeggioChordId
-                  : mode === "triads"
-                    ? triadId
-                    : chordId
-              }
-              onChange={
-                mode === "arpeggios"
-                  ? setArpeggioChordId
-                  : mode === "triads"
-                    ? setTriadId
-                    : setChordId
-              }
-              chords={mode === "triads" ? TRIAD_CHORD_TYPES : undefined}
-              label={mode === "triads" ? t("triads") : undefined}
-            />
-          )}
-          <TuningSelector value={tuningId} onChange={setTuningId} />
-          {mode === "scales" &&
-          (scaleId === "pentatonic_major" || scaleId === "pentatonic_minor") ? (
-            <Button
-              variant="outline"
-              className="m-2"
-              onClick={() => setGuidedRoutesOpen(true)}
-            >
-              {routeText(locale, "title")}
-            </Button>
-          ) : null}
-        </CollapsiblePanel>
-
-        <main
-          className="flex min-w-0 flex-1 flex-col overflow-hidden"
-          style={{ backgroundColor: "var(--surface)" }}
-        >
-          {mode === "scales" ? (
-            <ScaleInfo
-              root={root}
-              scaleId={scaleId}
-              colorPreset={colorPreset}
-              onColorPresetChange={setColorPreset}
-            />
-          ) : mode === "modes" ? (
-            <ModeInfo
-              root={root}
-              modeId={scaleId}
-              colorPreset={colorPreset}
-              onColorPresetChange={setColorPreset}
-            />
-          ) : mode === "arpeggios" ? (
-            <ArpeggioInfo
-              root={root}
-              chordId={arpeggioChordId}
-              voicing={selectedArpeggioVoicing}
-              colorPreset={colorPreset}
-              onColorPresetChange={setColorPreset}
-            />
-          ) : (
-            <ChordInfo
-              root={root}
-              chordId={mode === "triads" ? triadId : chordId}
-              titleSuffix={mode === "triads" ? t("triads") : undefined}
-              colorPreset={colorPreset}
-              onColorPresetChange={setColorPreset}
-            />
-          )}
-
-          <div
-            className="flex items-center"
-            style={{
-              borderBottom: "1px solid var(--border)",
-              padding: "9px 32px",
-            }}
-          >
-            <DisplayOptions value={displayMode} onChange={setDisplayMode} />
+      <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 px-5 pt-6 pb-28 sm:px-8 lg:px-12">
+        <section className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--border)] pb-4">
+          <div>
+            <p className="font-mono text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">
+              {t("scales")} / {t("explore")}
+            </p>
+            <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)] sm:text-5xl">
+              {heading}
+            </h1>
+            <p className="mt-2 font-mono text-xs text-[var(--muted-foreground)]">
+              {noteSummary} <span className="px-2">|</span>{" "}
+              {selectedPattern?.intervals.length ?? 0}{" "}
+              {isScaleExplorer ? t("notes") : t("tones")}
+            </p>
           </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleSaveExercise}
+              className="rounded-xl border border-[var(--border-2)] bg-[var(--card)] px-4 py-3 text-sm font-semibold hover:bg-[var(--secondary)]"
+            >
+              {t("saveExercise")}
+            </button>
+            <Link
+              href={localePath(locale, "/practice")}
+              className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-foreground)]"
+            >
+              {t("practice")} →
+            </Link>
+          </div>
+        </section>
 
-          <FretboardPanel
-            root={root}
-            pattern={selectedPattern}
-            tuningId={tuningId}
-            focusRange={focusRange}
-            colorPreset={colorPreset}
-            showNoteNames={showNoteNames}
-            showIntervals={showIntervals}
-            rootOnly={rootOnly}
-            selectedVoicing={isChordExplorer ? activeVoicing : undefined}
-            shapeFocus={
-              isChordExplorer && activeChordDisplayMode === "shapeFocus"
-            }
-            arpeggio={mode === "arpeggios" ? resolvedArpeggio : undefined}
-          />
+        <section
+          className="flex flex-wrap items-center gap-1 border-b border-[var(--border)] pb-2"
+          aria-label="Explore categories"
+        >
+          {(
+            [
+              "scales",
+              "modes",
+              "chords",
+              "triads",
+              "arpeggios",
+            ] as ExplorerMode[]
+          ).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => handleExplorerModeChange(item)}
+              aria-pressed={mode === item}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-semibold capitalize",
+                mode === item
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)]"
+              )}
+            >
+              {t(item)}
+            </button>
+          ))}
+        </section>
 
+        <section className="space-y-3" aria-label="Explore controls">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-16 font-mono text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">
+              {t("rootKey")}
+            </span>
+            {CHROMATIC.map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setRoot(key)}
+                aria-pressed={root === key}
+                className={cn(
+                  "min-w-12 rounded-lg border px-3 py-2 font-mono text-xs font-semibold",
+                  root === key
+                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)]"
+                    : "border-[var(--border-2)] bg-[var(--card)] hover:bg-[var(--secondary)]"
+                )}
+              >
+                {getKeyLabel(key)}
+              </button>
+            ))}
+            <label className="ml-auto flex items-center gap-2 font-mono text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">
+              {t("tuning")}
+              <select
+                value={tuningId}
+                onChange={(event) => setTuningId(event.target.value)}
+                className="rounded-lg border border-[var(--border-2)] bg-[var(--card)] px-3 py-2 text-xs font-semibold text-[var(--foreground)]"
+              >
+                {TUNINGS.map((tuning) => (
+                  <option key={tuning.id} value={tuning.id}>
+                    {tuning.strings.join(" ")} · {tuning.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-16 font-mono text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">
+              {isScaleExplorer ? t("scale") : t("chord")}
+            </span>
+            {isScaleExplorer
+              ? (mode === "modes" ? MODES : SCALES).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setScaleId(item.id)}
+                    aria-pressed={scaleId === item.id}
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm",
+                      scaleId === item.id
+                        ? "border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)]"
+                        : "border-[var(--border-2)] bg-[var(--card)] hover:bg-[var(--secondary)]"
+                    )}
+                  >
+                    {scaleLabel(locale, item.id, item.name)}
+                  </button>
+                ))
+              : (mode === "triads" ? TRIAD_CHORD_TYPES : CHORDS).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() =>
+                      mode === "arpeggios"
+                        ? setArpeggioChordId(item.id)
+                        : mode === "triads"
+                          ? setTriadId(item.id)
+                          : setChordId(item.id)
+                    }
+                    aria-pressed={
+                      (mode === "arpeggios"
+                        ? arpeggioChordId
+                        : mode === "triads"
+                          ? triadId
+                          : chordId) === item.id
+                    }
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm",
+                      (mode === "arpeggios"
+                        ? arpeggioChordId
+                        : mode === "triads"
+                          ? triadId
+                          : chordId) === item.id
+                        ? "border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)]"
+                        : "border-[var(--border-2)] bg-[var(--card)] hover:bg-[var(--secondary)]"
+                    )}
+                  >
+                    {chordLabel(locale, item.id, item.name)}
+                  </button>
+                ))}
+            {mode === "scales" &&
+            (scaleId === "pentatonic_major" ||
+              scaleId === "pentatonic_minor") ? (
+              <button
+                type="button"
+                onClick={() => setGuidedRoutesOpen(true)}
+                className="rounded-full border border-[var(--border-2)] px-4 py-2 text-sm"
+              >
+                {routeText(locale, "title")}
+              </button>
+            ) : null}
+            <div className="ml-auto flex items-center gap-2">
+              <span className="font-mono text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">
+                {t("displayMode")}
+              </span>
+              <DisplayOptions value={displayMode} onChange={setDisplayMode} />
+            </div>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-2xl border border-[var(--border-2)] bg-[var(--card)] shadow-sm">
+          <div className="flex h-[min(49vh,500px)] min-h-[340px] items-center px-3 sm:px-5">
+            <FretboardPanel
+              root={root}
+              pattern={selectedPattern}
+              tuningId={tuningId}
+              focusRange={focusRange}
+              colorPreset={colorPreset}
+              showNoteNames={showNoteNames}
+              showIntervals={showIntervals}
+              rootOnly={rootOnly}
+              selectedVoicing={isChordExplorer ? activeVoicing : undefined}
+              shapeFocus={
+                isChordExplorer && activeChordDisplayMode === "shapeFocus"
+              }
+              arpeggio={mode === "arpeggios" ? resolvedArpeggio : undefined}
+            />
+          </div>
           <Legend
             activeIntervals={
               isChordExplorer
@@ -390,82 +442,61 @@ export function Explorer() {
                   : undefined
             }
           />
-          {isScaleExplorer ? (
-            <PositionTabs
-              value={position}
-              onChange={handlePositionChange}
-              focusMode={focusMode}
-              onFocusModeChange={setFocusMode}
+        </section>
+        {isScaleExplorer ? (
+          <PositionTabs
+            value={position}
+            onChange={handlePositionChange}
+            focusMode={focusMode}
+            onFocusModeChange={setFocusMode}
+          />
+        ) : mode === "arpeggios" ? (
+          <ArpeggioControls
+            voicings={arpeggioVoicings}
+            value={selectedArpeggioVoicingId}
+            onChange={setSelectedArpeggioVoicingId}
+            direction={arpeggioDirection}
+            onDirectionChange={setArpeggioDirection}
+          />
+        ) : (
+          <ChordVoicingSelector
+            voicings={mode === "triads" ? triadVoicings : chordVoicings}
+            value={
+              mode === "triads" ? selectedTriadVoicingId : selectedVoicingId
+            }
+            onChange={
+              mode === "triads"
+                ? setSelectedTriadVoicingId
+                : setSelectedVoicingId
+            }
+            displayMode={activeChordDisplayMode}
+            onDisplayModeChange={
+              mode === "triads" ? setTriadDisplayMode : setChordDisplayMode
+            }
+            label={mode === "triads" ? t("triads") : undefined}
+          />
+        )}
+        {isScaleExplorer ? (
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3">
+            <RelatedScales root={root} scaleId={scaleId} />
+          </div>
+        ) : null}
+      </main>
+      {isScaleExplorer ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--surface)] px-5 py-3 sm:px-8">
+          <div className="mx-auto flex max-w-[1680px] items-center gap-3">
+            <Playback
+              root={root}
+              scaleId={scaleId}
+              tuningId={tuningId}
+              compact
             />
-          ) : mode === "arpeggios" ? (
-            <ArpeggioControls
-              voicings={arpeggioVoicings}
-              value={selectedArpeggioVoicingId}
-              onChange={setSelectedArpeggioVoicingId}
-              direction={arpeggioDirection}
-              onDirectionChange={setArpeggioDirection}
-            />
-          ) : (
-            <ChordVoicingSelector
-              voicings={mode === "triads" ? triadVoicings : chordVoicings}
-              value={
-                mode === "triads" ? selectedTriadVoicingId : selectedVoicingId
-              }
-              onChange={
-                mode === "triads"
-                  ? setSelectedTriadVoicingId
-                  : setSelectedVoicingId
-              }
-              displayMode={activeChordDisplayMode}
-              onDisplayModeChange={
-                mode === "triads" ? setTriadDisplayMode : setChordDisplayMode
-              }
-              label={mode === "triads" ? t("triads") : undefined}
-            />
-          )}
-        </main>
-
-        <CollapsiblePanel
-          side="right"
-          open={rightOpen}
-          onOpenChange={setRightOpen}
-          width={220}
-          shortcutKey="r"
-          modifier={modifier}
-          style={{
-            backgroundColor: "var(--surface)",
-            borderLeft: "1px solid var(--border)",
-          }}
-        >
-          {isScaleExplorer ? (
-            <>
-              <IntervalList root={root} scaleId={scaleId} />
-              <StatsGrid scaleId={scaleId} />
-              <RelatedScales root={root} scaleId={scaleId} />
-              <Playback root={root} scaleId={scaleId} tuningId={tuningId} />
-            </>
-          ) : mode === "arpeggios" ? (
-            <>
-              <ChordToneList root={root} chordId={arpeggioChordId} />
-              <ChordVoicingSummary voicing={selectedArpeggioVoicing} />
-              <ArpeggioSequence arpeggio={resolvedArpeggio} />
-              <ArpeggioPlayback root={root} arpeggio={resolvedArpeggio} />
-            </>
-          ) : (
-            <>
-              <ChordToneList
-                root={root}
-                chordId={mode === "triads" ? triadId : chordId}
-                label={mode === "triads" ? t("triads") : undefined}
-              />
-              <ChordVoicingSummary
-                voicing={activeVoicing}
-                label={mode === "triads" ? "Triad" : undefined}
-              />
-            </>
-          )}
-        </CollapsiblePanel>
-      </div>
+            <span className="ml-auto hidden text-xs text-[var(--muted-foreground)] sm:block">
+              Tap any note to hear it
+            </span>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

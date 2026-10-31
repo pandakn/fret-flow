@@ -15,9 +15,15 @@ interface PlaybackProps {
   root: NoteName
   scaleId: string
   tuningId: string
+  compact?: boolean
 }
 
-export function Playback({ root, scaleId, tuningId }: PlaybackProps) {
+export function Playback({
+  root,
+  scaleId,
+  tuningId,
+  compact = false,
+}: PlaybackProps) {
   const { t } = useI18n()
   const sequence = useMemo(() => {
     const scale = getScaleById(scaleId)
@@ -47,6 +53,7 @@ export function Playback({ root, scaleId, tuningId }: PlaybackProps) {
       sequence={sequence}
       playLabel={t("playScale")}
       unavailableLabel={t("scaleUnavailable")}
+      compact={compact}
     />
   )
 }
